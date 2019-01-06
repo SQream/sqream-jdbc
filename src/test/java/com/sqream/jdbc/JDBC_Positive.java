@@ -112,7 +112,35 @@ public class JDBC_Positive {
         return a_ok;
     }
     
-    
+     public boolean getUDF() throws SQLException {
+        /*  Check isSigned command()   */
+        boolean a_ok = false;
+        
+        // Create some user defined functions
+        conn = DriverManager.getConnection(url,"sqream","sqream");
+        String sql = "CREATE OR REPLACE FUNCTION fud () RETURNS int as $$ return 1 $$ LANGUAGE PYTHON";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+               
+        // Run getProcedures
+        dbmeta = conn.getMetaData();
+        rs = dbmeta.getProcedures(null, null, null);
+        String udfName = "";
+        while(rs.next()) 
+            udfName = rs.getString("PROCEDURE_NAME"); 
+
+        System.out.println("udf name: " + udfName);
+        
+        // Check functionality
+        if (udfName.equals("fud"))
+            a_ok = true;    
+        
+        rs.close();
+        
+        return a_ok;
+    }
+
     public boolean isSigned() throws SQLException {
         /*  Check isSigned command()   */
         boolean a_ok = false;
@@ -533,6 +561,12 @@ public class JDBC_Positive {
         JDBC_Positive pos_tests = new JDBC_Positive();
         String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+
+        if (pos_tests.getUDF()) 
+            System.out.println("getUDF() test  - OK");
+        else
+            System.out.println("getUDF() test  - Fail");
+
 
         if (pos_tests.isSigned()) 
             System.out.println("isSigned() test  - OK");

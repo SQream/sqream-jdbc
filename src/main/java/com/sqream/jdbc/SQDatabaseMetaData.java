@@ -531,7 +531,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException {
 		ResultSet rs = null;
 		try {
-			rs = EmptyResultSet();
+			rs = metadataStatement("select database_name as PROCEDURE_CAT, null as PROCEDURE_SCHEM, function_name as PROCEDURE_NAME, null as UNUSED, null as UNUSED2, null as UNUSED3, ' ' as REMARKS, 0 as PROCEDURE_TYPE, function_name as SPECIFIC_NAME from sqream_catalog.user_defined_functions");	
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

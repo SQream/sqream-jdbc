@@ -12,7 +12,7 @@ git clone https://github.com/helipilot50/SQream-JDBC.git
 ## Dependencies
 
 This code is dependent on
-- Java 7
+- Java 8
 - Jackson JSON library
 - SQream JAVA-connector (clone and follow readme from http://gitlab.sq.l/connectors/java.git)
 

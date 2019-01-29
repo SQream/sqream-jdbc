@@ -70,7 +70,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public boolean allProceduresAreCallable() throws SQLException {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -1174,7 +1174,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public boolean supportsStoredProcedures() throws SQLException {
-		return false;
+		return true;
 	}
 
 	@Override

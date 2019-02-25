@@ -52,18 +52,16 @@
 				</configuration>
 			</plugin>
 			<plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>3.5.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Implementation-Version>
-                            SQream_2.9.2
-                        </Implementation-Version>
-                    </instructions>
-                </configuration>
-            </plugin>
+		      <groupId>org.apache.maven.plugins</groupId>
+		      <artifactId>maven-jar-plugin</artifactId>
+		      <configuration>
+		        <archive>
+		          <manifest>
+		            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+		          </manifest>
+		        </archive>
+		      </configuration>
+		    </plugin>
 		</plugins>
 	    <resources>
             <resource>

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sqream</groupId>
     <artifactId>sqream-jdbc</artifactId>
-    <version>2.3.1</version>
+    <version>2.9.2</version>
     <name>SQream JDBC</name>
     <packaging>jar</packaging>
     <url>http://maven.apache.org</url>
@@ -48,9 +48,9 @@
             <version>3.1.0</version>
             <configuration>
               <archive>
-                <manifestEntries>
-                  <Implementation-Version>SQream_2.4</Implementation-Version>
-                </manifestEntries>
+                <manifest>
+                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                </manifest>
               </archive>
             </configuration>
             </plugin>
@@ -81,19 +81,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>3.5.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Implementation-Version>
-                            SQream_2.9.2
-                        </Implementation-Version>
-                    </instructions>
-                </configuration>
             </plugin>
         </plugins>
         <resources>

@@ -360,7 +360,8 @@ public class SQPreparedStatment implements PreparedStatement {
 
     @Override
     public void setQueryTimeout(int arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        if (arg0 !=0)  // 0 means unlimited timeout
+            throw new SQLFeatureNotSupportedException();
     }
 
     @Override

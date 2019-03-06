@@ -537,7 +537,6 @@ public class SQStatment implements Statement {
 
 	@Override
 	public void setPoolable(boolean arg0) throws SQLException {
-		if (arg0 !=0)  // 0 means unlimited timeout
             throw new SQLFeatureNotSupportedException();
 	}
 

@@ -11,6 +11,7 @@ class SQlb {
 	String Password;
 	String DB_name;
 	Boolean Use_ssl;
+	String service;
 	
 	static void main(String[] args) {
 		// TODO Auto-generated method stub

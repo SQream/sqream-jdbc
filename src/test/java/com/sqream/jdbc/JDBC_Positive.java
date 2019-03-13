@@ -1,6 +1,9 @@
 package com.sqream.jdbc;
 
 import java.text.MessageFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Random;
 import java.util.UUID;
 
@@ -19,6 +22,7 @@ import java.sql.DatabaseMetaData;    // for getTables test
 import java.sql.ResultSetMetaData;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -52,8 +56,8 @@ public class JDBC_Positive {
     double    res_double   = 0.0;
     String    res_varchar  = "";
     //String test_varchar = "koko"; 
-    Date      res_date     = new Date(2012, 9, 13);
-    Timestamp res_datetime = new Timestamp(2002, 9, 13, 14, 56, 34, 567);
+    Date      res_date     = date_from_tuple(2012, 9, 13);
+    Timestamp res_datetime = datetime_from_tuple(2002, 9, 13, 14, 56, 34, 567);
     
     ///*
     boolean test_bool = false;
@@ -65,8 +69,8 @@ public class JDBC_Positive {
     double test_double = r.nextDouble();
     String test_varchar = UUID.randomUUID().toString();
     //String test_varchar = "koko"; 
-    Date test_date = new Date(2002, 9, 13);
-    Timestamp test_datetime = new Timestamp(2002, 9, 13, 14, 56, 34, 567); //*/
+    Date test_date = date_from_tuple(2002, 9, 13);
+    Timestamp test_datetime = datetime_from_tuple(2002, 9, 13, 14, 56, 34, 567); //*/
     
     // JDBC Data
     static final String url = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
@@ -81,7 +85,30 @@ public class JDBC_Positive {
     ResultSetMetaData rsmeta = null;
     // Load JDBC driver
     
-    
+    static void print(Object printable) {
+		System.out.println(printable);
+	}
+	
+	static void printbuf(ByteBuffer to_print, String description) {
+		System.out.println(description + " : " + to_print);
+	}
+	
+	
+	static long time() {
+		return System.currentTimeMillis();
+	}
+	
+	static Date date_from_tuple(int year, int month, int day) {
+		
+		return Date.valueOf(LocalDate.of(year, month, day));
+	}
+	
+	static Timestamp datetime_from_tuple(int year, int month, int day, int hour, int minutes, int seconds, int ms) {
+			
+		return Timestamp.valueOf(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
+	}
+	
+	
     public boolean execBatchRes() throws SQLException {
         boolean a_ok = false;
         int[] res;

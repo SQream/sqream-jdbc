@@ -1,11 +1,6 @@
 package com.sqream.jdbc;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Array;
@@ -30,7 +25,12 @@ import java.util.Vector;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.sqream.connector.ConnectionHandle;
+import javax.script.ScriptException;
+
+//import com.sqream.connector.Connector;
+import com.sqream.connector.Connector;
+import com.sqream.connector.Connector.ConnException;
+
 
 
 public class SQConnection implements Connection {
@@ -39,7 +39,7 @@ public class SQConnection implements Connection {
 	private  Vector<SQStatment> Statement_list = new Vector<SQStatment>();
 	
 
-	ConnectionHandle globalClient = null; // this client is in use only
+	Connector globalClient = null; // this client is in use only
 													// for our internal
 													// queries!(like select
 													// show_schema etc..)
@@ -50,8 +50,9 @@ public class SQConnection implements Connection {
     String username;
     Properties connInfo;
     String db_name;
+    String service = "sqream";
     
-	public SQConnection(ConnectionHandle client) throws IOException {
+	public SQConnection(Connector client) throws IOException {
 
 		globalClient = client;
 
@@ -67,8 +68,7 @@ public class SQConnection implements Connection {
 	}
 	
 	public SQConnection(Properties connectionInfo) 
-			throws SQLException,  NumberFormatException, UnknownHostException,
-			IOException, KeyManagementException, NoSuchAlgorithmException {
+			throws ScriptException, SQLException, NumberFormatException, IOException {
 		
 		connInfo = connectionInfo;
 		String cluster = connectionInfo.getProperty("cluster");
@@ -100,37 +100,8 @@ public class SQConnection implements Connection {
 		if (skipPicker == null)
 			skipPicker = "false";
 
-		
-		
 		boolean isCluster=cluster.equalsIgnoreCase("true");
-		if (isCluster)
-			
-		{
-			    sqlb.LB_ip=ipaddress;
-				sqlb.LB_port=Integer.parseInt(s_port);
-			    
-			    Socket socketClient = new Socket(ipaddress, Integer.parseInt(s_port));
-				InputStream is = socketClient.getInputStream();
-
-				byte[] b = new byte[4];
-				socketClient.getInputStream().read(b, 0, 4);
-
-				int size = ConvertToInt(b);
-
-				byte[] ip = new byte[size];
-				socketClient.getInputStream().read(ip, 0, size);
-				ipaddress = new String(ip);
-
-				byte[] b_port = new byte[4];
-				socketClient.getInputStream().read(b_port, 0, 4);
-
-				int port = ConvertToInt(b_port);
-				s_port = String.valueOf(port);
-
-				is.close();
-				socketClient.close();
-			
-		}
+		
 		boolean use_ssl = false;
 		String SSL_Connection = connectionInfo.getProperty("ssl");
 		if (SSL_Connection == null || SSL_Connection.isEmpty()) {
@@ -142,10 +113,8 @@ public class SQConnection implements Connection {
 		
 		
 		//boolean use_ssl= SSL_Connection != null && !SSL_Connection.isEmpty()? true:false;
-		globalClient = new ConnectionHandle(ipaddress, Integer.parseInt(s_port), usr, pswd,db_name
-				,use_ssl);
-
-		globalClient.connect();
+		globalClient = new Connector(ipaddress, Integer.parseInt(s_port), cluster.equalsIgnoreCase("true"), use_ssl);
+		globalClient.connect(db_name, usr, pswd, service);
 		
 		sqlb.Cluster=isCluster;
 		sqlb.ip=ipaddress;
@@ -154,15 +123,9 @@ public class SQConnection implements Connection {
 		sqlb.Password=pswd;
 		sqlb.User=usr;
 		sqlb.Use_ssl=use_ssl;
+		sqlb.service = service;
 		IsClosed.set(false);
 		
-	}
-
-	private static int ConvertToInt(byte[] value) {
-//		System.out.println("ConvertToInt");
-		ByteBuffer wrapped = ByteBuffer.wrap(value);
-		wrapped.order(ByteOrder.LITTLE_ENDIAN);
-		return wrapped.getInt();
 	}
 
 	@Override
@@ -197,10 +160,10 @@ public class SQConnection implements Connection {
 				Statement_list.clear();
 			}
 			
-			globalClient.close();      // Closing ConnectionHandle
+			globalClient.close_connection();      // Closing Connector
 			IsClosed.set(true);
 
-		} catch (IOException e) {
+		} catch (IOException | ScriptException e) {
 			// TODO Auto-generated catch block
 			throw new SQLException(e);
 		} 
@@ -428,10 +391,7 @@ public class SQConnection implements Connection {
 		SQPreparedStatment SQPS = null;
 		try {
 			SQPS = new SQPreparedStatment(globalClient, sql, this, db_name);
-		} catch (KeyManagementException | NoSuchAlgorithmException e) {
-			throw new SQLException(e);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (KeyManagementException | NoSuchAlgorithmException | IOException | SQLException | ScriptException | ConnException e) {
 			throw new SQLException(e);
 		} return SQPS;
 	}
@@ -462,10 +422,8 @@ public class SQConnection implements Connection {
 		SQPreparedStatment SQPS = null;
 		try {
 			SQPS = new SQPreparedStatment(globalClient, sql, this, db_name);
-		} catch (KeyManagementException | NoSuchAlgorithmException e) {
-			throw new SQLException(e);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (KeyManagementException | NoSuchAlgorithmException | IOException | ScriptException | ConnException e) {
+			e.printStackTrace();
 			throw new SQLException(e);
 		} 
 		return SQPS;

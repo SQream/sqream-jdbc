@@ -3,9 +3,6 @@ package com.sqream.jdbc;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
@@ -13,6 +10,8 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.logging.Logger;
+
+import javax.script.ScriptException;
 
 
 
@@ -179,27 +178,16 @@ public class SQDriver implements java.sql.Driver {
 
 		SQConnection SQC = null;
 		try {
-
 			SQC = new SQConnection(info);
-			String[] lables = { "url", "info" };
-			String[] values = { url, info.toString() };
+			//String[] lables = { "url", "info" };
+			//String[] values = { url, info.toString() };
 
-			
-		} catch (KeyManagementException | NoSuchAlgorithmException e) {
-			throw new SQLException(e);
-		} catch (NumberFormatException e) {
-			//TODO razi
-			throw new SQLException(e);
-		} catch (UnknownHostException e) {
-			//TODO razi
-			throw new SQLException(e);
-		}  catch (IOException e) {
-			
+		} catch (NumberFormatException | IOException | ScriptException e) {
+			e.printStackTrace();
 			throw new SQLException(e);
 		}
-
+		
 		return SQC;
-
 	}
 
 	@Override

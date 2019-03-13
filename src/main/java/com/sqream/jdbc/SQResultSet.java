@@ -3,7 +3,6 @@ package com.sqream.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.Optional;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -25,17 +24,18 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
-import javax.sql.rowset.serial.SerialBlob;
 
-import com.sqream.connector.ConnectionHandle;
-import com.sqream.connector.StatementHandle;
-import com.sqream.connector.ColumnMetadata;
+import javax.script.ScriptException;
+
+import com.sqream.connector.Connector;
+import com.sqream.connector.Connector.ConnException;
+//import com.sqream.connector.Client;
+
 
 class SQResultSet implements ResultSet {
 
 	
-	ConnectionHandle Client = null;
-	StatementHandle StatementHandle = null;
+	Connector Client = null;
 	RS_STAT Status = RS_STAT.CLOSE;
 	int MaxRows = 0;
 	String db_name;
@@ -75,43 +75,30 @@ class SQResultSet implements ResultSet {
 
 	}	
 	
-	public SQResultSet( StatementHandle statementHandle, String catalog)
-			throws IOException {
-		this(null, statementHandle, catalog, false);
+	public SQResultSet(String catalog) throws IOException {
+		this(null, catalog, false);
 	}
 
-	public SQResultSet(ConnectionHandle client, StatementHandle statementHandle, String catalog)
+	public SQResultSet(Connector client, String catalog)
 			throws IOException {
-		this(client, statementHandle, catalog, false);
+		this(client, catalog, false);
 	}
 	
-	public SQResultSet(StatementHandle statementHandle, String catalog, boolean removeSpaces)
+	public SQResultSet(String catalog, boolean removeSpaces)
 			throws IOException {
-		this(null, statementHandle, catalog, removeSpaces);
+		this(null, catalog, removeSpaces);
 		
 	}
 	
-	public SQResultSet( ConnectionHandle client, StatementHandle statementHandle, String catalog, boolean removeSpaces)
+	public SQResultSet( Connector client, String catalog, boolean removeSpaces)
 			throws IOException {
 		Client = client;
 		Status = RS_STAT.OPEN;
 		db_name = catalog;
-		StatementHandle = statementHandle;
 		RemoveSpaces = removeSpaces;
 	}
 	
 	
-	
-	public SQResultSet( String sql,
-			StatementHandle statementHandle) throws IOException {
-
-
-		Status = RS_STAT.OPEN;
-
-		StatementHandle = statementHandle;
-
-	}
-
 	public SQResultSet(boolean bEmpty) throws IOException {
 		
 		Empty = bEmpty;
@@ -125,12 +112,13 @@ class SQResultSet implements ResultSet {
 	@Override
 	public void close() throws SQLException {
 		
-		if (!Empty) {  // Empty result sets don't start with a statementHandle
+		if (!Empty) {  // Empty result sets don't start with a Client
 			try {
-				StatementHandle.close();
-				if (Client!= null)
+				if (Client!= null) {
 					Client.close();
-			} catch (IOException e) {
+					Client.close_connection();
+				}
+			} catch (IOException | ScriptException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -146,8 +134,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public boolean getBoolean(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getBoolean(columnLabel.toLowerCase());
+			return Client.get_boolean(columnLabel.toLowerCase());
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -158,10 +145,10 @@ class SQResultSet implements ResultSet {
 	public boolean getBoolean(int columnIndex) throws SQLException {
 		Boolean b = null;
 		try {
-			isNull = StatementHandle.isNull(columnIndex);
-			b = StatementHandle.getBoolean(columnIndex);
+			
+			b = Client.get_boolean(columnIndex);
 
-		} catch (IOException e) {
+		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -172,8 +159,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public byte getByte(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getByte(columnLabel.toLowerCase());
+			return Client.get_ubyte(columnLabel.toLowerCase());
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -185,9 +171,9 @@ class SQResultSet implements ResultSet {
 
 		Byte b = null;
 		try {
-			isNull = StatementHandle.isNull(columnIndex);
-			b = StatementHandle.getByte(columnIndex);
-		} catch (IOException e) {
+			
+			b = Client.get_ubyte(columnIndex);
+		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -208,8 +194,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getDate(columnLabel.toLowerCase());
+			return Client.get_date(columnLabel.toLowerCase());
 
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
@@ -221,9 +206,8 @@ class SQResultSet implements ResultSet {
 	public Date getDate(int columnIndex) throws SQLException {
 		Date d = null;
 		try {
-			isNull = StatementHandle.isNull(columnIndex);
-			d = StatementHandle.getDate(columnIndex);
-		} catch (IOException e) {
+			d = Client.get_date(columnIndex);
+		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -233,8 +217,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(String columnLabel, Calendar cal) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getDate(columnLabel.toLowerCase());
+			return Client.get_date(columnLabel.toLowerCase());
 
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
@@ -246,8 +229,8 @@ class SQResultSet implements ResultSet {
 	public Date getDate(int columnIndex, Calendar cal) throws SQLException {
 		isNull = false;
 		Date d = null;
-		try {d = StatementHandle.getDate(columnIndex);
-		} catch (IOException e) {
+		try {d = Client.get_date(columnIndex);
+		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -257,8 +240,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public double getDouble(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getDouble(columnLabel.toLowerCase());
+			return Client.get_double(columnLabel.toLowerCase());
 
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
@@ -270,9 +252,9 @@ class SQResultSet implements ResultSet {
 	public double getDouble(int columnIndex) throws SQLException {
 		Double d = null;
 		try {
-			isNull = StatementHandle.isNull(columnIndex);
-			d = StatementHandle.getDouble(columnIndex);
-		} catch (IOException e) {
+			
+			d = Client.get_double(columnIndex);
+		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -282,8 +264,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public float getFloat(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getFloat(columnLabel.toLowerCase());
+			return Client.get_float(columnLabel.toLowerCase());
 
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
@@ -295,9 +276,9 @@ class SQResultSet implements ResultSet {
 	public float getFloat(int columnIndex) throws SQLException {
 		Float f = null;
 		try {
-			isNull = StatementHandle.isNull(columnIndex);
-			f = StatementHandle.getFloat(columnIndex);
-		} catch (IOException e) {
+			
+			f = Client.get_float(columnIndex);
+		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -308,8 +289,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public int getInt(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getInt(columnLabel.toLowerCase());
+			return Client.get_int(columnLabel.toLowerCase());
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -320,9 +300,9 @@ class SQResultSet implements ResultSet {
 	public int getInt(int columnIndex) throws SQLException {
 		Integer i = null;
 		try {
-			isNull = StatementHandle.isNull(columnIndex);
-			i = StatementHandle.getInt(columnIndex);
-		} catch (IOException e) {
+			
+			i = Client.get_int(columnIndex);
+		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -332,8 +312,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public long getLong(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getLong(columnLabel.toLowerCase());
+			return Client.get_long(columnLabel.toLowerCase());
 
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
@@ -344,8 +323,8 @@ class SQResultSet implements ResultSet {
 	@Override
 	public long getLong(int columnIndex) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnIndex);
-			return StatementHandle.getLong(columnIndex);
+			
+			return Client.get_long(columnIndex);
 
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnIndex
@@ -359,8 +338,8 @@ class SQResultSet implements ResultSet {
 		// TODO Auto-generated method stub
 		ResultSetMetaData rsmd = null;
 		try {
-			rsmd = new SQResultSetMetaData(StatementHandle, db_name);
-		} catch (IOException e) {
+			rsmd = new SQResultSetMetaData(Client, db_name);
+		} catch (IOException | ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -373,7 +352,7 @@ class SQResultSet implements ResultSet {
 		throw new SQLException("getObject() by column name unsupported");
 		
 		/*
-		ColumnMetadata[] meta = StatementHandle.getMetadata();
+		ColumnMetadata[] meta = Client.getMetadata();
 		String type = meta[columnIndex-1].type.tid.toString();
 		Object res = null; 
 		
@@ -407,31 +386,36 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Object getObject(int columnIndex) throws SQLException {
 		
-		ColumnMetadata[] meta = StatementHandle.getMetadata();
-		String type = meta[columnIndex-1].type.tid.toString();
+		String type = "";
+		try {
+			type = Client.get_col_type(columnIndex);
+		} catch (ConnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		Object res = null; 
 		
-		if (type.equals("Bool")) 
+		if (type.equals("ftBool")) 
 			res =  (Boolean)getBoolean(columnIndex);
-		else if (type.equals("Tinyint"))
+		else if (type.equals("ftUByte"))
 			res =  (Short)getShort(columnIndex);
-		else if (type.equals("Smallint")) 
+		else if (type.equals("ftShort")) 
 			res =  (Short)getShort(columnIndex);
-		else if (type.equals("Int")) 	
+		else if (type.equals("ftInt")) 	
 			res =  (Integer)getInt(columnIndex);
-		else if (type.equals("Bigint")) 
+		else if (type.equals("ftLong")) 
 			res =  (Long)getLong(columnIndex);
-		else if (type.equals("Real")) 
+		else if (type.equals("ftFloat")) 
 			res =  (Float)getFloat(columnIndex);
-		else if (type.equals("Float"))
+		else if (type.equals("ftDouble"))
 			res =  (Double)getDouble(columnIndex);
-		else if (type.equals("Date")) 
+		else if (type.equals("ftDate")) 
 			res =  (Date)getDate(columnIndex);
-		else if (type.equals("DateTime"))
+		else if (type.equals("ftDateTime"))
 			res =  (Timestamp)getTimestamp(columnIndex);
-		else if (type.equals("Varchar")) 
+		else if (type.equals("ftVarchar")) 
 			res =  (String)getString(columnIndex);
-		else if (type.equals("NVarchar")) 	
+		else if (type.equals("ftBlob")) 	
 			res =  (String)getString(columnIndex);
 		
 		return res;
@@ -461,10 +445,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public String getString(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			
-			
-			String value = StatementHandle.getVarchar(columnLabel.toLowerCase());
+			String value = Client.get_varchar(columnLabel.toLowerCase());
 			if (RemoveSpaces) 
 				return value.trim();
 			return value;
@@ -478,15 +459,18 @@ class SQResultSet implements ResultSet {
 	public String getString(int columnIndex) throws SQLException {
 		isNull = false;
 		String value = null;
+		String type = "";
+		try {
+			type = Client.get_col_type(columnIndex);
+		} catch (ConnException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
-		ColumnMetadata[] meta = StatementHandle.getMetadata();
-		String type = meta[columnIndex-1].type.tid.toString();
-		
-		if (type.equals("NVarchar")) {
+		if (type.equals("ftBlob")) {
 			try {
-				isNull = StatementHandle.isNull(columnIndex);
-				value = StatementHandle.getNvarchar(columnIndex);
-			}catch (IOException e) {
+				value = Client.get_nvarchar(columnIndex);
+			}catch (ConnException e) {
 				e.printStackTrace();
 			}
 			if (RemoveSpaces) 
@@ -495,9 +479,8 @@ class SQResultSet implements ResultSet {
 		}
 		else {                    // if (type.equals("Varchar")) {
 			try {
-				isNull = StatementHandle.isNull(columnIndex);
-				value = StatementHandle.getVarchar(columnIndex);
-			}catch (IOException e) {
+				value = Client.get_varchar(columnIndex);
+			}catch (ConnException e) {
 				e.printStackTrace();
 			}
 			if (RemoveSpaces) 
@@ -511,8 +494,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public short getShort(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getShort(columnLabel.toLowerCase());
+			return Client.get_short(columnLabel.toLowerCase());
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -523,9 +505,8 @@ class SQResultSet implements ResultSet {
 	public short getShort(int columnIndex) throws SQLException {
 		Short s = null;
 		try {
-			isNull = StatementHandle.isNull(columnIndex);
-			s = StatementHandle.getShort(columnIndex);
-		} catch (IOException e) {
+			s = Client.get_short(columnIndex);
+		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -535,8 +516,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Timestamp getTimestamp(String columnLabel) throws SQLException {
 		try {
-			isNull = StatementHandle.isNull(columnLabel.toLowerCase());
-			return StatementHandle.getDatetime(columnLabel.toLowerCase());
+			return Client.get_datetime(columnLabel.toLowerCase());
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -547,9 +527,8 @@ class SQResultSet implements ResultSet {
 	public Timestamp getTimestamp(int columnIndex) throws SQLException {
 		Timestamp t = null;
 		try {
-			isNull = StatementHandle.isNull(columnIndex);
-			t = StatementHandle.getDatetime(columnIndex);
-		} catch (IOException e) {
+			t = Client.get_datetime(columnIndex);
+		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -582,8 +561,8 @@ class SQResultSet implements ResultSet {
 	 * SQClientHandle.showClientInfo(Client); if (!MetaDataResultSet) {
 	 * Rd.rows.clear(); Rd = new ResultData(); }
 	 * 
-	 * // long rows = StatementHandle.fetch(Resp); long rows =
-	 * StatementHandle.fetch(StatementHandle.getQueryTypeOutSaved(), Rd); //
+	 * // long rows = Client.fetch(Resp); long rows =
+	 * Client.fetch(Client.getQueryTypeOutSaved(), Rd); //
 	 * long rows=Client.fetch(resType,Rd);
 	 * GeneralUtils.writeln("SQResultSet TRY FETCH OK, rows = " +
 	 * Rd.dataSizes.rows); // TODO razi check if (Rd == null) {
@@ -591,7 +570,7 @@ class SQResultSet implements ResultSet {
 	 * SQLException("ResultData is NULL"); }
 	 * 
 	 * if (rows == 0) { Status = RS_STAT.CLOSE; return false; } // Rd.rtype =
-	 * resType; Rd.rtype = StatementHandle.getQueryTypeOutSaved(); //
+	 * resType; Rd.rtype = Client.getQueryTypeOutSaved(); //
 	 * Rd.rebuildByteArrayPointers(); // a helper to the "Rd.getRow(i)" //
 	 * Rd.rebuildByteArrayPointers4Or(); // the old server packet // support
 	 * (data+null order)
@@ -607,12 +586,12 @@ class SQResultSet implements ResultSet {
 		if (Empty) 
 			return false;
 		try {
-			 boolean nextResult = this.StatementHandle.nextRow();
+			 boolean nextResult = this.Client.next();
 			 return nextResult;
 		} catch (Exception e2) {
 			try {
-				StatementHandle.close();
-			} catch (IOException e) {
+				Client.close();
+			} catch (IOException | ScriptException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				throw new SQLException(e.getMessage());
@@ -627,7 +606,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	// TODO fix
 	public boolean wasNull() throws SQLException {
-		//return StatementHandle.wasNull();
+		//return Client.wasNull();
 		return isNull;
 
 	}
@@ -1179,8 +1158,6 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public Blob getBlob(int columnIndex) throws SQLException {
-		Blob b = null;
-
 		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException();
 	}

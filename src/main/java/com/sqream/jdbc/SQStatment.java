@@ -1,11 +1,7 @@
 package com.sqream.jdbc;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -15,17 +11,16 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.script.ScriptException;
 
-import com.sqream.connector.ConnectionHandle;
-import com.sqream.connector.StatementHandle;
-import com.sqream.connector.ColumnMetadata;
+import com.sqream.connector.Connector;
+
 
 public class SQStatment implements Statement {
 
 	int NO_LIMIT = 0;
 	int SIZE_RESULT = NO_LIMIT; // 0 means no limit.
-	private ConnectionHandle Client = null;
-    private StatementHandle stmt =null; 
+	private Connector Client = null;
 	SQResultSet SQRS = null;
 	String SQLCommand = ""; // this string is only for debugging purpose.
 	boolean SpecialStatement = false;
@@ -36,9 +31,9 @@ public class SQStatment implements Statement {
     String db_name;
     
     	
-	public SQStatment(ConnectionHandle client,SQConnection conn, String catalog) throws NumberFormatException,
+	public SQStatment(Connector client,SQConnection conn, String catalog) throws NumberFormatException,
 			UnknownHostException, IOException, 
-			SQLException, KeyManagementException, NoSuchAlgorithmException {
+			SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException {
 		Tuple<String ,Integer> params =null;
 		Connection=conn;
 		db_name = catalog;
@@ -51,8 +46,8 @@ public class SQStatment implements Statement {
 		  conn.sqlb.port=params.port;
 		}
 		
-		Client = new ConnectionHandle(conn.sqlb.ip, conn.sqlb.port,conn.sqlb.User , conn.sqlb.Password, conn.sqlb.DB_name, conn.sqlb.Use_ssl);
-		Client.connect();
+		Client = new Connector(conn.sqlb.ip, conn.sqlb.port, conn.sqlb.Cluster, conn.sqlb.Use_ssl);
+		Client.connect(conn.sqlb.DB_name, conn.sqlb.User, conn.sqlb.Password, conn.sqlb.service);
 
 	}
 
@@ -76,58 +71,40 @@ public class SQStatment implements Statement {
 
 	@Override
 	public void cancel() throws SQLException  {
-
 		
 		if (IsCancelStatement.get())
 			return;
 
 		String sql = "select stop_statement(" + statement_id + ")";
 		IsCancelStatement.set(true);
-		ConnectionHandle cancel=null;
-		StatementHandle cancel_stmt=null;
-					
+		
+		Connector cancel=null;
 		try {
-			cancel = new ConnectionHandle(Connection.sqlb.ip, Connection.sqlb.port, Connection.sqlb.User , Connection.sqlb.Password, Connection.sqlb.DB_name, Connection.sqlb.Use_ssl);
-			cancel.connect();
-			cancel_stmt = new StatementHandle (cancel, sql);
-			cancel_stmt.prepare();
-			cancel_stmt.execute();			
-		}catch (SQLException e) {
-			String message = e.getMessage();
-			if (!message.contains("The statement has already ended"))
-				throw new SQLException(e.getMessage());
-			
-		}catch (KeyManagementException | NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
+			cancel = new Connector(Connection.sqlb.ip, Connection.sqlb.port, Connection.sqlb.Cluster, Connection.sqlb.Use_ssl);
+			cancel.connect(Connection.sqlb.DB_name, Connection.sqlb.User, Connection.sqlb.Password, Connection.sqlb.service);
+			cancel.execute(sql);			
+		}catch (IOException | ScriptException e) {
+			e.printStackTrace();
 			throw new SQLException(e.getMessage());
-		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			throw new SQLException(e.getMessage());
-		}
+		} 
 		finally  {
 			// TODO Auto-generated catch block
-			if(cancel_stmt !=null)
+			if(cancel !=null)
 				try {
-					if(cancel_stmt !=null)
-						cancel_stmt.close();
-					if(cancel !=null)
-						cancel.close();
-				} catch (IOException e) {
+					cancel.close();
+					cancel.close_connection();
+				} catch (IOException | ScriptException e) {
 					// TODO Auto-generated catch block
 					String message = e.getMessage();
 					if (!message.contains("The statement has already ended")) {
 						e.printStackTrace();
 						throw new SQLException(e.getMessage());
 					}
-
 				}
-			
-			
 		}
-		
 	}
 
+	
 	@Override
 	public void clearBatch() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
@@ -141,16 +118,15 @@ public class SQStatment implements Statement {
 	@Override
 	public void close() throws SQLException {
 		try {
-			if(stmt !=null)
-				stmt.close();
-			if (Client !=null)
-				Client.close(); // since each statement creates a new client connection.
+			if(Client !=null && Client.is_open()) {
+				Client.close();
+				Client.close_connection(); // since each statement creates a new client connection.
+			}
             if(Connection !=null)
 			   Connection.RemoveItem(this); 
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-
-			throw new SQLException("Statement already closed");
+		} catch (IOException | ScriptException e) {
+			e.printStackTrace();
+			throw new SQLException("Statement already closed. Error: " + e);
 		} 
 		
 //		catch (NullPointerException e) {}
@@ -173,23 +149,19 @@ public class SQStatment implements Statement {
 		else
 
 			try {
-				stmt = new StatementHandle (Client, sql);
-				statement_id =stmt.getStatementId();
-				stmt.prepare();
+				statement_id = Client.execute(sql);
 				
 				// Omer and Razi - support cancel
 				if (IsCancelStatement.get()) {
 					//Close the connection of cancel statement
-					Client.close();
+					Client.close_connection();
 					throw new SQLException("Statement cancelled by user");
 				}
 
-				stmt.execute();
-
-				if ((stmt.getStatementType() != StatementHandle.statementType.INSERT) && stmt.getMetadata().length > 0)
+				if ((Client.get_query_type() != "INSERT") && Client.get_row_length() > 0)
 					result = true;
 
-				SQRS = new SQResultSet(stmt, db_name);
+				SQRS = new SQResultSet(Client, db_name);
 				SQRS.MaxRows = SIZE_RESULT;
 			} catch (Exception e) {
 				if (e.getMessage().contains("stopped by user")
@@ -230,10 +202,9 @@ public class SQStatment implements Statement {
 		throw new SQLFeatureNotSupportedException();
 	}
 
-	private void execute_set(String sql) throws SQLException, KeyManagementException, NoSuchAlgorithmException {
+	private void execute_set(String sql) throws SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException {
 		try {
-			stmt = new StatementHandle(Client, sql);
-			stmt.prepare();
+			Client.execute(sql);
 			// SqrmRespPrepareSql ps=
 			// Client.prepareSql(sql,SIZE_RESULT,SpecialStatement);
 			 
@@ -241,12 +212,11 @@ public class SQStatment implements Statement {
 			// Omer and Razi - support cancel
 			if (IsCancelStatement.get()) {
 				//Close the connection of cancel statement
-				Client.close();
+				Client.close_connection();
 				throw new SQLException("Statement cancelled by user");
 			}
-			stmt.execute();
 
-			stmt.close();
+			Client.close();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -258,11 +228,7 @@ public class SQStatment implements Statement {
 		try {
 
             			
-			stmt = new StatementHandle(Client, sql);
-			
-			statement_id =stmt.getStatementId();
-			stmt.prepare();
-			
+			statement_id = Client.execute(sql);
 			
 			// BG-1742 hack for workbench data tag , close statement after size
 			// of rows
@@ -272,30 +238,20 @@ public class SQStatment implements Statement {
 			
 			if (IsCancelStatement.get()) {
 				//Close the connection of cancel statement
-				Client.close();
+				Client.close_connection();
 				throw new SQLException("Statement cancelled by user");
 			}
 
-			
-
-			try {
-				stmt.execute();
-			} catch (KeyManagementException | NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			SQRS = new SQResultSet(stmt, db_name);
+			SQRS = new SQResultSet(Client, db_name);
 			SQRS.MaxRows = SIZE_RESULT;
 			// Related to bug BG-910 - Set as empty since there is no need to
 			// return result
-			if ((stmt.getStatementType() != StatementHandle.statementType.INSERT) && stmt.getMetadata().length == 0)
+			if ((Client.get_query_type() != "INSERT") && Client.get_row_length() == 0)
 				SQRS.Empty = true;
 			
-
 			return SQRS;
 
-		} catch (IOException e) {
+		} catch (IOException | ScriptException e) {
 			// TODO Auto-generated catch block
 			throw new SQLException(e);
 		}
@@ -307,17 +263,8 @@ public class SQStatment implements Statement {
 	public int executeUpdate(String sql) throws SQLException {
 
 		try {
-			stmt = new StatementHandle(Client, sql);
-			statement_id =stmt.getStatementId();
-			stmt.prepare();
-			try {
-				stmt.execute();
-			} catch (KeyManagementException | NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		} catch (IOException e) {			
+			statement_id =Client.execute(sql);
+		} catch (IOException | ScriptException e) {			
 			throw new SQLException(e);
 		} 
 		return 0;

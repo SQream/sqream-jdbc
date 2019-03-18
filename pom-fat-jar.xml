@@ -23,7 +23,14 @@
             <artifactId>connector</artifactId>
             <version>2.3.1</version>
         </dependency>
-    
+        
+        <!-- https://mvnrepository.com/artifact/com.github.marianobarrios/tls-channel -->
+        <dependency>
+            <groupId>com.github.marianobarrios</groupId>
+            <artifactId>tls-channel</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+        
     </dependencies>
 
     <build>

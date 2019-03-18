@@ -17,6 +17,13 @@
 			<systemPath>${basedir}/../../build/SQream-JAVA-connector.jar</systemPath>
 		</dependency>
 		
+		<!-- https://mvnrepository.com/artifact/com.github.marianobarrios/tls-channel -->
+        <dependency>
+            <groupId>com.github.marianobarrios</groupId>
+            <artifactId>tls-channel</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+        
 		<!-- Tests -->
 		<dependency>
 			<groupId>junit</groupId>

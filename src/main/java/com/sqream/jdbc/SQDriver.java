@@ -3,6 +3,8 @@ package com.sqream.jdbc;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
@@ -182,7 +184,7 @@ public class SQDriver implements java.sql.Driver {
 			//String[] lables = { "url", "info" };
 			//String[] values = { url, info.toString() };
 
-		} catch (NumberFormatException | IOException | ScriptException e) {
+		} catch (NumberFormatException | IOException | ScriptException| NoSuchAlgorithmException | KeyManagementException  e) {
 			e.printStackTrace();
 			throw new SQLException(e);
 		}

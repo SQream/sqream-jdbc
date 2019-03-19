@@ -83,7 +83,7 @@ public class SQStatment implements Statement {
 			cancel = new Connector(Connection.sqlb.ip, Connection.sqlb.port, Connection.sqlb.Cluster, Connection.sqlb.Use_ssl);
 			cancel.connect(Connection.sqlb.DB_name, Connection.sqlb.User, Connection.sqlb.Password, Connection.sqlb.service);
 			cancel.execute(sql);			
-		}catch (IOException | ScriptException e) {
+		}catch (IOException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		} 

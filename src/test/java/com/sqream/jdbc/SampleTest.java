@@ -124,7 +124,33 @@ public class SampleTest {
         rs.close();
         stmt.close();
         
+        // clean dst table
+        sql_dst = "truncate table test_dst";
+        stmt = conn_dst.createStatement();
+        stmt.execute(sql_dst);
+        stmt.close();
         
+        // Copy CSV from src to disk and load to dst
+        start = time();
+        sql_src = "copy test_src to '/home/eliy/bla.csv'";
+        stmt = conn_src.createStatement();
+        stmt.execute(sql_src);
+        stmt.close();
+        
+        sql_dst = "copy test_dst from '/home/jeremy/bla.csv'";
+        stmt = conn_dst.createStatement();
+        stmt.execute(sql_dst);
+        stmt.close();
+        print ("total csv copy: " + (time() -start));
+        
+        // Check amount inserted
+        sql_dst = "select count(*) from test_dst";
+        stmt = conn_dst.createStatement();
+        rs = stmt.executeQuery(sql_dst);
+        while(rs.next()) 
+            print("row count: " + rs.getLong(1));
+        rs.close();
+        stmt.close();
     }     
     
     public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{

@@ -19,7 +19,7 @@ public class SampleTest {
     
     // Replace with your respective URL
     static final String url_src = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
-    static final String url_dst = "jdbc:Sqream://192.168.0.226:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
+    static final String url_dst = "jdbc:Sqream://192.168.0.223:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
 
     Connection conn_src  = null;
     Connection conn_dst  = null;
@@ -45,7 +45,7 @@ public class SampleTest {
     
     public void testJDBC() throws SQLException, IOException {
         
-        //conn_src = DriverManager.getConnection(url_src,"sqream","sqream");
+        conn_src = DriverManager.getConnection(url_src,"sqream","sqream");
         conn_dst = DriverManager.getConnection(url_dst,"sqream","sqream");
 
         /*
@@ -67,20 +67,36 @@ public class SampleTest {
 
         //rs = dbmeta.getColumns("master", "public", "test" , null );
         //*
-        // Create a table 
-        String sql = "create or replace table test (x int)";
+        String sql_src, sql_dst;
+        
+        /*
+        // Create a table on src and dst
+        sql_src = "create or replace table test_src (ints int)";
+        stmt = conn_src.createStatement();
+        stmt.execute(sql_src);
+        stmt.close();
+        sql_dst = "create or replace table test_dst (ints int)";
         stmt = conn_dst.createStatement();
-        stmt.execute(sql);
+        stmt.execute(sql_dst);
         stmt.close();
         
-        stmt.close();
+        // Generate data on src
+        sql_src = "insert into test_src values (?)";
+        ps = conn_src.prepareStatement(sql_src);
+        for(int i=0; i < 3000000; i++) {
+            ps.setInt(1, 8);
+            ps.addBatch();
+        }
+        ps.executeBatch();  // Should be done automatically
+        ps.close();
+        //*/
         
+        // Stream from src to dst
         long start = time();
-        // Get Push loop
-        String sql_src = "select top 3000000 ints from shoko";
+        sql_src = "select top 3000000 * from test_src";
         stmt = conn_src.createStatement();
         rs = stmt.executeQuery(sql_src);
-        String sql_dst = "insert into test values (?)";
+        sql_dst = "insert into test_dst values (?)";
         ps = conn_dst.prepareStatement(sql_dst);
         
         while(rs.next()) {

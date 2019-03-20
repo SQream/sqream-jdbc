@@ -17,6 +17,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import javax.script.ScriptException;
 
 import com.sqream.connector.Connector;
+import com.sqream.connector.Connector.ConnException;
 
 /**
  * @author root
@@ -136,7 +137,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	}
 
 	
-	SQResultSet metadataStatement(String sql) throws IOException, SQLException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
+	SQResultSet metadataStatement(String sql) throws ConnException, IOException, SQLException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
 		
 		Connector client = null;
 		String ip =  Conn.sqlb.ip; //  Conn.sqlb.Cluster ? Conn.sqlb.LB_ip : Conn.sqlb.ip;
@@ -156,7 +157,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 			return metadataStatement("select get_catalogs()");
 		}
 		
-		catch (IOException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
+		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
@@ -200,7 +201,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 			return metadataStatement(sql);
 		}
 		
-		catch (IOException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
+		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
@@ -522,7 +523,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		ResultSet rs = null;
 		try {
 			rs = metadataStatement("select database_name as PROCEDURE_CAT, null as PROCEDURE_SCHEM, function_name as PROCEDURE_NAME, null as UNUSED, null as UNUSED2, null as UNUSED3, ' ' as REMARKS, 0 as PROCEDURE_TYPE, function_name as SPECIFIC_NAME from sqream_catalog.user_defined_functions");	
-		} catch (IOException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
+		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -568,7 +569,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 			return metadataStatement("select get_schemas()");
 		}
 		
-		catch (IOException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
+		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
@@ -651,7 +652,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		
 		try {
 			return metadataStatement("select get_table_types()");
-		} catch (IOException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
+		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			// TODO Auto-generated catch block
 			throw new SQLException(e.getMessage());
 		}
@@ -712,7 +713,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 				+ ")";
 		try {
 			return metadataStatement(sql);
-		} catch (IOException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
+		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
@@ -733,7 +734,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 		try {
 			return metadataStatement("select get_type_info()");
-		} catch (IOException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
+		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			// TODO Auto-generated catch block
 			throw new SQLException(e.getMessage());
 		}

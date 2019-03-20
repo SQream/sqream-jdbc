@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.script.ScriptException;
 
 import com.sqream.connector.Connector;
+import com.sqream.connector.Connector.ConnException;
 
 
 public class SQStatment implements Statement {
@@ -83,7 +84,7 @@ public class SQStatment implements Statement {
 			cancel = new Connector(Connection.sqlb.ip, Connection.sqlb.port, Connection.sqlb.Cluster, Connection.sqlb.Use_ssl);
 			cancel.connect(Connection.sqlb.DB_name, Connection.sqlb.User, Connection.sqlb.Password, Connection.sqlb.service);
 			cancel.execute(sql);			
-		}catch (IOException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
+		}catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		} 
@@ -93,7 +94,7 @@ public class SQStatment implements Statement {
 				try {
 					cancel.close();
 					cancel.close_connection();
-				} catch (IOException | ScriptException e) {
+				} catch (IOException | ConnException | ScriptException e) {
 					// TODO Auto-generated catch block
 					String message = e.getMessage();
 					if (!message.contains("The statement has already ended")) {
@@ -124,7 +125,7 @@ public class SQStatment implements Statement {
 			}
             if(Connection !=null)
 			   Connection.RemoveItem(this); 
-		} catch (IOException | ScriptException e) {
+		} catch (IOException | ConnException | ScriptException e) {
 			e.printStackTrace();
 			throw new SQLException("Statement already closed. Error: " + e);
 		} 
@@ -202,7 +203,7 @@ public class SQStatment implements Statement {
 		throw new SQLFeatureNotSupportedException();
 	}
 
-	private void execute_set(String sql) throws SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException {
+	private void execute_set(String sql) throws ConnException, SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException {
 		try {
 			Client.execute(sql);
 			// SqrmRespPrepareSql ps=
@@ -251,7 +252,7 @@ public class SQStatment implements Statement {
 			
 			return SQRS;
 
-		} catch (IOException | ScriptException e) {
+		} catch (IOException | ConnException | ScriptException e) {
 			// TODO Auto-generated catch block
 			throw new SQLException(e);
 		}
@@ -264,7 +265,7 @@ public class SQStatment implements Statement {
 
 		try {
 			statement_id =Client.execute(sql);
-		} catch (IOException | ScriptException e) {			
+		} catch (IOException | ConnException | ScriptException e) {			
 			throw new SQLException(e);
 		} 
 		return 0;

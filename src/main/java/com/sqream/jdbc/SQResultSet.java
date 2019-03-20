@@ -118,7 +118,7 @@ class SQResultSet implements ResultSet {
 					Client.close();
 					Client.close_connection();
 				}
-			} catch (IOException | ScriptException e) {
+			} catch (IOException | ConnException | ScriptException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -591,7 +591,7 @@ class SQResultSet implements ResultSet {
 		} catch (Exception e2) {
 			try {
 				Client.close();
-			} catch (IOException | ScriptException e) {
+			} catch (IOException | ConnException | ScriptException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				throw new SQLException(e.getMessage());

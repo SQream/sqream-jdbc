@@ -163,7 +163,7 @@ public class SQConnection implements Connection {
 			globalClient.close_connection();      // Closing Connector
 			IsClosed.set(true);
 
-		} catch (IOException | ScriptException e) {
+		} catch (IOException | ScriptException | ConnException e) {
 			// TODO Auto-generated catch block
 			throw new SQLException(e);
 		} 

@@ -105,7 +105,7 @@ public class SQPreparedStatment implements PreparedStatement {
 
         try {
             Client.close();
-        } catch (IOException | ScriptException e) {
+        } catch (IOException | ConnException | ScriptException e) {
             // TODO Auto-generated catch block
             throw new SQLException(e);
         } 

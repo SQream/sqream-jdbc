@@ -70,7 +70,7 @@ public class SampleTest {
         String sql_src, sql_dst;
         
         /*
-        // Create a table on src and dst
+        // Create a table on src and generate data
         sql_src = "create or replace table test_src (ints int)";
         stmt = conn_src.createStatement();
         stmt.execute(sql_src);
@@ -80,7 +80,6 @@ public class SampleTest {
         stmt.execute(sql_dst);
         stmt.close();
         
-        // Generate data on src
         sql_src = "insert into test_src values (?)";
         ps = conn_src.prepareStatement(sql_src);
         for(int i=0; i < 3000000; i++) {
@@ -90,6 +89,12 @@ public class SampleTest {
         ps.executeBatch();  // Should be done automatically
         ps.close();
         //*/
+        
+        // create dst table
+        sql_dst = "create or replace table test_dst (ints int)";
+        stmt = conn_dst.createStatement();
+        stmt.execute(sql_dst);
+        stmt.close();
         
         // Stream from src to dst
         long start = time();
@@ -109,9 +114,18 @@ public class SampleTest {
         rs.close();
         stmt.close();
         print ("total network insert: " + (time() -start));
+      
+        // Check amount inserted
+        sql_dst = "select count(*) from test_dst";
+        stmt = conn_dst.createStatement();
+        rs = stmt.executeQuery(sql_dst);
+        while(rs.next()) 
+            print("row count: " + rs.getLong(1));
+        rs.close();
+        stmt.close();
+        
         
     }     
-    
     
     public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{
         

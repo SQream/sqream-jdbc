@@ -25,12 +25,15 @@ public class Perf {
     // Replace with your respective URL
     static final String url_src = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
     static final String url_dst = "jdbc:Sqream://192.168.0.223:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
-
+    //here sonoo is database name, root is username and password  
+    
+    Connection mysql_con;
     Connection conn  = null;
     Statement stmt = null;
     ResultSet rs = null;
     DatabaseMetaData dbmeta = null;
     PreparedStatement ps = null;
+    String sql;
     
     int res = 0;
    
@@ -59,7 +62,30 @@ public class Perf {
     public void perf() throws SQLException, IOException {
         
         conn = DriverManager.getConnection(url_src,"sqream","sqream");
+        mysql_con=DriverManager.getConnection("jdbc:mysql://192.168.0.219:3306/perf","eliy","bladerfuK~1");  
+        //*
+        sql = "create table perf_t2 (ints int, ints2 int)";
+        stmt = mysql_con.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        //*/
+        sql = "insert into perf_t2 values (?, ?)";
+        ps = mysql_con.prepareStatement(sql);
+        print ("before network insert");
+        for(int i=0; i < 200000000; i++) {
+            ps.setInt(1, 6);
+            ps.setInt(1, 8);
+            ps.addBatch();
+        }
+        ps.executeBatch();  // Should be done automatically
+        ps.close();
+        print ("after network insert");
 
+        //*/
+        
+        
+        
+        /*
         // create dst table
         String sql = "create or replace table perf (bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, strangs nvarchar(10), dates date, dts datetime)";
         stmt = conn.createStatement();
@@ -82,7 +108,7 @@ public class Perf {
             ps.setDouble(1, 57.0);
             ps.setDate(1, date_from_tuple(2019, 11, 26));
             ps.setTimestamp(1,  datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45));
-            ps.setString(1, "שוקו");
+            ps.setString(1, "bla");
             
             ps.addBatch();
         }
@@ -90,7 +116,7 @@ public class Perf {
         ps.close();
 
         print ("total network insert: " + (time() -start));
-      
+      //*/
         
     }     
     
@@ -98,7 +124,8 @@ public class Perf {
         
         // Load JDBC driver - not needed with newer version
         Class.forName("com.sqream.jdbc.SQDriver");
-        
+        Class.forName("com.mysql.jdbc.Driver");  
+
         Perf test = new Perf();   
         test.perf();
     }

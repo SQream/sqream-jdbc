@@ -29,7 +29,8 @@ public class SampleTest {
     PreparedStatement ps = null;
     
     int res = 0;
-   
+    int res2 = 0;
+    
     static void print(Object printable) {
         System.out.println(printable);
     }
@@ -45,7 +46,7 @@ public class SampleTest {
     
     public void testJDBC() throws SQLException, IOException {
         
-        conn_src = DriverManager.getConnection(url_src,"sqream","sqream");
+        conn_src = DriverManager.getConnection("jdbc:mysql://192.168.0.219:3306/perf","eliy","bladerfuK~1");  
         conn_dst = DriverManager.getConnection(url_dst,"sqream","sqream");
 
         /*
@@ -82,7 +83,7 @@ public class SampleTest {
         
         sql_src = "insert into test_src values (?)";
         ps = conn_src.prepareStatement(sql_src);
-        for(int i=0; i < 3000000; i++) {
+        for(int i=0; i < 100000000; i++) {
             ps.setInt(1, 8);
             ps.addBatch();
         }
@@ -91,22 +92,22 @@ public class SampleTest {
         //*/
         
         // create dst table
-        sql_dst = "create or replace table test_dst (ints int)";
+        sql_dst = "create or replace table perf_t2 (ints int, ints2 int)";
         stmt = conn_dst.createStatement();
         stmt.execute(sql_dst);
         stmt.close();
         
         // Stream from src to dst
         long start = time();
-        sql_src = "select top 3000000 * from test_src";
+        sql_src = "select top 200000000 * from test_src";
         stmt = conn_src.createStatement();
         rs = stmt.executeQuery(sql_src);
-        sql_dst = "insert into test_dst values (?)";
+        sql_dst = "insert into test_dst values (?, ?)";
         ps = conn_dst.prepareStatement(sql_dst);
         
         while(rs.next()) {
-            res = rs.getInt(1);
-            ps.setInt(1, res);
+            ps.setInt(1, rs.getInt(1));
+            ps.setInt(2, rs.getInt(2));
             ps.addBatch();
         }
         ps.executeBatch();  // Should be done automatically
@@ -130,6 +131,7 @@ public class SampleTest {
         stmt.execute(sql_dst);
         stmt.close();
         
+        /*
         // Copy CSV from src to disk and load to dst
         start = time();
         sql_src = "copy test_src to '/home/eliy/bla.csv'";
@@ -151,12 +153,14 @@ public class SampleTest {
             print("row count: " + rs.getLong(1));
         rs.close();
         stmt.close();
+        //*/
     }     
     
     public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{
         
         // Load JDBC driver - not needed with newer version
         Class.forName("com.sqream.jdbc.SQDriver");
+        Class.forName("com.mysql.jdbc.Driver");  
         
         SampleTest test = new SampleTest();   
         test.testJDBC();

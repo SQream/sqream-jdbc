@@ -61,32 +61,32 @@ public class Perf {
 
     public void perf() throws SQLException, IOException {
         
-        conn = DriverManager.getConnection(url_src,"sqream","sqream");
+        //conn = DriverManager.getConnection(url_src,"sqream","sqream");
         mysql_con=DriverManager.getConnection("jdbc:mysql://192.168.0.219:3306/perf","eliy","bladerfuK~1");  
+  
         //*
-        sql = "create table perf_t2 (ints int, ints2 int)";
-        stmt = mysql_con.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        //*/
         sql = "insert into perf_t2 values (?, ?)";
         ps = mysql_con.prepareStatement(sql);
         print ("before network insert");
-        for(int i=0; i < 200000000; i++) {
+        for(int i=1; i < 100000000; i++) {
             ps.setInt(1, 6);
-            ps.setInt(1, 8);
+            ps.setInt(2, 8);
             ps.addBatch();
+            //ps.executeUpdate();m
+            if (i % 10000 == 0) {
+                print ("added batch number " + i);
+                //ps.executeBatch();
+            }
         }
-        ps.executeBatch();  // Should be done automatically
+        print ("after loop");
+        //ps.executeBatch();  // Should be done automatically
         ps.close();
         print ("after network insert");
-
         //*/
         
         
-        
         /*
-        // create dst table
+        // create table
         String sql = "create or replace table perf (bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, strangs nvarchar(10), dates date, dts datetime)";
         stmt = conn.createStatement();
         stmt.execute(sql);
@@ -100,30 +100,39 @@ public class Perf {
         
         for (int i=0; i < amount; i++) {
             ps.setBoolean(1, true);
-            ps.setByte(1, (byte)120);
-            ps.setShort(1, (short) 1400);
-            ps.setInt(1, 140000);
-            ps.setLong(1, (long) 5);
-            ps.setFloat(1, (float)56.0);
-            ps.setDouble(1, 57.0);
-            ps.setDate(1, date_from_tuple(2019, 11, 26));
-            ps.setTimestamp(1,  datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45));
-            ps.setString(1, "bla");
-            
+            ps.setByte(2, (byte)120);
+            ps.setShort(3, (short) 1400);
+            ps.setInt(4, 140000);
+            ps.setLong(5, (long) 5);
+            ps.setFloat(6, (float)56.0);
+            ps.setDouble(7, 57.0);
+            ps.setString(8, "bla");
+            ps.setDate(9, date_from_tuple(2019, 11, 26));
+            ps.setTimestamp(10, datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45));
             ps.addBatch();
         }
         ps.executeBatch();  // Should be done automatically
         ps.close();
 
         print ("total network insert: " + (time() -start));
-      //*/
+        
+        // Check amount inserted
+        sql = "select count(*) from perf";
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        while(rs.next()) 
+            print("row count: " + rs.getLong(1));
+        rs.close();
+        stmt.close();
+        
+        //*/
         
     }     
     
     public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{
         
         // Load JDBC driver - not needed with newer version
-        Class.forName("com.sqream.jdbc.SQDriver");
+        //Class.forName("com.sqream.jdbc.SQDriver");
         Class.forName("com.mysql.jdbc.Driver");  
 
         Perf test = new Perf();   

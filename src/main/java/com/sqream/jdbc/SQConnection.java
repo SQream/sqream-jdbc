@@ -472,7 +472,7 @@ public class SQConnection implements Connection {
 		 * commit or the method rollback. By default, new connections are in auto-commit 
 		 * mode. 
 		 */
-		System.out.println("setAutoCommit");
+		if (printouts) System.out.println("setAutoCommit");
 	}
 
 	@Override

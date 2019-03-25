@@ -45,8 +45,9 @@ public class SampleTest {
     
     public void testJDBC() throws SQLException, IOException {
         
-    	String url_dst = "jdbc:Sqream://192.168.0.219:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
-        conn_src = DriverManager.getConnection("jdbc:mysql://192.168.0.219:3306/perf","eliy","bladerfuK~1");  
+    	String url_dst = "jdbc:Sqream://192.168.1.4:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
+        String url_src = "jdbc:mysql://127.0.0.1:3306/perf";
+    	conn_src = DriverManager.getConnection(url_src, "root","ssup");  
         conn_dst = DriverManager.getConnection(url_dst,"sqream","sqream");
 
         /*
@@ -69,7 +70,7 @@ public class SampleTest {
         //rs = dbmeta.getColumns("master", "public", "test" , null );
         //*
         String sql_src, sql_dst;
-        
+        long start;
         /*
         // Create a table on src and generate data
         sql_src = "create or replace table test_src (ints int)";
@@ -91,13 +92,14 @@ public class SampleTest {
         ps.close();
         //*/
         
-        /*
+        conn_src.setAutoCommit(false);
+        //*
         // Stream from src to dst
-        long start = time();
-        sql_src = "select * from perf_t2 limit 19000000";
+        start = time();
+        sql_src = "select * from perf_t limit 19000000";
         stmt = conn_src.createStatement();
         rs = stmt.executeQuery(sql_src);
-        sql_dst = "insert into perf_t2 values (?, ?)";
+        sql_dst = "insert into perf_t values (?, ?)";
         ps = conn_dst.prepareStatement(sql_dst);
         
         while(rs.next()) {
@@ -106,13 +108,14 @@ public class SampleTest {
             ps.addBatch();
         }
         ps.executeBatch();  // Should be done automatically
+        conn_src.commit();
         ps.close();
         rs.close();
         stmt.close();
         print ("total network insert: " + (time() -start));
       
         // Check amount inserted
-        sql_dst = "select count(*) from perf_t2";
+        sql_dst = "select count(*) from perf_t";
         stmt = conn_dst.createStatement();
         rs = stmt.executeQuery(sql_dst);
         while(rs.next()) 
@@ -121,28 +124,63 @@ public class SampleTest {
         stmt.close();
         
         // clean dst table
-        sql_dst = "truncate table perf_t2";
+        sql_dst = "truncate table perf_t";
         stmt = conn_dst.createStatement();
         stmt.execute(sql_dst);
         stmt.close();
         //*/
         
         //*
-        long start = time();
-        sql_src = "select * from perf_t2 limit 19000000 into outfile '/var/lib/mysql-files/perf5.csv'";
+        // Stream from src to src
+        start = time();
+        sql_src = "select * from perf_t limit 19000000";
         stmt = conn_src.createStatement();
-        stmt.execute(sql_src);
+        rs = stmt.executeQuery(sql_src);
+        sql_src = "insert into perf_t values (?, ?)";
+        ps = conn_src.prepareStatement(sql_src);
+        int idx = 0;
+        while(rs.next()) {
+            ps.setInt(1, rs.getInt(1));
+            ps.setInt(2, rs.getInt(2));
+            ps.addBatch();
+        } 
+        print ("total network insert setup: " + (time() -start));
+        ps.executeBatch();  // Should be done automatically
+        conn_src.commit();
+        conn_src.setAutoCommit(true);
+        ps.close();
+        rs.close();
+        stmt.close();
+        print ("total network insert: " + (time() -start));
+      
+        // Check amount inserted
+        sql_src = "select count(*) from perf_t";
+        stmt = conn_src.createStatement();
+        rs = stmt.executeQuery(sql_src);
+        while(rs.next()) 
+            print("row count: " + rs.getLong(1));
+        rs.close();
         stmt.close();
         //*/
         
-        sql_dst = "copy perf_t2 from '/var/lib/mysql-files/perf5.csv' with delimiter '\\t'";
+        
+        /* // Copy CSV from src to dst
+        start = time();
+        sql_src = "select * from perf_t limit 19000000 into outfile '/var/lib/mysql-files/perf.csv'";
+        stmt = conn_src.createStatement();
+        stmt.execute(sql_src);
+        stmt.close();
+        print ("total csv export: " + (time() -start));
+     
+        start = time();
+        sql_dst = "copy perf_t from '/var/lib/mysql-files/perf.csv' with delimiter '\\t'";
         stmt = conn_dst.createStatement();
         stmt.execute(sql_dst);
         stmt.close();
-        print ("total csv copy: " + (time() -start));
+        print ("total csv import: " + (time() -start));
       
         // Check amount inserted
-        sql_dst = "select count(*) from perf_t2";
+        sql_dst = "select count(*) from perf_t";
         stmt = conn_dst.createStatement();
         rs = stmt.executeQuery(sql_dst);
         while(rs.next()) 
@@ -151,47 +189,13 @@ public class SampleTest {
         stmt.close();
         
         // clean dst table
-        sql_dst = "truncate table perf_t2";
+        sql_dst = "truncate table perf_t";
         stmt = conn_dst.createStatement();
         stmt.execute(sql_dst);
         stmt.close();
+        //*/
         
         
-        
-        
-        
-        /*
-        // Stream from src to src
-        long start = time();
-        sql_src = "select * from perf_t2 limit 19000000";
-        stmt = conn_src.createStatement();
-        rs = stmt.executeQuery(sql_src);
-        sql_src = "insert into perf_t2 values (?, ?)";
-        ps = conn_src.prepareStatement(sql_src);
-        int idx = 0;
-        while(rs.next()) {
-            ps.setInt(1, rs.getInt(1));
-            ps.setInt(2, rs.getInt(2));
-            ps.addBatch();
-            if (++idx % 1000000 == 0)
-            	print("inserting index " + idx);
-        }
-        print ("total network insert setup: " + (time() -start));
-        ps.executeBatch();  // Should be done automatically
-        ps.close();
-        rs.close();
-        stmt.close();
-        print ("total network insert: " + (time() -start));
-      
-        // Check amount inserted
-        sql_src = "select count(*) from perf_t2";
-        stmt = conn_src.createStatement();
-        rs = stmt.executeQuery(sql_src);
-        while(rs.next()) 
-            print("row count: " + rs.getLong(1));
-        rs.close();
-        stmt.close();
-        */
        
         /*
         // Copy CSV from src to disk and load to dst

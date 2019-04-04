@@ -50,7 +50,6 @@ public class SQConnection implements Connection {
     String username;
     Properties connInfo;
     String db_name;
-    String service = "sqream";
     
 	public SQConnection(Connector client) throws IOException {
 
@@ -86,6 +85,12 @@ public class SQConnection implements Connection {
 		if (s_port.equals("-1"))
 			throw new SQLException("missing database name error");
 
+		//Always gets a value
+		String service = connectionInfo.containsKey("service") == true ? connectionInfo.getProperty("service") : Connector.DEFAULT_SERVICE;
+		if(service == null)
+			throw new SQLException("error setting value to service");
+
+		
 		String usr = connectionInfo.getProperty("user");
 		username = usr;
 		if (usr.equals("-1"))

@@ -44,6 +44,9 @@ class SQResultSet implements ResultSet {
 	boolean RemoveSpaces = false;
 	boolean isNull = true;
 	
+	static void print(Object printable) {
+        System.out.println(printable);
+    }
 	
 	enum RS_STAT {
 		BASE, FETCH_ONCE, FINISH, CLOSE, OPEN
@@ -67,6 +70,7 @@ class SQResultSet implements ResultSet {
 		TABLE_TYPE, NONE
 	} // there are more columns..
 
+	
 	public void baseUsageError() throws SQLException {
 
 		final StackTraceElement[] ste = Thread.currentThread().getStackTrace();
@@ -315,8 +319,8 @@ class SQResultSet implements ResultSet {
 			return Client.get_long(columnLabel.toLowerCase());
 
 		} catch (Exception e) {
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
+			//e.printStackTrace();
+			throw new SQLException("Exception on getLong:" + e.toString());
 		}
 	}
 
@@ -327,6 +331,7 @@ class SQResultSet implements ResultSet {
 			return Client.get_long(columnIndex);
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnIndex
 					+ "' not found");
 		}
@@ -444,15 +449,37 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public String getString(String columnLabel) throws SQLException {
+		String value = null;
+		String type = "";
 		try {
-			String value = Client.get_varchar(columnLabel.toLowerCase());
+			type = Client.get_col_type(columnLabel);
+		} catch (ConnException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		if (type.equals("ftBlob")) {
+			try {
+				value = Client.get_nvarchar(columnLabel);
+			}catch (ConnException e) {
+				e.printStackTrace();
+			}
 			if (RemoveSpaces) 
 				return value.trim();
-			return value;
-		} catch (Exception e) {
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
+			
 		}
+		else {                    // if (type.equals("Varchar")) {
+			try {
+				value = Client.get_varchar(columnLabel);
+			}catch (ConnException e) {
+				e.printStackTrace();
+			}
+			if (RemoveSpaces) 
+				return value.trim();
+		}
+		
+		
+		return value;
 	}
 
 	@Override
@@ -496,6 +523,7 @@ class SQResultSet implements ResultSet {
 		try {
 			return Client.get_short(columnLabel.toLowerCase());
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}

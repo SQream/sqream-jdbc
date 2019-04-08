@@ -23,7 +23,7 @@ import java.sql.SQLException;
 public class Perf {
     
     // Replace with your respective URL
-    static final String url_src = "jdbc:Sqream://192.168.0.74:5000/developer_regression_query;user=sqream;password=sqream;cluster=false;ssl=false";
+    static final String url_src = "jdbc:Sqream://192.168.1.4:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
     //static final String url_dst = "jdbc:Sqream://192.168.0.223:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
     //here sonoo is database name, root is username and password  
     
@@ -125,7 +125,7 @@ public class Perf {
         rs.close();
         stmt.close();
         
-        //*/
+        /*
         sql = "select sum(xbigint) over (partition by xdate) from t_a";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
@@ -133,12 +133,36 @@ public class Perf {
             print("item: " + rs.getLong(1));
         rs.close();
         stmt.close();
+        //*/
+        
+        sql = "select top 1 joinid,dlrstatus,requestrecdtime,enterpriseid,messagetext from otp_dlr_history ";
+  
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            
+        	print( rs.getLong(1));
+            print( rs.getString(2));
+            print( rs.getTimestamp(3));
+            print( rs.getInt(4));
+            print(rs.getString(5));
+            
+            print(rs.getLong("joinid"));
+            print(rs.getString("dlrstatus"));
+            print(rs.getTimestamp("requestrecdtime"));
+            print(rs.getInt("enterpriseid"));
+            print (rs.getString("messagetext"));
+  
+            conn.close();
+
+        }
+    
     }     
     
     public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{
         
         // Load JDBC driver - not needed with newer version
-        Class.forName("com.sqream.jdbc.SQDriver");
+        //Class.forName("com.sqream.jdbc.SQDriver");
         //Class.forName("com.mysql.jdbc.Driver");  
 
         Perf test = new Perf();   

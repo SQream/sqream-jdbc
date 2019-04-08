@@ -934,62 +934,64 @@ public class Connector {
     
     public Boolean get_boolean(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
-        return (_validate_get(col_num, "ftBool")) ? data_columns[col_num].get() != 0 : null;
+        return (_validate_get(col_num, "ftBool")) ? data_columns[col_num].get(row_counter) != 0 : null;
     }
     
     
     public Byte get_ubyte(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     
-        return (_validate_get(col_num, "ftUByte")) ? data_columns[col_num].get() : null;
+        return (_validate_get(col_num, "ftUByte")) ? data_columns[col_num].get(row_counter) : null;
     }  // .get().toUnsignedInt()  -->  to allow values between 127-255 
     
     
     public Short get_short(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
     	if (col_types[col_num].equals("ftUByte"))
-            return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (short)(data_columns[col_num].get() & 0xFF) : null;
+            return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (short)(data_columns[col_num].get(row_counter) & 0xFF) : null;
 
-		return (_validate_get(col_num, "ftShort")) ? data_columns[col_num].getShort() : null;
+		return (_validate_get(col_num, "ftShort")) ? data_columns[col_num].getShort(row_counter) : null;
     }
     
     
     public Integer get_int(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
 	    if (col_types[col_num].equals("ftShort"))
-	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)data_columns[col_num].getShort() : null;
+	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)data_columns[col_num].getShort(row_counter) : null;
 	    else if (col_types[col_num].equals("ftUByte"))
-	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)(data_columns[col_num].get() & 0xFF) : null;
+	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)(data_columns[col_num].get(row_counter) & 0xFF) : null;
 
-        return (_validate_get(col_num, "ftInt")) ? data_columns[col_num].getInt() : null;
+        return (_validate_get(col_num, "ftInt")) ? data_columns[col_num].getInt(row_counter) : null;
         //return (null_balls[col_num].get() == 0) ? data_columns[col_num].getInt() : null;
     }
     
     
     public Long get_long(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     
-        return (_validate_get(col_num, "ftLong")) ? data_columns[col_num].getLong() : null;
+        return (_validate_get(col_num, "ftLong")) ? data_columns[col_num].getLong(row_counter) : null;
     }
     
     
     public Float get_float(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
-        return (_validate_get(col_num, "ftFloat")) ? data_columns[col_num].getFloat() : null;
+        return (_validate_get(col_num, "ftFloat")) ? data_columns[col_num].getFloat(row_counter) : null;
     }
     
     
     public Double get_double(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
 	    if (col_types[col_num].equals("ftFloat"))
-	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (double)data_columns[col_num].getFloat() : null;
+	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (double)data_columns[col_num].getFloat(row_counter) : null;
 
-        return (_validate_get(col_num, "ftDouble")) ? data_columns[col_num].getDouble() : null;
+        return (_validate_get(col_num, "ftDouble")) ? data_columns[col_num].getDouble(row_counter) : null;
     }
     
     
     public String get_varchar(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-            
+        
         // Get bytes the size of the varchar column into string_bytes
         data_columns[col_num].get(string_bytes, 0, col_sizes[col_num]);
+        // Resetting buffer position in csae someone runs the same get()
+        data_columns[col_num].position(data_columns[col_num].position() -col_sizes[col_num]);
         
         return (_validate_get(col_num, "ftVarchar")) ? new String(string_bytes, 0, col_sizes[col_num], UTF8).trim() : null;
     }
@@ -1001,6 +1003,7 @@ public class Connector {
         
         // Get bytes the size of this specific nvarchar into string_bytes
         data_columns[col_num].get(string_bytes, 0, nvarc_len);
+        data_columns[col_num].position(data_columns[col_num].position() - nvarc_len);
         
         return (_validate_get(col_num, "ftBlob")) ? new String(string_bytes, 0, nvarc_len, UTF8) : null;
     }
@@ -1008,13 +1011,13 @@ public class Connector {
     
     public Date get_date(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
             
-        return (_validate_get(col_num, "ftDate")) ? int_to_date(data_columns[col_num].getInt()) : null;
+        return (_validate_get(col_num, "ftDate")) ? int_to_date(data_columns[col_num].getInt(row_counter)) : null;
     }
     
     
     public Timestamp get_datetime(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
-        return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong()) : null;
+        return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(row_counter)) : null;
     }
     
     // -o-o-o-o-o  By column name -o-o-o-o-o
@@ -1040,7 +1043,7 @@ public class Connector {
     }
     
     public Long get_long(String col_name) throws ConnException {  
-    
+    	
         return get_long(col_names_map.get(col_name));
     }
     
@@ -1055,7 +1058,7 @@ public class Connector {
     }
     
     public String get_varchar(String col_name) throws ConnException {  
-            
+        
         return get_varchar(col_names_map.get(col_name));
     }
     
@@ -1292,6 +1295,13 @@ public class Connector {
         
         return col_types[_validate_col_num(col_num)];
     }
+    
+    
+    public String get_col_type(String col_name) throws ConnException {  
+        
+        return get_col_type(col_names_map.get(col_name));
+    }
+
     
     public int get_col_size(int col_num) throws ConnException {  
     

@@ -6,15 +6,13 @@ This repository contains the SQream JDBC driver
 
 Clone the repository with:
 ```
-git clone https://github.com/helipilot50/SQream-JDBC.git
+git clone http://gitlab.sq.l/connectors/jdbc-driver.git
 ```
 
 ## Dependencies
 
 This code is dependent on
 - Java 8
-- Jackson JSON library
-- SQream JAVA-connector (clone and follow readme from http://gitlab.sq.l/connectors/java.git)
 
 ## How to build
 To build the driver as a JAR, use:

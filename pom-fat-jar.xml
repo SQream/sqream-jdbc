@@ -8,27 +8,20 @@
     <packaging>jar</packaging>
     <url>http://maven.apache.org</url>
     <dependencies>
-
-        <!-- https://mvnrepository.com/artifact/junit/junit -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- SQream -->
-        <dependency>
-            <groupId>com.sqream</groupId>
-            <artifactId>connector</artifactId>
-            <version>2.3.1</version>
-        </dependency>
         
         <!-- https://mvnrepository.com/artifact/com.github.marianobarrios/tls-channel -->
         <dependency>
             <groupId>com.github.marianobarrios</groupId>
             <artifactId>tls-channel</artifactId>
             <version>0.2.0</version>
+        </dependency>
+
+        <!-- Tests -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
         
     </dependencies>

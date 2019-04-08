@@ -16,8 +16,8 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import javax.script.ScriptException;
 
-import com.sqream.connector.Connector;
-import com.sqream.connector.Connector.ConnException;
+import com.sqream.jdbc.Connector;
+import com.sqream.jdbc.Connector.ConnException;
 
 /**
  * @author root

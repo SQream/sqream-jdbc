@@ -35,8 +35,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
-import com.sqream.connector.Connector;
-import com.sqream.connector.Connector.ConnException;
+import com.sqream.jdbc.Connector;
+import com.sqream.jdbc.Connector.ConnException;
 
 
 public class SQPreparedStatment implements PreparedStatement {

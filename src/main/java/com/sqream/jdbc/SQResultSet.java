@@ -27,9 +27,9 @@ import java.util.Map;
 
 import javax.script.ScriptException;
 
-import com.sqream.connector.Connector;
-import com.sqream.connector.Connector.ConnException;
-//import com.sqream.connector.Client;
+import com.sqream.jdbc.Connector;
+import com.sqream.jdbc.Connector.ConnException;
+
 
 
 class SQResultSet implements ResultSet {

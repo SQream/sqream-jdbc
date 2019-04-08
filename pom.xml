@@ -8,14 +8,6 @@
 	<packaging>jar</packaging>
 	<url>http://maven.apache.org</url>
 	<dependencies>
-		<!-- SQream -->
-		<dependency>
-			<groupId>com.sqream</groupId>
-			<artifactId>connector</artifactId>
-			<version>2.3.1</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/../../build/SQream-JAVA-connector.jar</systemPath>
-		</dependency>
 		
 		<!-- https://mvnrepository.com/artifact/com.github.marianobarrios/tls-channel -->
         <dependency>
@@ -32,13 +24,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
-		<dependency>
-		    <groupId>mysql</groupId>
-		    <artifactId>mysql-connector-java</artifactId>
-		    <version>5.1.6</version>
-		</dependency>
-		
 	</dependencies>
 	
 	<build>

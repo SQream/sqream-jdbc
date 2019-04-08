@@ -23,8 +23,8 @@ import java.sql.SQLException;
 public class Perf {
     
     // Replace with your respective URL
-    static final String url_src = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
-    static final String url_dst = "jdbc:Sqream://192.168.0.223:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
+    static final String url_src = "jdbc:Sqream://192.168.0.74:5000/developer_regression_query;user=sqream;password=sqream;cluster=false;ssl=false";
+    //static final String url_dst = "jdbc:Sqream://192.168.0.223:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
     //here sonoo is database name, root is username and password  
     
     Connection mysql_con;
@@ -61,10 +61,10 @@ public class Perf {
 
     public void perf() throws SQLException, IOException {
         
-        //conn = DriverManager.getConnection(url_src,"sqream","sqream");
-        mysql_con=DriverManager.getConnection("jdbc:mysql://192.168.0.219:3306/perf","eliy","bladerfuK~1");  
-  
-        //*
+        conn = DriverManager.getConnection(url_src,"sqream","sqream");
+        //mysql_con=DriverManager.getConnection("jdbc:mysql://192.168.0.219:3306/perf","eliy","bladerfuK~1");  
+        String sql;
+        /*
         sql = "insert into perf_t2 values (?, ?)";
         ps = mysql_con.prepareStatement(sql);
         print ("before network insert");
@@ -126,14 +126,20 @@ public class Perf {
         stmt.close();
         
         //*/
-        
+        sql = "select sum(xbigint) over (partition by xdate) from t_a";
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        while(rs.next()) 
+            print("item: " + rs.getLong(1));
+        rs.close();
+        stmt.close();
     }     
     
     public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{
         
         // Load JDBC driver - not needed with newer version
-        //Class.forName("com.sqream.jdbc.SQDriver");
-        Class.forName("com.mysql.jdbc.Driver");  
+        Class.forName("com.sqream.jdbc.SQDriver");
+        //Class.forName("com.mysql.jdbc.Driver");  
 
         Perf test = new Perf();   
         test.perf();

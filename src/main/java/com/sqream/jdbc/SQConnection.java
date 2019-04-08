@@ -28,8 +28,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.script.ScriptException;
 
 //import com.sqream.connector.Connector;
-import com.sqream.connector.Connector;
-import com.sqream.connector.Connector.ConnException;
+import com.sqream.jdbc.Connector;
+import com.sqream.jdbc.Connector.ConnException;
 
 
 

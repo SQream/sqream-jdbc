@@ -155,7 +155,7 @@ public class JDBC_Positive {
         rs = dbmeta.getProcedures(null, null, null);
         String udfName = "";
         while(rs.next()) 
-            udfName = rs.getString("PROCEDURE_NAME"); 
+            udfName = rs.getString("procedure_name"); 
 
         System.out.println("udf name: " + udfName);
         
@@ -586,9 +586,11 @@ public class JDBC_Positive {
         Class.forName("com.sqream.jdbc.SQDriver");
         
         JDBC_Positive pos_tests = new JDBC_Positive();
-        String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+//        String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        String[] typelist = {"smallint"};
 
+        //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        /*
         if (pos_tests.getUDF()) 
             System.out.println("getUDF() test  - OK");
         else
@@ -605,6 +607,7 @@ public class JDBC_Positive {
             System.out.println("Execute batch reutrn value test  - OK");
         else
             System.out.println("Execute batch reutrn value test  - Fail");
+        //*/
         
         //*
         for (String col_type : typelist)

@@ -358,6 +358,11 @@ public class JDBC_Positive {
         }  //*/ 
         rs.close();
         stmt.close();
+        
+        sql = MessageFormat.format("truncate table t_{0}", table_name);
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
     }
     
     public boolean is_identical(String table_type) {
@@ -443,6 +448,7 @@ public class JDBC_Positive {
                 res = true;}
             
         }
+        
         
         
         return res;     
@@ -586,11 +592,11 @@ public class JDBC_Positive {
         Class.forName("com.sqream.jdbc.SQDriver");
         
         JDBC_Positive pos_tests = new JDBC_Positive();
-//        String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        String[] typelist = {"smallint"};
+        String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        //String[] typelist = {"smallint"};
 
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        /*
+        //*
         if (pos_tests.getUDF()) 
             System.out.println("getUDF() test  - OK");
         else

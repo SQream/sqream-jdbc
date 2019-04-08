@@ -60,6 +60,7 @@ public class SQDriver implements java.sql.Driver {
 		public String logger;
 		public String showFullStackTrace;
 		public String cluster;
+		public String service;
 		public String ssl;
 
 		uriEx(String url) throws SQLException {
@@ -110,6 +111,8 @@ public class SQDriver implements java.sql.Driver {
 							cluster = entryValue;
 						else if (entryType.toLowerCase().equals("ssl"))
 							ssl = entryValue;
+						else if (entryType.toLowerCase().equals("service"))
+							service = entryValue;
 					}
 				}
 				port = uri.getPort();
@@ -171,6 +174,9 @@ public class SQDriver implements java.sql.Driver {
 		info.put("host", UEX.host);
 		info.put("cluster", UEX.cluster);
 		info.put("ssl", UEX.ssl);
+		
+		if(UEX.service != null)
+			info.put("service", UEX.service);
 
 		Boolean logConfigEnabled = UEX.logger != null ? Boolean.valueOf(UEX.logger) : false;
 		Common.setLogEnabled(logConfigEnabled);

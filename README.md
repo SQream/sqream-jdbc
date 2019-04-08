@@ -6,7 +6,7 @@ This repository contains the SQream JDBC driver
 
 Clone the repository with:
 ```
-git clone https://github.com/helipilot50/SQream-JDBC.git
+git clone http://gitlab.sq.l/connectors/jdbc-driver.git
 ```
 
 ## Dependencies

@@ -156,13 +156,11 @@ public class JDBC_Positive {
         String udfName = "";
         while(rs.next()) 
             udfName = rs.getString("procedure_name"); 
-
-        System.out.println("udf name: " + udfName);
         
         // Check functionality
         if (udfName.equals("fud"))
             a_ok = true;    
-        
+       
         rs.close();
         
         return a_ok;
@@ -601,8 +599,8 @@ public class JDBC_Positive {
             System.out.println("getUDF() test  - OK");
         else
             System.out.println("getUDF() test  - Fail");
-
-
+        
+        //*
         if (pos_tests.isSigned()) 
             System.out.println("isSigned() test  - OK");
         else

@@ -197,6 +197,7 @@ public class Connector {
     byte [] spaces; 
     int nvarc_len;
     int col_num;
+    int[] col_calls;
     
     // Date/Time conversion related
     static ZoneId UTC = ZoneOffset.UTC;
@@ -601,7 +602,8 @@ public class Connector {
         col_nullable = new BitSet(row_length);
         col_tvc = new BitSet(row_length);
         col_names_map = new HashMap<String, Integer>();
-                
+        
+        col_calls = new int[row_length];
         // Parse the queryType json to get metadata for every column
         // An internal item looks like: {"isTrueVarChar":false,"nullable":true,"type":["ftInt",4,0]}
         for(int idx=0; idx < row_length; idx++) {
@@ -645,7 +647,6 @@ public class Connector {
             // Instantiate select counters, Initial storage same as insert
             row_counter = -1;
             total_rows_fetched = 0;
-            
             data_columns = new ByteBuffer[row_length];
             null_columns = new byte[row_length][];
             null_balls = new ByteBuffer[row_length];
@@ -872,7 +873,8 @@ public class Connector {
         else if (statement_type.equals("SELECT")) {
             //print ("select row counter: " + row_counter + " total: " + total_rows_fetched);
             // If all data has been read, try to fetch more
-            if (row_counter == (total_rows_fetched -1)) {
+        	Arrays.fill(col_calls, 0);
+        	if (row_counter == (total_rows_fetched -1)) {
                 row_counter = -1;
                 total_rows_fetched = _fetch();
                 if (row_counter == (total_rows_fetched -1)) {
@@ -949,40 +951,40 @@ public class Connector {
     	if (col_types[col_num].equals("ftUByte"))
             return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (short)(data_columns[col_num].get(row_counter) & 0xFF) : null;
 
-		return (_validate_get(col_num, "ftShort")) ? data_columns[col_num].getShort(row_counter) : null;
+		return (_validate_get(col_num, "ftShort")) ? data_columns[col_num].getShort(row_counter * 2) : null;
     }
     
     
     public Integer get_int(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
 	    if (col_types[col_num].equals("ftShort"))
-	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)data_columns[col_num].getShort(row_counter) : null;
+	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)data_columns[col_num].getShort(row_counter * 2) : null;
 	    else if (col_types[col_num].equals("ftUByte"))
 	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)(data_columns[col_num].get(row_counter) & 0xFF) : null;
 
-        return (_validate_get(col_num, "ftInt")) ? data_columns[col_num].getInt(row_counter) : null;
+        return (_validate_get(col_num, "ftInt")) ? data_columns[col_num].getInt(row_counter * 4) : null;
         //return (null_balls[col_num].get() == 0) ? data_columns[col_num].getInt() : null;
     }
     
     
     public Long get_long(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     
-        return (_validate_get(col_num, "ftLong")) ? data_columns[col_num].getLong(row_counter) : null;
+        return (_validate_get(col_num, "ftLong")) ? data_columns[col_num].getLong(row_counter * 8) : null;
     }
     
     
     public Float get_float(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
-        return (_validate_get(col_num, "ftFloat")) ? data_columns[col_num].getFloat(row_counter) : null;
+        return (_validate_get(col_num, "ftFloat")) ? data_columns[col_num].getFloat(row_counter * 4) : null;
     }
     
     
     public Double get_double(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
 	    if (col_types[col_num].equals("ftFloat"))
-	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (double)data_columns[col_num].getFloat(row_counter) : null;
+	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (double)data_columns[col_num].getFloat(row_counter * 4) : null;
 
-        return (_validate_get(col_num, "ftDouble")) ? data_columns[col_num].getDouble(row_counter) : null;
+        return (_validate_get(col_num, "ftDouble")) ? data_columns[col_num].getDouble(row_counter * 8) : null;
     }
     
     
@@ -990,8 +992,10 @@ public class Connector {
         
         // Get bytes the size of the varchar column into string_bytes
         data_columns[col_num].get(string_bytes, 0, col_sizes[col_num]);
-        // Resetting buffer position in csae someone runs the same get()
-        data_columns[col_num].position(data_columns[col_num].position() -col_sizes[col_num]);
+        if (++col_calls[col_num] > 1) {
+	        // Resetting buffer position in csae someone runs the same get()
+	        data_columns[col_num].position(data_columns[col_num].position() -col_sizes[col_num]);
+        }
         
         return (_validate_get(col_num, "ftVarchar")) ? new String(string_bytes, 0, col_sizes[col_num], UTF8).trim() : null;
     }
@@ -1003,7 +1007,8 @@ public class Connector {
         
         // Get bytes the size of this specific nvarchar into string_bytes
         data_columns[col_num].get(string_bytes, 0, nvarc_len);
-        data_columns[col_num].position(data_columns[col_num].position() - nvarc_len);
+        if (++col_calls[col_num] > 1)
+        	data_columns[col_num].position(data_columns[col_num].position() - nvarc_len);
         
         return (_validate_get(col_num, "ftBlob")) ? new String(string_bytes, 0, nvarc_len, UTF8) : null;
     }
@@ -1011,13 +1016,13 @@ public class Connector {
     
     public Date get_date(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
             
-        return (_validate_get(col_num, "ftDate")) ? int_to_date(data_columns[col_num].getInt(row_counter)) : null;
+        return (_validate_get(col_num, "ftDate")) ? int_to_date(data_columns[col_num].getInt(4*row_counter)) : null;
     }
     
     
     public Timestamp get_datetime(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
-        return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(row_counter)) : null;
+        return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(8* row_counter)) : null;
     }
     
     // -o-o-o-o-o  By column name -o-o-o-o-o

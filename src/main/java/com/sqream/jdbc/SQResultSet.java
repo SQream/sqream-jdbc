@@ -50,10 +50,7 @@ class SQResultSet implements ResultSet {
 	boolean Empty = false;
 	boolean RemoveSpaces = false;
 	boolean isNull = true;
-	Date date = null;
-    ZonedDateTime zonedDate = null;
-    Timestamp utcDateTime = null;
-    Instant instant = null;
+	
     
 	static void print(Object printable) {
         System.out.println(printable);
@@ -231,9 +228,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(String columnLabel, Calendar cal) throws SQLException {
 		try {
-			date = Client.get_date(columnLabel.toLowerCase());
+			Date date = Client.get_date(columnLabel.toLowerCase());
 			if (date != null) {
-				zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId());  
+				ZonedDateTime zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId());  
 				date = Date.valueOf(zonedDate.toLocalDate());
 			}
 			return date;
@@ -249,9 +246,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(int columnIndex, Calendar cal) throws SQLException {
 		try {
-			date = Client.get_date(columnIndex);
+			Date date = Client.get_date(columnIndex);
 			if (date != null) {
-				zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId());  
+				ZonedDateTime zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId());  
 				date = Date.valueOf(zonedDate.toLocalDate());
 			}
 			return date;
@@ -587,9 +584,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
 		try {
-			utcDateTime = Client.get_datetime(columnIndex);
+			Timestamp utcDateTime = Client.get_datetime(columnIndex);
 			if (utcDateTime!= null) {
-				instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
+				Instant instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
 				utcDateTime = Timestamp.from(instant);
 			}
 			return utcDateTime;
@@ -605,9 +602,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
 		try {
-			utcDateTime = Client.get_datetime(columnLabel.toLowerCase());
+			Timestamp utcDateTime = Client.get_datetime(columnLabel.toLowerCase());
 			if (utcDateTime!= null) {
-				instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
+				Instant instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
 				utcDateTime = Timestamp.from(instant);
 			}
 			return utcDateTime;

@@ -34,6 +34,10 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+
+
 
 import com.sqream.jdbc.Connector;
 import com.sqream.jdbc.Connector.ConnException;
@@ -564,10 +568,10 @@ public class SQPreparedStatment implements PreparedStatement {
     }
 
     @Override
-    public void setDate(int arg0, Date arg1) throws SQLException {
+    public void setDate(int colNum, Date date) throws SQLException {
         // TODO Auto-generated method stub
         try {
-			Client.set_date(arg0, arg1);
+			Client.set_date(colNum, date);
 		} catch (UnsupportedEncodingException | ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -575,16 +579,19 @@ public class SQPreparedStatment implements PreparedStatement {
     }
 
     @Override
-    public void setDate(int arg0, Date arg1, Calendar arg2) throws SQLException {
+    public void setDate(int colNum, Date date, Calendar cal) throws SQLException {
         // TODO Auto-generated method stub
         try {
-			Client.set_date(arg0, arg1);
+        	ZonedDateTime zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId()); 
+			Client.set_date(colNum, Date.valueOf(zonedDate.toLocalDate()));
 		} catch (UnsupportedEncodingException | ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} setCounter++; 
     }
-
+    
+ 
+    
     static int convertDateToInt(java.sql.Date Output) {
         int result = 0;
         if (Output != null) {
@@ -847,10 +854,10 @@ public class SQPreparedStatment implements PreparedStatement {
     }
 
     @Override
-    public void setTimestamp(int arg0, Timestamp arg1) throws SQLException {
+    public void setTimestamp(int colNum, Timestamp datetime) throws SQLException {
         // TODO Auto-generated method stub
         try {
-			Client.set_datetime(arg0, arg1);
+			Client.set_datetime(colNum, datetime);
 		} catch (UnsupportedEncodingException | ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -858,9 +865,10 @@ public class SQPreparedStatment implements PreparedStatement {
     }
 
     @Override
-    public void setTimestamp(int arg0, Timestamp arg1, Calendar arg2) throws SQLException {
+    public void setTimestamp(int colNum, Timestamp datetime, Calendar cal) throws SQLException {
         try {
-			Client.set_datetime(arg0, arg1);
+        	ZonedDateTime zonedDate = datetime.toInstant().atZone(cal.getTimeZone().toZoneId()); 
+			Client.set_datetime(colNum, Timestamp.valueOf(zonedDate.toLocalDateTime()));
 		} catch (UnsupportedEncodingException | ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -868,6 +876,7 @@ public class SQPreparedStatment implements PreparedStatement {
 
     }
 
+    
     @Override
     public void setURL(int arg0, URL arg1) throws SQLException {
         throw new SQLFeatureNotSupportedException();

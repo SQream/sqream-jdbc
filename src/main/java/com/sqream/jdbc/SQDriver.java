@@ -31,7 +31,7 @@ public class SQDriver implements java.sql.Driver {
 			e.printStackTrace();
 		}
 		 //need to comment UTC line for BG-1729 ,but then we need to handle daylight (same with SqrmTypes and StatementHandle )
-		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+		//TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
 	}
 

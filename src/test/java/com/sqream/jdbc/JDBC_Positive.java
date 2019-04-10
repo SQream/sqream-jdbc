@@ -1,8 +1,6 @@
 package com.sqream.jdbc;
 
 import java.text.MessageFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Random;
 import java.util.UUID;
@@ -11,8 +9,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import java.util.stream.IntStream;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -27,6 +23,13 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+//Datetime related
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.TimeZone;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class JDBC_Positive {
     
@@ -90,7 +93,7 @@ public class JDBC_Positive {
 	}
 	
 	static void printbuf(ByteBuffer to_print, String description) {
-		System.out.println(description + " : " + to_print);
+		print(description + " : " + to_print);
 	}
 	
 	
@@ -193,6 +196,69 @@ public class JDBC_Positive {
     }
     
     
+    public boolean timeZones() throws SQLException {
+        /*  Check isSigned command()   */
+        boolean a_ok = false;
+        
+        // Create table for test
+        conn = DriverManager.getConnection(url,"sqream","sqream");
+        String sql = "create or replace table test_zones (x date, y datetime)";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        
+        // Set using calendar
+        sql = "insert into test_zones values (?, ?)";
+        ps = conn.prepareStatement(sql);
+        Date date = Date.valueOf(LocalDate.of(2002, 9, 15));
+        Timestamp datetime = Timestamp.valueOf(LocalDateTime.of(2002, 9, 23, 13, 40, 34)); 
+        String zone = "Europe/Oslo"; //"Asia/Yekaterinburg"; //  "Pacific/Fiji";
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(zone)); // +2 in summer, +1 in winter
+        
+        ps.setDate(1, date, cal);
+        ps.setTimestamp(2, datetime, cal);
+        ps.addBatch();
+        ps.executeBatch();
+        ps.close();
+
+        // Get back without calendar
+        sql = "select * from test_zones";
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        rs.next();
+        Date resDate = rs.getDate(1);
+        Timestamp resDateTime = rs.getTimestamp(2);
+        rs.close();
+        stmt.close();
+        
+        // Get back with calendar
+        sql = "select * from test_zones";
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        rs.next();
+        Date resDateZoned = rs.getDate(1, cal);
+        Timestamp resDateTimeZoned = rs.getTimestamp(2, cal);
+        rs.close();
+        stmt.close();
+
+        // Compare results - datetime > resDateTime as Oslo > UTC (UTC + 2)
+        if (datetime.compareTo(resDateTime) > 0 && datetime.compareTo(resDateTimeZoned) == 0)
+            a_ok = true;
+        /*
+        print("Originals - date: " +  date + " datetime: " + datetime);
+        print("Retrieved wo calendar - date: " + resDate + " datetime: " + resDateTime );
+        print("Retrieved with calendar- date: " + resDateZoned + " datetime: " + resDateTimeZoned );
+        print("Does equal date: " + (date.compareTo(resDateZoned)));
+        print("Does equal datetime: " + (datetime.compareTo(resDateTimeZoned)));
+        print("Does equal datetime when retreived with no cal: " + (datetime.compareTo(resDateTime)));
+        //*/
+        // print("a_ok: " + a_ok);
+        
+        return a_ok;
+    }
+    
+    
+    
     public boolean insert(String table_type) throws IOException, SQLException, KeyManagementException, NoSuchAlgorithmException{
         
         boolean a_ok = false;
@@ -202,7 +268,7 @@ public class JDBC_Positive {
         conn = DriverManager.getConnection(url,"sqream","sqream");
         
         // Prepare Table
-//      System.out.println(" - Create Table t_" + table_type);
+//      print(" - Create Table t_" + table_type);
         stmt = conn.createStatement();
         sql = MessageFormat.format("create or replace table t_{0} (x {1})", table_name, table_type);
         stmt.execute(sql);
@@ -211,7 +277,7 @@ public class JDBC_Positive {
         }
         
         // Insert value
-//      System.out.println(" - Insert test value " + table_type);
+//      print(" - Insert test value " + table_type);
         if (table_type == "bool") 
             for (boolean test : test_bools) {
                 test_bool = test;
@@ -305,7 +371,7 @@ public class JDBC_Positive {
         else if (table_type == "datetime")
             for (Timestamp test : test_datetimes) {
                 test_datetime = test;
-                //System.out.println("datetime: " + test_datetime);
+                //print("datetime: " + test_datetime);
                 sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
                 ps = conn.prepareStatement(sql);
                 
@@ -325,7 +391,7 @@ public class JDBC_Positive {
         
         //*
         // Retreive
-//      System.out.println(" - Getting " + table_type + " value back for value");
+//      print(" - Getting " + table_type + " value back for value");
         String sql = MessageFormat.format("select * from t_{0}", table_name);
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
@@ -372,77 +438,77 @@ public class JDBC_Positive {
         if (use_junit) {
             if (table_type == "bool") {
                 Assert.assertEquals(test_bool, res_bool);
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_bool + " " + res_bool);
+    //          print("Results not identical on table type " + table_type + " " + test_bool + " " + res_bool);
             }else if (table_type == "tinyint") {
                 Assert.assertEquals(test_ubyte, res_ubyte);
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_ubyte + " " + res_ubyte);       
+    //          print("Results not identical on table type " + table_type + " " + test_ubyte + " " + res_ubyte);       
             }else if (table_type == "smallint") {
                 Assert.assertEquals(test_short, res_short) ;
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_short + " " + res_short);       
+    //          print("Results not identical on table type " + table_type + " " + test_short + " " + res_short);       
             }else if (table_type == "int") {
                 Assert.assertEquals(test_int, res_int); 
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_int + " " + res_int);       
+    //          print("Results not identical on table type " + table_type + " " + test_int + " " + res_int);       
             }else if (table_type == "bigint") {
                 Assert.assertEquals(test_long, res_long) ;
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_long + " " + res_long);     
+    //          print("Results not identical on table type " + table_type + " " + test_long + " " + res_long);     
             }else if (table_type == "real") {
                 Assert.assertEquals(test_real, res_real, 0.0) ;
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_real + " " + res_real);     
+    //          print("Results not identical on table type " + table_type + " " + test_real + " " + res_real);     
             }else if (table_type == "double") {
                 Assert.assertEquals(test_double, res_double, 0.0) ;
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_double + " " + res_double);     
+    //          print("Results not identical on table type " + table_type + " " + test_double + " " + res_double);     
             }else if (table_type == "varchar(100)") {
                 Assert.assertTrue(test_varchar.equals(res_varchar.trim())) ;
     //                  {
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_varchar + " " + res_varchar);       
-    //          System.out.println(test_varchar.compareTo(res_varchar) + "a"+ test_varchar.length() + "b" + res_varchar.length());}
+    //          print("Results not identical on table type " + table_type + " " + test_varchar + " " + res_varchar);       
+    //          print(test_varchar.compareTo(res_varchar) + "a"+ test_varchar.length() + "b" + res_varchar.length());}
             }else if (table_type == "date") {
                     Assert.assertEquals(1, Math.abs(test_date.compareTo(res_date))) ;
     //      {
     //      //else if (table_type == "date" && !test_date.equals(res_date))  {  
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_date + " " + test_date.getTime() + " " + res_date + " " + res_date.getTime());      
-    //          System.out.println(test_date.compareTo(res_date));}
+    //          print("Results not identical on table type " + table_type + " " + test_date + " " + test_date.getTime() + " " + res_date + " " + res_date.getTime());      
+    //          print(test_date.compareTo(res_date));}
             }else if (table_type == "datetime") {
                 Assert.assertTrue(test_datetime.equals(res_datetime));
             //else if (table_type == "datetime" && Math.abs(test_datetime.compareTo(res_datetime)) > 1) 
     
-    //          System.out.println("Results not identical on table type " + table_type + " " + test_datetime + " " + test_datetime.getTime() + " " + res_datetime + " " + res_datetime.getTime());      
+    //          print("Results not identical on table type " + table_type + " " + test_datetime + " " + test_datetime.getTime() + " " + res_datetime + " " + res_datetime.getTime());      
             
             }else {
-    //          System.out.println(" Results identical");
+    //          print(" Results identical");
                 res = true;}
             }
         else {
             //assertEquals(testInt, resInt);
             
             if (table_type == "bool" && test_bool != res_bool)
-                System.out.println("Results not identical on table type " + table_type + " " + test_bool + " " + res_bool);
+                print("Results not identical on table type " + table_type + " " + test_bool + " " + res_bool);
             else if (table_type == "tinyint" && test_ubyte != res_ubyte) 
-                System.out.println("Results not identical on table type " + table_type + " " + test_ubyte + " " + res_ubyte);       
+                print("Results not identical on table type " + table_type + " " + test_ubyte + " " + res_ubyte);       
             else if (table_type == "smallint" && test_short != res_short) 
-                System.out.println("Results not identical on table type " + table_type + " " + test_short + " " + res_short);       
+                print("Results not identical on table type " + table_type + " " + test_short + " " + res_short);       
             else if (table_type == "int" && test_int != res_int) 
-                System.out.println("Results not identical on table type " + table_type + " " + test_int + " " + res_int);       
+                print("Results not identical on table type " + table_type + " " + test_int + " " + res_int);       
             else if (table_type == "bigint" && test_long != res_long) 
-                System.out.println("Results not identical on table type " + table_type + " " + test_long + " " + res_long);     
+                print("Results not identical on table type " + table_type + " " + test_long + " " + res_long);     
             else if (table_type == "real" && test_real != res_real) 
-                System.out.println("Results not identical on table type " + table_type + " " + test_real + " " + res_real);     
+                print("Results not identical on table type " + table_type + " " + test_real + " " + res_real);     
             else if (table_type == "double" && test_double != res_double) 
-                System.out.println("Results not identical on table type " + table_type + " " + test_double + " " + res_double);     
+                print("Results not identical on table type " + table_type + " " + test_double + " " + res_double);     
             else if (table_type == "varchar(100)" && !test_varchar.equals(res_varchar.trim()))  {
-                System.out.println("Results not identical on table type " + table_type + " " + test_varchar + " " + res_varchar);       
-                System.out.println(test_varchar.compareTo(res_varchar) + "a"+ test_varchar.length() + "b" + res_varchar.length());}
+                print("Results not identical on table type " + table_type + " " + test_varchar + " " + res_varchar);       
+                print(test_varchar.compareTo(res_varchar) + "a"+ test_varchar.length() + "b" + res_varchar.length());}
             else if (table_type == "date" && Math.abs(test_date.compareTo(res_date)) > 1) {
             //else if (table_type == "date" && !test_date.equals(res_date))  {  
-                System.out.println("Results not identical on table type " + table_type + " " + test_date + " " + test_date.getTime() + " " + res_date + " " + res_date.getTime());      
-                System.out.println(test_date.compareTo(res_date));}
+                print("Results not identical on table type " + table_type + " " + test_date + " " + test_date.getTime() + " " + res_date + " " + res_date.getTime());      
+                print(test_date.compareTo(res_date));}
             else if (table_type == "datetime" && !test_datetime.equals(res_datetime))
             //else if (table_type == "datetime" && Math.abs(test_datetime.compareTo(res_datetime)) > 1) 
 
-                System.out.println("Results not identical on table type " + table_type + " " + test_datetime + " " + test_datetime.getTime() + " " + res_datetime + " " + res_datetime.getTime());      
+                print("Results not identical on table type " + table_type + " " + test_datetime + " " + test_datetime.getTime() + " " + res_datetime + " " + res_datetime.getTime());      
             
             else {
-                System.out.println(" Results identical");
+                print(" Results identical");
                 res = true;}
             
         }
@@ -463,21 +529,21 @@ public class JDBC_Positive {
         
         Client = Client.connect();  
         // Client.setBulkRows(insert_every);
-        //System.out.println("bulk size: " + Client.bulkinsert);
+        //print("bulk size: " + Client.bulkinsert);
 
         // Prepare Table
         String table_type = "int";
         
         int multi_row_value = 8;
         //int row_num = 100000000;
-        //System.out.println(" - Create Table t_" + table_type);
+        //print(" - Create Table t_" + table_type);
         String sql = MessageFormat.format("create or replace table t_{0} (x {0})", table_type);
         StatementHandle stmt = new StatementHandle(Client, sql); 
         stmt.prepare();     
         stmt.execute();
         stmt.close();
         
-        //System.out.println(" - Insert " + table_type + " " + total_inserts + " times");
+        //print(" - Insert " + table_type + " " + total_inserts + " times");
         sql = MessageFormat.format("insert into t_{0} values (?)", table_type);
         stmt = new StatementHandle(Client, sql); 
         stmt.prepare();
@@ -502,7 +568,7 @@ public class JDBC_Positive {
         rs = dbmeta.getTables(null, null, null, null);
         // rsmeta = rs.getMetaData();
         while(rs.next()) 
-            System.out.println(rs.getString(3));
+            print(rs.getString(3));
         rs.close();
         conn.close();
         //conn.close();
@@ -595,22 +661,27 @@ public class JDBC_Positive {
 
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
         //*
-        if (pos_tests.getUDF()) 
-            System.out.println("getUDF() test  - OK");
+        if (pos_tests.timeZones()) 
+            print("timeZones test  - OK");
         else
-            System.out.println("getUDF() test  - Fail");
+            print("timeZones test  - Fail");
+        //*
+        if (pos_tests.getUDF()) 
+            print("getUDF() test  - OK");
+        else
+            print("getUDF() test  - Fail");
         
         //*
         if (pos_tests.isSigned()) 
-            System.out.println("isSigned() test  - OK");
+            print("isSigned() test  - OK");
         else
-            System.out.println("isSigned() test  - Fail");
+            print("isSigned() test  - Fail");
         
            
         if (pos_tests.execBatchRes()) 
-            System.out.println("Execute batch reutrn value test  - OK");
+            print("Execute batch reutrn value test  - OK");
         else
-            System.out.println("Execute batch reutrn value test  - Fail");
+            print("Execute batch reutrn value test  - Fail");
         //*/
         
         //*
@@ -625,7 +696,7 @@ public class JDBC_Positive {
         try {
             pos_tests.autoflush(10000, 100);
         }catch (java.lang.ArrayIndexOutOfBoundsException e) {
-            System.out.println("Correct error on overflowing buffer with addBatch()");
+            print("Correct error on overflowing buffer with addBatch()");
         }    */
 
     }  

@@ -27,6 +27,13 @@ import java.util.Map;
 
 import javax.script.ScriptException;
 
+
+import java.time.Instant;
+//import java.time.ZoneId;
+//import java.time.OffsetDateTime;   // For OffsetDateTime.now().getOffset() to get the machine's offset
+//import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 import com.sqream.jdbc.Connector;
 import com.sqream.jdbc.Connector.ConnException;
 
@@ -43,7 +50,11 @@ class SQResultSet implements ResultSet {
 	boolean Empty = false;
 	boolean RemoveSpaces = false;
 	boolean isNull = true;
-	
+	Date date = null;
+    ZonedDateTime zonedDate = null;
+    Timestamp utcDateTime = null;
+    Instant instant = null;
+    
 	static void print(Object printable) {
         System.out.println(printable);
     }
@@ -208,37 +219,46 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public Date getDate(int columnIndex) throws SQLException {
-		Date d = null;
 		try {
-			d = Client.get_date(columnIndex);
+			return Client.get_date(columnIndex);
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new SQLException("");
 		}
-		return d;
 	}
 
 	@Override
 	public Date getDate(String columnLabel, Calendar cal) throws SQLException {
 		try {
-			return Client.get_date(columnLabel.toLowerCase());
-
+			date = Client.get_date(columnLabel.toLowerCase());
+			if (date != null) {
+				zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId());  
+				date = Date.valueOf(zonedDate.toLocalDate());
+			}
+			return date;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}
 	}
 
+	
+	
 	@Override
 	public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-		isNull = false;
-		Date d = null;
-		try {d = Client.get_date(columnIndex);
-		} catch (ConnException e) {
-			// TODO Auto-generated catch block
+		try {
+			date = Client.get_date(columnIndex);
+			if (date != null) {
+				zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId());  
+				date = Date.valueOf(zonedDate.toLocalDate());
+			}
+			return date;
+		} catch (Exception e) {
 			e.printStackTrace();
+			throw new SQLException("");
 		}
-		return d;
 	}
 
 	@Override
@@ -562,6 +582,40 @@ class SQResultSet implements ResultSet {
 		}
 		return t;
 
+	}
+	
+	@Override
+	public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
+		try {
+			utcDateTime = Client.get_datetime(columnIndex);
+			if (utcDateTime!= null) {
+				instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
+				utcDateTime = Timestamp.from(instant);
+			}
+			return utcDateTime;
+		} catch (ConnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new SQLException("");
+		}
+
+	}
+
+	
+	@Override
+	public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
+		try {
+			utcDateTime = Client.get_datetime(columnLabel.toLowerCase());
+			if (utcDateTime!= null) {
+				instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
+				utcDateTime = Timestamp.from(instant);
+			}
+			return utcDateTime;
+		} catch (ConnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new SQLException("");
+		}
 	}
 
 	boolean memFlag = false;
@@ -1243,18 +1297,6 @@ class SQResultSet implements ResultSet {
 	public Time getTime(String columnLabel, Calendar cal) throws SQLException {
 		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public Timestamp getTimestamp(int columnIndex, Calendar cal)
-			throws SQLException {
-		return getTimestamp(columnIndex);
-	}
-
-	@Override
-	public Timestamp getTimestamp(String columnLabel, Calendar cal)
-			throws SQLException {
-		return getTimestamp(columnLabel);
 	}
 
 	@Override

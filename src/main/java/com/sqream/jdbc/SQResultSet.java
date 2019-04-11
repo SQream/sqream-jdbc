@@ -146,7 +146,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public boolean getBoolean(String columnLabel) throws SQLException {
 		try {
-			return Client.get_boolean(columnLabel.toLowerCase());
+			Boolean res = Client.get_boolean(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -155,23 +157,24 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public boolean getBoolean(int columnIndex) throws SQLException {
-		Boolean b = null;
+		Boolean res = null;
 		try {
-			
-			b = Client.get_boolean(columnIndex);
-
+			res = Client.get_boolean(columnIndex);
+			isNull = (res == null) ? true : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return b;
+		return res;
 
 	}
 
 	@Override
 	public byte getByte(String columnLabel) throws SQLException {
 		try {
-			return Client.get_ubyte(columnLabel.toLowerCase());
+			Byte res = Client.get_ubyte(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -181,16 +184,15 @@ class SQResultSet implements ResultSet {
 	@Override
 	public byte getByte(int columnIndex) throws SQLException {
 
-		Byte b = null;
+		Byte res = null;
 		try {
-			
-			b = Client.get_ubyte(columnIndex);
+			res = Client.get_ubyte(columnIndex);
+			isNull = (res == null) ? true : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return b;
-
+		return res;
 	}
 
 	@Override
@@ -206,8 +208,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(String columnLabel) throws SQLException {
 		try {
-			return Client.get_date(columnLabel.toLowerCase());
-
+			Date res = Client.get_date(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -217,7 +220,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(int columnIndex) throws SQLException {
 		try {
-			return Client.get_date(columnIndex);
+			Date res = Client.get_date(columnIndex);
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -233,6 +238,7 @@ class SQResultSet implements ResultSet {
 				ZonedDateTime zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId());  
 				date = Date.valueOf(zonedDate.toLocalDate());
 			}
+			isNull = (date == null) ? true : false;
 			return date;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -240,7 +246,6 @@ class SQResultSet implements ResultSet {
 					+ "' not found");
 		}
 	}
-
 	
 	
 	@Override
@@ -251,6 +256,7 @@ class SQResultSet implements ResultSet {
 				ZonedDateTime zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId());  
 				date = Date.valueOf(zonedDate.toLocalDate());
 			}
+			isNull = (date == null) ? true : false;
 			return date;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -261,8 +267,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public double getDouble(String columnLabel) throws SQLException {
 		try {
-			return Client.get_double(columnLabel.toLowerCase());
-
+			Double res = Client.get_double(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -273,8 +280,8 @@ class SQResultSet implements ResultSet {
 	public double getDouble(int columnIndex) throws SQLException {
 		Double d = null;
 		try {
-			
 			d = Client.get_double(columnIndex);
+			isNull = (d == null) ? true : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -285,8 +292,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public float getFloat(String columnLabel) throws SQLException {
 		try {
-			return Client.get_float(columnLabel.toLowerCase());
-
+			Float res = Client.get_float(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -297,8 +305,8 @@ class SQResultSet implements ResultSet {
 	public float getFloat(int columnIndex) throws SQLException {
 		Float f = null;
 		try {
-			
 			f = Client.get_float(columnIndex);
+			isNull = (f == null) ? true : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -310,7 +318,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public int getInt(String columnLabel) throws SQLException {
 		try {
-			return Client.get_int(columnLabel.toLowerCase());
+			Integer res = Client.get_int(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -321,8 +331,8 @@ class SQResultSet implements ResultSet {
 	public int getInt(int columnIndex) throws SQLException {
 		Integer i = null;
 		try {
-			
 			i = Client.get_int(columnIndex);
+			isNull = (i == null) ? true : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -333,8 +343,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public long getLong(String columnLabel) throws SQLException {
 		try {
-			return Client.get_long(columnLabel.toLowerCase());
-
+			Long res = Client.get_long(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			//e.printStackTrace();
 			throw new SQLException("Exception on getLong:" + e.toString());
@@ -344,9 +355,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public long getLong(int columnIndex) throws SQLException {
 		try {
-			
-			return Client.get_long(columnIndex);
-
+			Long res = Client.get_long(columnIndex);
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnIndex
@@ -538,7 +549,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public short getShort(String columnLabel) throws SQLException {
 		try {
-			return Client.get_short(columnLabel.toLowerCase());
+			Short res = Client.get_short(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
@@ -551,6 +564,7 @@ class SQResultSet implements ResultSet {
 		Short s = null;
 		try {
 			s = Client.get_short(columnIndex);
+			isNull = (s == null) ? true : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -561,7 +575,9 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Timestamp getTimestamp(String columnLabel) throws SQLException {
 		try {
-			return Client.get_datetime(columnLabel.toLowerCase());
+			Timestamp res =  Client.get_datetime(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -573,6 +589,7 @@ class SQResultSet implements ResultSet {
 		Timestamp t = null;
 		try {
 			t = Client.get_datetime(columnIndex);
+			isNull = (t == null) ? true : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -589,6 +606,7 @@ class SQResultSet implements ResultSet {
 				Instant instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
 				utcDateTime = Timestamp.from(instant);
 			}
+			isNull = (utcDateTime == null) ? true : false;
 			return utcDateTime;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
@@ -607,6 +625,7 @@ class SQResultSet implements ResultSet {
 				Instant instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
 				utcDateTime = Timestamp.from(instant);
 			}
+			isNull = (utcDateTime == null) ? true : false;
 			return utcDateTime;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block

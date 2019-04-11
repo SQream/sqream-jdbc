@@ -991,11 +991,11 @@ public class Connector {
     public String get_varchar(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         
         // Get bytes the size of the varchar column into string_bytes
-        data_columns[col_num].get(string_bytes, 0, col_sizes[col_num]);
-        if (++col_calls[col_num] > 1) {
+        if (col_calls[col_num]++ > 0) {
 	        // Resetting buffer position in csae someone runs the same get()
 	        data_columns[col_num].position(data_columns[col_num].position() -col_sizes[col_num]);
         }
+        data_columns[col_num].get(string_bytes, 0, col_sizes[col_num]);
         
         return (_validate_get(col_num, "ftVarchar")) ? new String(string_bytes, 0, col_sizes[col_num], UTF8).trim() : null;
     }
@@ -1006,9 +1006,9 @@ public class Connector {
         nvarc_len = nvarc_len_columns[col_num].getInt(row_counter * 4);
         
         // Get bytes the size of this specific nvarchar into string_bytes
-        data_columns[col_num].get(string_bytes, 0, nvarc_len);
-        if (++col_calls[col_num] > 1)
+        if (col_calls[col_num]++ > 0)
         	data_columns[col_num].position(data_columns[col_num].position() - nvarc_len);
+        data_columns[col_num].get(string_bytes, 0, nvarc_len);
         
         return (_validate_get(col_num, "ftBlob")) ? new String(string_bytes, 0, nvarc_len, UTF8) : null;
     }

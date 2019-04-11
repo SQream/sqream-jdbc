@@ -76,7 +76,7 @@ public class JDBC_Positive {
     Timestamp test_datetime = datetime_from_tuple(2002, 9, 13, 14, 56, 34, 567); //*/
     
     // JDBC Data
-    static final String url = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
+    static final String url = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false;service=bobo";
     
     Statement stmt = null;
     ResultSet rs = null;
@@ -159,7 +159,6 @@ public class JDBC_Positive {
         String udfName = "";
         while(rs.next()) 
             udfName = rs.getString("procedure_name"); 
-        
         // Check functionality
         if (udfName.equals("fud"))
             a_ok = true;    
@@ -257,6 +256,53 @@ public class JDBC_Positive {
         return a_ok;
     }
     
+    
+    public boolean casted_gets() throws SQLException {
+        /*  Check isSigned command()   */
+        boolean a_ok = false;
+        
+        // Create table for test
+        conn = DriverManager.getConnection(url,"sqream","sqream");
+        String sql = "create or replace table test_casts (x tinyint, y smallint, z real)";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        
+        // Set using calendar
+        byte test_byte = 5;
+        short test_short = 55;
+        float test_float = (float)5.5;
+        sql = "insert into test_casts values (?, ?, ?)";
+        ps = conn.prepareStatement(sql);
+        ps.setByte(1, test_byte);
+        ps.setShort(2, test_short);
+        ps.setFloat(3, test_float);
+        ps.addBatch();
+        ps.executeBatch();
+        ps.close();
+
+        // Get back without calendar
+        sql = "select * from test_casts";
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        rs.next();
+        if (test_byte != rs.getInt(1))
+        	print ("bad casted getInt on byte column");
+        else if (test_byte != rs.getShort(1))
+        	print ("bad casted getShort on byte column");
+        else if (test_short != rs.getInt(2))
+			print ("bad casted getInt on short column");
+        else if (test_float != rs.getDouble(3))
+			print ("bad casted getDouble on float column");
+        else
+        	a_ok = true;
+        
+        rs.close();
+        stmt.close();
+       
+        
+        return a_ok;
+    }
     
     
     public boolean insert(String table_type) throws IOException, SQLException, KeyManagementException, NoSuchAlgorithmException{
@@ -397,28 +443,51 @@ public class JDBC_Positive {
         rs = stmt.executeQuery(sql);
         while(rs.next())
         {
-            if (table_type == "bool") 
+            if (table_type == "bool") {
+            	if (rs.getBoolean(1) != rs.getBoolean("x")) 
+            		print ("Different results on getBoolean on index vs column name");
                 res_bool = rs.getBoolean(1);
-            else if (table_type == "tinyint") 
+            }else if (table_type == "tinyint") {
+            	if (rs.getByte(1) != rs.getByte("x")) 
+            		print ("Different results on getByte on index vs column name");
                 res_ubyte = rs.getByte(1);
-            else if (table_type == "smallint") 
+            }else if (table_type == "smallint") {
+            	if (rs.getShort(1) != rs.getShort("x")) 
+            		print ("Different results on getShort on index vs column name");
                 res_short = rs.getShort(1);
-            else if (table_type == "int") 
+            }else if (table_type == "int") {
+            	if (rs.getInt(1) != rs.getInt("x")) 
+            		print ("Different results on getInt on index vs column name");
                 res_int = rs.getInt(1);
-            else if (table_type == "bigint")
+            }else if (table_type == "bigint") {
+            	if (rs.getLong(1) != rs.getLong("x")) 
+            		print ("Different results on getLong on index vs column name");
                 res_long = rs.getLong(1);
-            else if (table_type == "real")
+            }else if (table_type == "real") {
+            	if (rs.getFloat(1) != rs.getFloat("x")) 
+            		print ("Different results on getFloat on index vs column name");
                 res_real = rs.getFloat(1);
-            else if (table_type == "double")
+            }else if (table_type == "double") {
+            	if (rs.getDouble(1) != rs.getDouble("x")) 
+            		print ("Different results on getDouble on index vs column name");
                 res_double = rs.getDouble(1);
-            else if (table_type == "varchar(100)")
+            }else if (table_type == "varchar(100)") {
+            	if (!rs.getString(1).equals(rs.getString("x"))) 
+            		print ("Different results on getString on index vs column name");
                 res_varchar = rs.getString(1);
-            else if (table_type == "nvarchar(100)")
+            }else if (table_type == "nvarchar(100)") {
+            	if (!rs.getString(1).equals(rs.getString("x"))) 
+            		print ("Different results on getString on index vs column name");
                 res_varchar = rs.getString(1);
-            else if (table_type == "date")
+            }else if (table_type == "date") {
+            	if (Math.abs(rs.getDate(1).compareTo(rs.getDate("x"))) > 1) 
+            		print ("Different results on getDate on index vs column name");
                 res_date = rs.getDate(1);
-            else if (table_type == "datetime")
+            }else if (table_type == "datetime") {
+            	if (Math.abs(rs.getTimestamp(1).compareTo(rs.getTimestamp("x"))) > 1) 
+            		print ("Different results on getTimestamp on index vs column name");
                 res_datetime = rs.getTimestamp(1); 
+            }
         }  //*/ 
         rs.close();
         stmt.close();
@@ -657,32 +726,14 @@ public class JDBC_Positive {
         
         JDBC_Positive pos_tests = new JDBC_Positive();
         String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        //String[] typelist = {"smallint"};
+        //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
 
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        //*
-        if (pos_tests.timeZones()) 
-            print("timeZones test  - OK");
-        else
-            print("timeZones test  - Fail");
-        //*
-        if (pos_tests.getUDF()) 
-            print("getUDF() test  - OK");
-        else
-            print("getUDF() test  - Fail");
-        
-        //*
-        if (pos_tests.isSigned()) 
-            print("isSigned() test  - OK");
-        else
-            print("isSigned() test  - Fail");
-        
-           
-        if (pos_tests.execBatchRes()) 
-            print("Execute batch reutrn value test  - OK");
-        else
-            print("Execute batch reutrn value test  - Fail");
-        //*/
+        print ("Cast test - " + (pos_tests.casted_gets() ? "OK" : "Fail"));
+        print ("timeZones test - " + (pos_tests.timeZones() ? "OK" : "Fail"));
+        print ("getUDF test - " + (pos_tests.getUDF() ? "OK" : "Fail"));
+        print ("isSigned test - " + (pos_tests.isSigned() ? "OK" : "Fail"));
+        print ("Execute batch test - " + (pos_tests.execBatchRes() ? "OK" : "Fail"));
         
         //*
         for (String col_type : typelist)

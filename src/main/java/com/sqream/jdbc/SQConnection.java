@@ -88,11 +88,12 @@ public class SQConnection implements Connection {
 			throw new SQLException("missing database name error");
 
 		//Always gets a value
-		service = connectionInfo.containsKey("service") == true ? connectionInfo.getProperty("service") : DEFAULT_SERVICE;
-		if(service == null)
-			throw new SQLException("error setting value to service");
-
-		
+		service = connectionInfo.getProperty("service");
+		if(service.equals("-1")) {
+			System.out.println ("no service passed, defaulting to sqream");
+			service = "sqream";
+		}
+			
 		String usr = connectionInfo.getProperty("user");
 		username = usr;
 		if (usr.equals("-1"))

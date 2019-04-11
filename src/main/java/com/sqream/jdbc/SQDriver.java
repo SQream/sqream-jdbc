@@ -181,7 +181,7 @@ public class SQDriver implements java.sql.Driver {
 
 		if (UEX.showFullStackTrace != null)
 			info.put("showFullStackTrace", UEX.showFullStackTrace);
-
+		//System.out.println ("connection info: " + info);
 		SQConnection SQC = null;
 		try {
 			SQC = new SQConnection(info);

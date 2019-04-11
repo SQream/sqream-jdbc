@@ -918,6 +918,12 @@ public class Connector {
         return true;
     }
     
+    boolean _validate_index(int col_num) throws ConnException {
+    	if (col_num <0 || col_num > row_length)
+    		 throw new ConnException("Illegal index on get/set. Allowed indices are 0-" + (row_length -1));
+    	
+    	return true;
+    }
     
     // Gets
     // ----
@@ -935,19 +941,19 @@ public class Connector {
     // -o-o-o-o-o    By index -o-o-o-o-o
     
     public Boolean get_boolean(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
         return (_validate_get(col_num, "ftBool")) ? data_columns[col_num].get(row_counter) != 0 : null;
     }
     
     
     public Byte get_ubyte(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-    
+    	_validate_index(col_num);
         return (_validate_get(col_num, "ftUByte")) ? data_columns[col_num].get(row_counter) : null;
     }  // .get().toUnsignedInt()  -->  to allow values between 127-255 
     
     
     public Short get_short(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    _validate_index(col_num);
     	if (col_types[col_num].equals("ftUByte"))
             return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (short)(data_columns[col_num].get(row_counter) & 0xFF) : null;
 
@@ -956,7 +962,7 @@ public class Connector {
     
     
     public Integer get_int(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
 	    if (col_types[col_num].equals("ftShort"))
 	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)data_columns[col_num].getShort(row_counter * 2) : null;
 	    else if (col_types[col_num].equals("ftUByte"))
@@ -968,19 +974,19 @@ public class Connector {
     
     
     public Long get_long(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-    
+    	_validate_index(col_num);
         return (_validate_get(col_num, "ftLong")) ? data_columns[col_num].getLong(row_counter * 8) : null;
     }
     
     
     public Float get_float(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
         return (_validate_get(col_num, "ftFloat")) ? data_columns[col_num].getFloat(row_counter * 4) : null;
     }
     
     
     public Double get_double(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
 	    if (col_types[col_num].equals("ftFloat"))
 	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (double)data_columns[col_num].getFloat(row_counter * 4) : null;
 
@@ -989,7 +995,7 @@ public class Connector {
     
     
     public String get_varchar(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
         // Get bytes the size of the varchar column into string_bytes
         if (col_calls[col_num]++ > 0) {
 	        // Resetting buffer position in csae someone runs the same get()
@@ -1002,7 +1008,7 @@ public class Connector {
     
     
     public String get_nvarchar(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
         nvarc_len = nvarc_len_columns[col_num].getInt(row_counter * 4);
         
         // Get bytes the size of this specific nvarchar into string_bytes
@@ -1015,20 +1021,20 @@ public class Connector {
     
     
     public Date get_date(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-            
+    	_validate_index(col_num);
         return (_validate_get(col_num, "ftDate")) ? int_to_date(data_columns[col_num].getInt(4*row_counter)) : null;
     }
     
     
     public Timestamp get_datetime(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
         return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(8* row_counter)) : null;
     }
     
     // -o-o-o-o-o  By column name -o-o-o-o-o
     
     public Boolean get_boolean(String col_name) throws ConnException {  
-    
+    	
         return get_boolean(col_names_map.get(col_name));
     }
     
@@ -1108,7 +1114,7 @@ public class Connector {
 
 
     public boolean set_boolean(int col_num, Boolean value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
         // Set actual value
         data_columns[col_num].put((byte)(_validate_set(col_num, value, "ftBool") ? 0 : (value == true) ? 1 : 0));
         
@@ -1120,7 +1126,7 @@ public class Connector {
     
     
     public boolean set_ubyte(int col_num, Byte value) throws ConnException {   col_num--;  // set / get work with starting index 1
-    
+    	_validate_index(col_num);
         // Check the byte is positive
         if (value!= null && value < 0 ) 
                 throw new ConnException("Trying to set a negative byte value on an unsigned byte column");
@@ -1136,7 +1142,7 @@ public class Connector {
     
      
     public boolean set_short(int col_num, Short value) throws ConnException {   col_num--;  // set / get work with starting index 1
-    
+    	_validate_index(col_num);
         // Set actual value
         data_columns[col_num].putShort(_validate_set(col_num, value, "ftShort") ? 0 : value);
         
@@ -1148,7 +1154,7 @@ public class Connector {
         
     
     public boolean set_int(int col_num, Integer value) throws ConnException {   col_num--;  // set / get work with starting index 1
-    
+    	_validate_index(col_num);
         // Set actual value
         data_columns[col_num].putInt(_validate_set(col_num, value, "ftInt") ? 0 : value);
         
@@ -1160,7 +1166,7 @@ public class Connector {
      
 
     public boolean set_long(int col_num, Long value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
         // Set actual value
         data_columns[col_num].putLong(_validate_set(col_num, value, "ftLong") ? (long) 0 : value);
         
@@ -1172,7 +1178,7 @@ public class Connector {
      
     
     public boolean set_float(int col_num, Float value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        
+    	_validate_index(col_num);
         // Set actual value
         data_columns[col_num].putFloat(_validate_set(col_num, value, "ftFloat") ? (float)0.0 : value);
         
@@ -1184,7 +1190,7 @@ public class Connector {
     
     
     public boolean set_double(int col_num, Double value) throws ConnException {  col_num--;
-    
+    	_validate_index(col_num);
         // Set actual value
         data_columns[col_num].putDouble(_validate_set(col_num, value, "ftDouble") ? 0.0 : value);
         
@@ -1196,7 +1202,7 @@ public class Connector {
     
     
     public boolean set_varchar(int col_num, String value) throws ConnException {  col_num--;
-    
+    	_validate_index(col_num);
         // Set actual value - padding with spaces to the left if needed
         string_bytes = _validate_set(col_num, value, "ftVarchar") ? "".getBytes(UTF8) : value.getBytes(UTF8);
         if (string_bytes.length > col_sizes[col_num]) 
@@ -1218,7 +1224,7 @@ public class Connector {
     
     
     public boolean set_nvarchar(int col_num, String value) throws ConnException, UnsupportedEncodingException {  col_num--;
-    
+    	_validate_index(col_num);
         // Convert string to bytes
         string_bytes = _validate_set(col_num, value, "ftBlob") ? "".getBytes(UTF8) : value.getBytes(UTF8);
                 
@@ -1236,7 +1242,7 @@ public class Connector {
     
     
     public boolean set_date(int col_num, Date value, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
-        
+    	_validate_index(col_num);
         // Set actual value
         data_columns[col_num].putInt(_validate_set(col_num, value, "ftDate") ? 0 : date_to_int(value));
         
@@ -1248,7 +1254,7 @@ public class Connector {
         
     
     public boolean set_datetime(int col_num, Timestamp value, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
-    
+    	_validate_index(col_num);
         // Set actual value
         data_columns[col_num].putLong(_validate_set(col_num, value, "ftDateTime") ? 0 : dt_to_long(value));
         

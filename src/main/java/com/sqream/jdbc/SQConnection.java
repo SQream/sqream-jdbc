@@ -50,7 +50,6 @@ public class SQConnection implements Connection {
     String username;
     Properties connInfo;
     String db_name;
-    String service;
     String DEFAULT_SERVICE = "sqream";
     
 	public SQConnection(Connector client) throws IOException {
@@ -87,9 +86,8 @@ public class SQConnection implements Connection {
 		if (db_name.equals("-1"))
 			throw new SQLException("missing database name error");
 
-		//Always gets a value
-		service = connectionInfo.getProperty("service");
-		if(service.equals("-1")) {
+		String service = connectionInfo.getProperty("service");
+		if(service == null || service.equals("-1")) {
 			System.out.println ("no service passed, defaulting to sqream");
 			service = "sqream";
 		}

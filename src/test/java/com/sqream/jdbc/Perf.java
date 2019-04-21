@@ -135,6 +135,7 @@ public class Perf {
         stmt.close();
         //*/
         
+        /*
         sql = "select top 1 joinid,dlrstatus,requestrecdtime,enterpriseid,messagetext from otp_dlr_history ";
   
         PreparedStatement stmt = conn.prepareStatement(sql);
@@ -156,7 +157,31 @@ public class Perf {
             conn.close();
 
         }
-    
+    	//*/
+        
+        //*
+        sql = "create or replace table nulls (ints int)";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        
+        // Network insert 10 million rows
+        sql = "insert into nulls values (1), (null), (3)";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        
+        sql = "select * from nulls";
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        while(rs.next())  
+            print("item: " + rs.getInt(1) + " was null: " + rs.wasNull());
+    	rs.close();
+        stmt.close();
+        
+        
+        
+    	//*/
     }     
     
     public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{

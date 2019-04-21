@@ -181,7 +181,8 @@ public class Connector {
 
     // Column Storage
     ByteBuffer[] data_columns;
-    byte[][] null_columns;
+    //byte[][] null_columns;
+    ByteBuffer[] null_columns;
     ByteBuffer[] nvarc_len_columns;
     ByteBuffer [] null_balls;
     
@@ -628,7 +629,7 @@ public class Connector {
             //rows_per_flush = 10000;
             // Buffer arrays for column storage
             data_columns = new ByteBuffer[row_length];
-            null_columns = new byte[row_length][];
+            null_columns = new ByteBuffer[row_length];
             nvarc_len_columns = new ByteBuffer[row_length];
             
             // Instantiate flags for managing network insert operations
@@ -638,7 +639,7 @@ public class Connector {
             // Initiate buffers for each column using the metadata
             for (int idx=0; idx < row_length; idx++) {
                 data_columns[idx] = ByteBuffer.allocateDirect(col_sizes[idx]*rows_per_flush).order(ByteOrder.LITTLE_ENDIAN);
-                null_columns[idx] = col_nullable.get(idx) ? new byte[rows_per_flush] : null;
+                null_columns[idx] = col_nullable.get(idx) ? ByteBuffer.allocateDirect(rows_per_flush).order(ByteOrder.LITTLE_ENDIAN) : null;
                 nvarc_len_columns[idx] = col_tvc.get(idx) ? ByteBuffer.allocateDirect(4*rows_per_flush).order(ByteOrder.LITTLE_ENDIAN) : null;
             }
         }
@@ -648,7 +649,8 @@ public class Connector {
             row_counter = -1;
             total_rows_fetched = 0;
             data_columns = new ByteBuffer[row_length];
-            null_columns = new byte[row_length][];
+            //null_columns = new byte[row_length][];
+            null_columns = new ByteBuffer[row_length];
             null_balls = new ByteBuffer[row_length];
             nvarc_len_columns = new ByteBuffer[row_length];     
             
@@ -677,9 +679,9 @@ public class Connector {
         // Sort buffers to appropriate arrays (row_length determied during _query_type())
         for (int idx=0, buf_idx = 0; idx < row_length; idx++, buf_idx++) {  
             if(col_nullable.get(idx)) {
-                null_columns[idx] = new byte[(int) response_json.get("rows")];
-                fetch_buffers[buf_idx].get(null_columns[idx]);
-                fetch_buffers[buf_idx].clear();
+                null_columns[idx] = fetch_buffers[buf_idx];
+                //fetch_buffers[buf_idx].get(null_columns[idx]);
+                //fetch_buffers[buf_idx].clear();
                 //null_balls[idx] = fetch_buffers[buf_idx];
                 buf_idx++;
             } else
@@ -735,17 +737,15 @@ public class Connector {
         // Send header with total binary insert
         message_buffer = _generate_headered_buffer(total_bytes, false); 
         _send_data(message_buffer, false);
-                
         
         // Send available columns
         for(int idx=0; idx < row_length; idx++) {
             if(null_columns[idx] != null) {
-                _send_data((ByteBuffer) ByteBuffer.wrap(null_columns[idx], 0, row_counter).order(ByteOrder.LITTLE_ENDIAN).position(row_counter), false); 
+                _send_data((ByteBuffer)null_columns[idx].position(row_counter), false); 
             }
             if(nvarc_len_columns[idx] != null) {
                 _send_data(nvarc_len_columns[idx], false);
             }
-        
             _send_data(data_columns[idx], false);
         }
         
@@ -863,7 +863,7 @@ public class Connector {
                 row_counter = 0;
                 for(int idx=0; idx < row_length; idx++) {
                     if (null_columns[idx] != null)      
-                        Arrays.fill(null_columns[idx], (byte)0);
+                        null_columns[idx].clear();
                     if(nvarc_len_columns[idx] != null) 
                         nvarc_len_columns[idx].clear();
                     data_columns[idx].clear();
@@ -873,7 +873,7 @@ public class Connector {
         else if (statement_type.equals("SELECT")) {
             //print ("select row counter: " + row_counter + " total: " + total_rows_fetched);
             // If all data has been read, try to fetch more
-        	Arrays.fill(col_calls, 0);
+        	Arrays.fill(col_calls, 0); // calls in the same fetch - for varchar / nvarchar
         	if (row_counter == (total_rows_fetched -1)) {
                 row_counter = -1;
                 total_rows_fetched = _fetch();
@@ -896,9 +896,10 @@ public class Connector {
     
     
     public String close() throws IOException, ScriptException, ConnException {
-            
-        if (statement_type.equals("INSERT")) 
+        
+        if (statement_type.equals("INSERT")) {
             _flush(row_counter);
+        }
             // Statement is finished so no need to reset row_counter etc
         
         return _validate_response(_send_message(form_json("closeStatement"), true), form_json("statementClosed"));
@@ -934,8 +935,8 @@ public class Connector {
         if (!col_types[col_num].equals(value_type))
             throw new ConnException("Trying to get a value of type " + value_type + " from column number " + col_num + " of type " + col_types[col_num]);
         
-        
-        return null_columns[col_num] == null || null_columns[col_num][row_counter] == 0;
+        // print ("null column holder: " + Arrays.toString(null_columns));
+        return null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0;
     }
     
     // -o-o-o-o-o    By index -o-o-o-o-o
@@ -955,7 +956,7 @@ public class Connector {
     public Short get_short(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     _validate_index(col_num);
     	if (col_types[col_num].equals("ftUByte"))
-            return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (short)(data_columns[col_num].get(row_counter) & 0xFF) : null;
+            return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (short)(data_columns[col_num].get(row_counter) & 0xFF) : null;
 
 		return (_validate_get(col_num, "ftShort")) ? data_columns[col_num].getShort(row_counter * 2) : null;
     }
@@ -964,9 +965,9 @@ public class Connector {
     public Integer get_int(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
 	    if (col_types[col_num].equals("ftShort"))
-	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)data_columns[col_num].getShort(row_counter * 2) : null;
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (int)data_columns[col_num].getShort(row_counter * 2) : null;
 	    else if (col_types[col_num].equals("ftUByte"))
-	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (int)(data_columns[col_num].get(row_counter) & 0xFF) : null;
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (int)(data_columns[col_num].get(row_counter) & 0xFF) : null;
 
         return (_validate_get(col_num, "ftInt")) ? data_columns[col_num].getInt(row_counter * 4) : null;
         //return (null_balls[col_num].get() == 0) ? data_columns[col_num].getInt() : null;
@@ -988,7 +989,7 @@ public class Connector {
     public Double get_double(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
 	    if (col_types[col_num].equals("ftFloat"))
-	        return (null_columns[col_num] == null || null_columns[col_num][row_counter] == 0) ? (double)data_columns[col_num].getFloat(row_counter * 4) : null;
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (double)data_columns[col_num].getFloat(row_counter * 4) : null;
 
         return (_validate_get(col_num, "ftDouble")) ? data_columns[col_num].getDouble(row_counter * 8) : null;
     }
@@ -1100,7 +1101,7 @@ public class Connector {
         // Optional null handling - if null is appropriate, mark null column
         if (value == null) {
             if (null_columns[col_num] != null) { 
-                null_columns[col_num][row_counter]= 1;
+                null_columns[col_num].put((byte)1);
                 is_null = true;
             } else
                 throw new ConnException("Trying to set null on a non nullable column of type " + col_types[col_num]);
@@ -1117,7 +1118,6 @@ public class Connector {
     	_validate_index(col_num);
         // Set actual value
         data_columns[col_num].put((byte)(_validate_set(col_num, value, "ftBool") ? 0 : (value == true) ? 1 : 0));
-        
         // Mark column as set (BitSet at location col_num set to true
         columns_set.set(col_num);
         

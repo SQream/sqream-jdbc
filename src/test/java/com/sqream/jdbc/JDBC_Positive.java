@@ -76,7 +76,7 @@ public class JDBC_Positive {
     Timestamp test_datetime = datetime_from_tuple(2002, 9, 13, 14, 56, 34, 567); //*/
     
     // JDBC Data
-    static final String url = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false;service=bobo";
+    static final String url = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false;service=sqream";
     
     Statement stmt = null;
     ResultSet rs = null;

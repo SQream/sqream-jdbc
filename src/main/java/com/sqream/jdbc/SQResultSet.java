@@ -148,7 +148,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Boolean res = Client.get_boolean(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? null : res;
+			return (res == null) ? false : res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -165,7 +165,7 @@ class SQResultSet implements ResultSet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (res == null) ? null : res;
+		return (res == null) ? false : res;
 
 	}
 
@@ -174,7 +174,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Byte res = Client.get_ubyte(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? null : res;
+			return (res == null) ? 0 : res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -192,7 +192,7 @@ class SQResultSet implements ResultSet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (res == null) ? null : res;
+		return (res == null) ? 0 : res;
 	}
 
 	@Override
@@ -227,7 +227,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Integer res = Client.get_int(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? null : res;
+			return (res == null) ? 0 : res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -245,7 +245,7 @@ class SQResultSet implements ResultSet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (res == null) ? null : res;
+		return (res == null) ? 0 : res;
 	}
 
 	@Override
@@ -253,7 +253,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Long res = Client.get_long(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? null : res;
+			return (res == null) ? 0 : res;
 		} catch (Exception e) {
 			//e.printStackTrace();
 			throw new SQLException("Exception on getLong:" + e.toString());
@@ -265,7 +265,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Long res = Client.get_long(columnIndex);
 			isNull = (res == null) ? true : false;
-			return (res == null) ? null : res;
+			return (res == null) ? 0 : res;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnIndex
@@ -279,7 +279,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Float res = Client.get_float(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? null : res;
+			return (res == null) ? 0 : res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -296,7 +296,7 @@ class SQResultSet implements ResultSet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (res == null) ? null : res;
+		return (res == null) ? 0 : res;
 
 	}
 	
@@ -306,7 +306,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Double res = Client.get_double(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? null : res;
+			return (res == null) ? 0 : res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -323,7 +323,7 @@ class SQResultSet implements ResultSet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (res == null) ? null : res;
+		return (res == null) ? 0 : res;
 	}
 
 	

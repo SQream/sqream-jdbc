@@ -172,11 +172,11 @@ public class Perf {
         //*/
         
         //*
-        sql = "select distinct xdatetime from t_a where xdatetime is null";
+        sql = "select distinct xbit from t_a";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next())  
-            print("item: " + rs.getTimestamp(1) + " was null: " + rs.wasNull());
+            print("item: " + rs.getBoolean(1) + " was null: " + rs.wasNull());
     	rs.close();
         stmt.close();
         //*/

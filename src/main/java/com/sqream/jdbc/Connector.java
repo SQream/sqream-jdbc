@@ -546,8 +546,9 @@ public class Connector {
         bytes_read = (use_ssl) ? ss.read(header) : s.read(header);
         header.flip();
         //print ("header: " + header);
-        protocol_version = header.get();
-        is_text = header.get();
+    	protocol_version = header.get(); // java.nio.BufferUnderflowException - internal runtime error
+        	
+    	is_text = header.get();
         response_length = header.getLong();
         
         return (int)response_length;
@@ -578,7 +579,7 @@ public class Connector {
     // (5)   /* Send a JSON string to SQream over socket  */
     String _send_message(String message, boolean get_response) throws IOException {
         
-    	message_bytes = message.getBytes();
+    	message_bytes = message.replace("\n", " ").replace("\t", " ").getBytes();
         message_buffer = _generate_headered_buffer((long)message_bytes.length, true);
         message_buffer.put(message_bytes);
         

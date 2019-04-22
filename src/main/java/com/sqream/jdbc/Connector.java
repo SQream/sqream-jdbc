@@ -192,6 +192,7 @@ public class Connector {
     BitSet columns_set;
     int total_bytes;
     boolean is_null;
+    byte[] message_bytes;
     byte[] string_bytes; // Storing converted string to be set
     ByteBuffer[] fetch_buffers;
     ByteBuffer[] null_buffers;
@@ -576,8 +577,10 @@ public class Connector {
     // (5)   /* Send a JSON string to SQream over socket  */
     String _send_message(String message, boolean get_response) throws IOException {
         
-        message_buffer = _generate_headered_buffer((long)message.length(), true);
-        message_buffer.put(message.getBytes());
+    	message_bytes = message.getBytes();
+        message_buffer = _generate_headered_buffer((long)message_bytes.length, true);
+        message_buffer.put(message_bytes);
+        
         return _send_data(message_buffer, get_response);
     }
     

@@ -172,11 +172,11 @@ public class Perf {
         //*/
         
         //*
-        sql = "select distinct xbit from t_a";
+        sql = "select max(xint) over (partition by xint) , min(xint) over (partition by xint) , sum(xint) over (partition by xint) , rank() over (partition by xint order by xint,xkey) , row_number() over (partition by xint order by xkey) from t_a";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next())  
-            print("item: " + rs.getBoolean(1) + " was null: " + rs.wasNull());
+            print("item: " + rs.getInt(1) + " was null: " + rs.wasNull());
     	rs.close();
         stmt.close();
         //*/

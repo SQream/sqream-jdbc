@@ -1,55 +1,97 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.sqream</groupId>
-	<artifactId>sqream-jdbc</artifactId>
-	<version>2.3.1</version>
-	<name>SQream JDBC</name>
-	<packaging>jar</packaging>
-	<url>http://maven.apache.org</url>
-	<dependencies>
-
-		<!-- https://mvnrepository.com/artifact/com.github.marianobarrios/tls-channel -->
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.sqream</groupId>
+    <artifactId>sqream-jdbc</artifactId>
+    <version>2.9.4</version>
+    <name>SQream JDBC</name>
+    <packaging>jar</packaging>
+    <url>http://maven.apache.org</url>
+    <dependencies>
+        
+        <!-- https://mvnrepository.com/artifact/com.github.marianobarrios/tls-channel -->
         <dependency>
             <groupId>com.github.marianobarrios</groupId>
             <artifactId>tls-channel</artifactId>
             <version>0.2.0</version>
         </dependency>
-        
-		<!-- Tests -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
 
-	</dependencies>
-	
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.6.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-			<plugin>
-		      <groupId>org.apache.maven.plugins</groupId>
-		      <artifactId>maven-jar-plugin</artifactId>
-		      <configuration>
-		        <archive>
-		          <manifest>
-		            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-		          </manifest>
-		        </archive>
-		      </configuration>
-		    </plugin>
-		</plugins>
-	    <resources>
+        <!-- Tests -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        
+    </dependencies>
+
+    <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.1.0</version>
+            <configuration>
+              <archive>
+                <manifest>
+                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                </manifest>
+              </archive>
+            </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>assemble-all</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
             <resource>
                 <directory>${basedir}</directory>
                 <includes>
@@ -57,5 +99,5 @@
                 </includes>
             </resource>
         </resources>
-	</build>
+    </build>
 </project>

@@ -148,7 +148,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Boolean res = Client.get_boolean(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? false : res;
+			return (res == null) ? null : res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -160,12 +160,12 @@ class SQResultSet implements ResultSet {
 		Boolean res = null;
 		try {
 			res = Client.get_boolean(columnIndex);
-			isNull = (res == null) ? true : false;
+			isNull = (res == null) ? null : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (res == null) ? false : res;
+		return (res == null) ? null : res;
 
 	}
 
@@ -174,7 +174,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Byte res = Client.get_ubyte(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
+			return (res == null) ? null : res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -192,78 +192,42 @@ class SQResultSet implements ResultSet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return (res == null) ? null : res;
+	}
+
+	@Override
+	public short getShort(String columnLabel) throws SQLException {
+		try {
+			Short res = Client.get_short(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return (res == null) ? 0 : res;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SQLException("columnLabel '" + columnLabel.trim()
+					+ "' not found");
+		}
+	}
+
+	@Override
+	public short getShort(int columnIndex) throws SQLException {
+		Short res = null;
+		try {
+			res = Client.get_short(columnIndex);
+			isNull = (res == null) ? true : false;
+		} catch (ConnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return (res == null) ? 0 : res;
 	}
-
-	@Override
-	public byte[] getBytes(String columnLabel) throws SQLException {
-		throw new SQLException("Not supported");
-	}
-
-	@Override
-	public byte[] getBytes(int columnIndex) throws SQLException {
-		throw new SQLException("Not supported");
-	}
-
 	
-
-	@Override
-	public double getDouble(String columnLabel) throws SQLException {
-		try {
-			Double res = Client.get_double(columnLabel.toLowerCase());
-			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
-		} catch (Exception e) {
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
-		}
-	}
-
-	@Override
-	public double getDouble(int columnIndex) throws SQLException {
-		Double res = null;
-		try {
-			res = Client.get_double(columnIndex);
-			isNull = (res == null) ? true : false;
-		} catch (ConnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return (res == null) ? 0 : res;
-	}
-
-	@Override
-	public float getFloat(String columnLabel) throws SQLException {
-		try {
-			Float res = Client.get_float(columnLabel.toLowerCase());
-			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
-		} catch (Exception e) {
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
-		}
-	}
-
-	@Override
-	public float getFloat(int columnIndex) throws SQLException {
-		Float res = null;
-		try {
-			res = Client.get_float(columnIndex);
-			isNull = (res == null) ? true : false;
-		} catch (ConnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return (res == null) ? 0 : res;
-
-	}
-
+	
 	@Override
 	public int getInt(String columnLabel) throws SQLException {
 		try {
 			Integer res = Client.get_int(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
+			return (res == null) ? null : res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -281,7 +245,7 @@ class SQResultSet implements ResultSet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (res == null) ? 0 : res;
+		return (res == null) ? null : res;
 	}
 
 	@Override
@@ -289,7 +253,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Long res = Client.get_long(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
+			return (res == null) ? null : res;
 		} catch (Exception e) {
 			//e.printStackTrace();
 			throw new SQLException("Exception on getLong:" + e.toString());
@@ -301,7 +265,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Long res = Client.get_long(columnIndex);
 			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
+			return (res == null) ? null : res;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnIndex
@@ -309,116 +273,60 @@ class SQResultSet implements ResultSet {
 		}
 
 	}
-
+	
 	@Override
-	public ResultSetMetaData getMetaData() throws SQLException {
-		// TODO Auto-generated method stub
-		ResultSetMetaData rsmd = null;
+	public float getFloat(String columnLabel) throws SQLException {
 		try {
-			rsmd = new SQResultSetMetaData(Client, db_name);
-		} catch (IOException | ConnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Float res = Client.get_float(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return (res == null) ? null : res;
+		} catch (Exception e) {
+			throw new SQLException("columnLabel '" + columnLabel.trim()
+					+ "' not found");
 		}
-
-		return rsmd;
 	}
 
 	@Override
-	public Object getObject(String columnLabel) throws SQLException {
-		throw new SQLException("getObject() by column name unsupported");
-		
-		/*
-		ColumnMetadata[] meta = Client.getMetadata();
-		String type = meta[columnIndex-1].type.tid.toString();
-		Object res = null; 
-		
-		if (type.equals("Bool")) 
-			res =  (Boolean)getBoolean(columnLabel);
-		else if (type.equals("Tinyint"))
-			res =  (Byte)getByte(columnLabel);
-		else if (type.equals("Smallint")) 
-			res =  (Short)getShort(columnLabel);
-		else if (type.equals("Int")) 	
-			res =  (Integer)getInt(columnLabel);
-		else if (type.equals("Bigint")) 
-			res =  (Long)getLong(columnLabel);
-		else if (type.equals("Real")) 
-			res =  (Float)getFloat(columnLabel);
-		else if (type.equals("Float"))
-			res =  (Double)getDouble(columnLabel);
-		else if (type.equals("Date")) 
-			res =  (Date)getDate(columnLabel);
-		else if (type.equals("DateTime"))
-			res =  (Timestamp)getTimestamp(columnLabel);
-		else if (type.equals("Varchar")) 
-			res =  (String)getString(columnLabel);
-		else if (type.equals("NVarchar")) 	
-			res =  (String)getString(columnLabel);
-		
-		return res;  */
-
-	}
-
-	@Override
-	public Object getObject(int columnIndex) throws SQLException {
-		
-		String type = "";
+	public float getFloat(int columnIndex) throws SQLException {
+		Float res = null;
 		try {
-			type = Client.get_col_type(columnIndex);
+			res = Client.get_float(columnIndex);
+			isNull = (res == null) ? true : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Object res = null; 
-		
-		if (type.equals("ftBool")) 
-			res =  (Boolean)getBoolean(columnIndex);
-		else if (type.equals("ftUByte"))
-			res =  (Short)getShort(columnIndex);
-		else if (type.equals("ftShort")) 
-			res =  (Short)getShort(columnIndex);
-		else if (type.equals("ftInt")) 	
-			res =  (Integer)getInt(columnIndex);
-		else if (type.equals("ftLong")) 
-			res =  (Long)getLong(columnIndex);
-		else if (type.equals("ftFloat")) 
-			res =  (Float)getFloat(columnIndex);
-		else if (type.equals("ftDouble"))
-			res =  (Double)getDouble(columnIndex);
-		else if (type.equals("ftDate")) 
-			res =  (Date)getDate(columnIndex);
-		else if (type.equals("ftDateTime"))
-			res =  (Timestamp)getTimestamp(columnIndex);
-		else if (type.equals("ftVarchar")) 
-			res =  (String)getString(columnIndex);
-		else if (type.equals("ftBlob")) 	
-			res =  (String)getString(columnIndex);
-		
-		return res;
+		return (res == null) ? null : res;
+
+	}
+	
+	
+	@Override
+	public double getDouble(String columnLabel) throws SQLException {
+		try {
+			Double res = Client.get_double(columnLabel.toLowerCase());
+			isNull = (res == null) ? true : false;
+			return (res == null) ? null : res;
+		} catch (Exception e) {
+			throw new SQLException("columnLabel '" + columnLabel.trim()
+					+ "' not found");
+		}
+	}
+
+	@Override
+	public double getDouble(int columnIndex) throws SQLException {
+		Double res = null;
+		try {
+			res = Client.get_double(columnIndex);
+			isNull = (res == null) ? true : false;
+		} catch (ConnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return (res == null) ? null : res;
 	}
 
 	
-	private static int getCharLength(char[] value) {
-		int size = value.length;
-		for (int i = 0; i < size; i++) {
-			if (value[i] == '\0')
-				return i;
-		}
-		return size;
-	}
-
-	public static String nullessStr(char[] chars) {
-		int size = getCharLength(chars);
-		return new String(chars, 0, size);
-	}
-
-	/*
-	 * private static int getCharLength(char[] value) { int size = value.length;
-	 * for (int i = 0; i < size; i++) { if (value[i] == '\0') return i; } return
-	 * size; }
-	 */
-
 	@Override
 	public String getString(String columnLabel) throws SQLException {
 		String res = null;
@@ -490,31 +398,6 @@ class SQResultSet implements ResultSet {
 		return (res == null) ? null : res;
 	}
 
-	@Override
-	public short getShort(String columnLabel) throws SQLException {
-		try {
-			Short res = Client.get_short(columnLabel.toLowerCase());
-			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
-		}
-	}
-
-	@Override
-	public short getShort(int columnIndex) throws SQLException {
-		Short res = null;
-		try {
-			res = Client.get_short(columnIndex);
-			isNull = (res == null) ? true : false;
-		} catch (ConnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return (res == null) ? 0 : res;
-	}
 	
 	
 	@Override
@@ -637,6 +520,118 @@ class SQResultSet implements ResultSet {
 			throw new SQLException("");
 		}
 	}
+	
+
+	@Override
+	public ResultSetMetaData getMetaData() throws SQLException {
+		// TODO Auto-generated method stub
+		ResultSetMetaData rsmd = null;
+		try {
+			rsmd = new SQResultSetMetaData(Client, db_name);
+		} catch (IOException | ConnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return rsmd;
+	}
+
+	@Override
+	public Object getObject(String columnLabel) throws SQLException {
+		throw new SQLException("getObject() by column name unsupported");
+		
+		/*
+		ColumnMetadata[] meta = Client.getMetadata();
+		String type = meta[columnIndex-1].type.tid.toString();
+		Object res = null; 
+		
+		if (type.equals("Bool")) 
+			res =  (Boolean)getBoolean(columnLabel);
+		else if (type.equals("Tinyint"))
+			res =  (Byte)getByte(columnLabel);
+		else if (type.equals("Smallint")) 
+			res =  (Short)getShort(columnLabel);
+		else if (type.equals("Int")) 	
+			res =  (Integer)getInt(columnLabel);
+		else if (type.equals("Bigint")) 
+			res =  (Long)getLong(columnLabel);
+		else if (type.equals("Real")) 
+			res =  (Float)getFloat(columnLabel);
+		else if (type.equals("Float"))
+			res =  (Double)getDouble(columnLabel);
+		else if (type.equals("Date")) 
+			res =  (Date)getDate(columnLabel);
+		else if (type.equals("DateTime"))
+			res =  (Timestamp)getTimestamp(columnLabel);
+		else if (type.equals("Varchar")) 
+			res =  (String)getString(columnLabel);
+		else if (type.equals("NVarchar")) 	
+			res =  (String)getString(columnLabel);
+		
+		return res;  */
+
+	}
+
+	@Override
+	public Object getObject(int columnIndex) throws SQLException {
+		
+		String type = "";
+		try {
+			type = Client.get_col_type(columnIndex);
+		} catch (ConnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Object res = null; 
+		
+		if (type.equals("ftBool")) 
+			res =  (Boolean)getBoolean(columnIndex);
+		else if (type.equals("ftUByte"))
+			res =  (Short)getShort(columnIndex);
+		else if (type.equals("ftShort")) 
+			res =  (Short)getShort(columnIndex);
+		else if (type.equals("ftInt")) 	
+			res =  (Integer)getInt(columnIndex);
+		else if (type.equals("ftLong")) 
+			res =  (Long)getLong(columnIndex);
+		else if (type.equals("ftFloat")) 
+			res =  (Float)getFloat(columnIndex);
+		else if (type.equals("ftDouble"))
+			res =  (Double)getDouble(columnIndex);
+		else if (type.equals("ftDate")) 
+			res =  (Date)getDate(columnIndex);
+		else if (type.equals("ftDateTime"))
+			res =  (Timestamp)getTimestamp(columnIndex);
+		else if (type.equals("ftVarchar")) 
+			res =  (String)getString(columnIndex);
+		else if (type.equals("ftBlob")) 	
+			res =  (String)getString(columnIndex);
+		
+		return res;
+	}
+
+	
+	private static int getCharLength(char[] value) {
+		int size = value.length;
+		for (int i = 0; i < size; i++) {
+			if (value[i] == '\0')
+				return i;
+		}
+		return size;
+	}
+
+	public static String nullessStr(char[] chars) {
+		int size = getCharLength(chars);
+		return new String(chars, 0, size);
+	}
+
+	/*
+	 * private static int getCharLength(char[] value) { int size = value.length;
+	 * for (int i = 0; i < size; i++) { if (value[i] == '\0') return i; } return
+	 * size; }
+	 */
+
+	
 
 	boolean memFlag = false;
 	Runtime runtime;
@@ -712,7 +707,17 @@ class SQResultSet implements ResultSet {
 		return isNull;
 
 	}
+	
+	@Override
+	public byte[] getBytes(String columnLabel) throws SQLException {
+		throw new SQLException("Not supported");
+	}
 
+	@Override
+	public byte[] getBytes(int columnIndex) throws SQLException {
+		throw new SQLException("Not supported");
+	}
+	
 	@Override
 	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
 		throw new SQLFeatureNotSupportedException();

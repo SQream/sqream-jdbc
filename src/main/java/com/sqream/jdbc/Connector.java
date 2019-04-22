@@ -906,7 +906,7 @@ public class Connector {
     
     public String close() throws IOException, ScriptException, ConnException {
         
-        if (statement_type.equals("INSERT")) {
+        if (statement_type!= null && statement_type.equals("INSERT")) {
             _flush(row_counter);
         }
             // Statement is finished so no need to reset row_counter etc

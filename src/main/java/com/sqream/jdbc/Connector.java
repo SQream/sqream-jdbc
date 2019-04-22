@@ -178,6 +178,7 @@ public class Connector {
     int []    col_sizes;
     BitSet col_nullable;
     BitSet col_tvc;
+    boolean is_open = false;
 
     // Column Storage
     ByteBuffer[] data_columns;
@@ -791,7 +792,11 @@ public class Connector {
     public int execute(String statement) throws IOException, ScriptException, ConnException {
         /* getStatementId, prepareStatement, reconnect, execute, queryType  */
         
-        // Get statement ID, send prepareStatement and get response parameters
+    	if (is_open)
+    		throw new ConnException("Trying to run a statement when another was not closed");
+        is_open = true;
+    	
+    	// Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
         String prepareStr = MessageFormat.format(prepareStatement, statement, 0);  // Random chunkSize to remember it's not really used
         response_json =  _parse_sqream_json(_send_message(prepareStr, true));
@@ -906,12 +911,21 @@ public class Connector {
     
     public String close() throws IOException, ScriptException, ConnException {
         
+    	if (!is_open)
+    		print ("Trying to run a statement that's already been closed");
+        
+    	is_open = true;
+        
         if (statement_type!= null && statement_type.equals("INSERT")) {
             _flush(row_counter);
         }
             // Statement is finished so no need to reset row_counter etc
         
-        return _validate_response(_send_message(form_json("closeStatement"), true), form_json("statementClosed"));
+        String res = _validate_response(_send_message(form_json("closeStatement"), true), form_json("statementClosed"));
+        is_open = false;
+        
+        
+        return res;
     }
     
     

@@ -23,7 +23,6 @@ import java.sql.SQLException;
 public class Perf {
     
     // Replace with your respective URL
-    static final String url_src = "jdbc:Sqream://192.168.1.4:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
     //static final String url_dst = "jdbc:Sqream://192.168.0.223:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
     //here sonoo is database name, root is username and password  
     
@@ -59,7 +58,7 @@ public class Perf {
         return Timestamp.valueOf(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
     }
 
-    public void perf() throws SQLException, IOException {
+    public void perf(String url_src) throws SQLException, IOException {
         
         conn = DriverManager.getConnection(url_src,"sqream","sqream");
         //mysql_con=DriverManager.getConnection("jdbc:mysql://192.168.0.219:3306/perf","eliy","bladerfuK~1");  
@@ -159,26 +158,28 @@ public class Perf {
         }
     	//*/
         
-        //*
-        sql = "create or replace table nulls (ints int)";
+        /*
+        sql = "create or replace table dt (dts datetime)";
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
         
         // Network insert 10 million rows
-        sql = "insert into nulls values (1), (null), (3)";
+        sql = "insert into dt values ('2010-02-19 00:00:00.000')";
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
+        //*/
         
-        sql = "select * from nulls";
+        //*
+        sql = "select xdatetime  from t_a";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next())  
-            print("item: " + rs.getInt(1) + " was null: " + rs.wasNull());
+            print("item: " + rs.getTimestamp(1) + " was null: " + rs.wasNull());
     	rs.close();
         stmt.close();
-        
+        //*/
         
         
     	//*/
@@ -189,9 +190,11 @@ public class Perf {
         // Load JDBC driver - not needed with newer version
         //Class.forName("com.sqream.jdbc.SQDriver");
         //Class.forName("com.mysql.jdbc.Driver");  
+        String url_src = "jdbc:Sqream://192.168.1.4:5000/developer_regression_query;user=sqream;password=sqream;cluster=false;ssl=false";
 
+        
         Perf test = new Perf();   
-        test.perf();
+        test.perf(url_src);
     }
 }
 

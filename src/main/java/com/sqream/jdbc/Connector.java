@@ -183,6 +183,7 @@ public class Connector {
     ByteBuffer[] data_columns;
     //byte[][] null_columns;
     ByteBuffer[] null_columns;
+    ByteBuffer null_resetter;
     ByteBuffer[] nvarc_len_columns;
     ByteBuffer [] null_balls;
     
@@ -630,6 +631,7 @@ public class Connector {
             // Buffer arrays for column storage
             data_columns = new ByteBuffer[row_length];
             null_columns = new ByteBuffer[row_length];
+            null_resetter = ByteBuffer.allocate(rows_per_flush);
             nvarc_len_columns = new ByteBuffer[row_length];
             
             // Instantiate flags for managing network insert operations
@@ -862,8 +864,12 @@ public class Connector {
                 // After flush, clear row counter and all buffers
                 row_counter = 0;
                 for(int idx=0; idx < row_length; idx++) {
-                    if (null_columns[idx] != null)      
+                    if (null_columns[idx] != null) {  
+                    	// Clear doesn't actually nullify/reset the data
                         null_columns[idx].clear();
+                        null_columns[idx].put(null_resetter);
+                        null_columns[idx].clear();
+                    }
                     if(nvarc_len_columns[idx] != null) 
                         nvarc_len_columns[idx].clear();
                     data_columns[idx].clear();

@@ -160,7 +160,7 @@ class SQResultSet implements ResultSet {
 		Boolean res = null;
 		try {
 			res = Client.get_boolean(columnIndex);
-			isNull = (res == null) ? null : false;
+			isNull = (res == null) ? true : false;
 		} catch (ConnException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

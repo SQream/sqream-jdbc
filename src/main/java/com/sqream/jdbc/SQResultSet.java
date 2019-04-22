@@ -126,7 +126,7 @@ class SQResultSet implements ResultSet {
 		
 		if (!Empty) {  // Empty result sets don't start with a Client
 			try {
-				if (Client!= null) {
+				if (Client!= null && Client.is_open()) {
 					Client.close();
 					Client.close_connection();
 				}

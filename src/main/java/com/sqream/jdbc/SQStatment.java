@@ -120,7 +120,8 @@ public class SQStatment implements Statement {
 	public void close() throws SQLException {
 		try {
 			if(Client !=null && Client.is_open()) {
-				Client.close();
+				if (Client.is_open_statement())
+					Client.close();
 				Client.close_connection(); // since each statement creates a new client connection.
 			}
             if(Connection !=null)

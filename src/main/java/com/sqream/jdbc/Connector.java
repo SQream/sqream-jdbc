@@ -1347,6 +1347,11 @@ public class Connector {
         return col_nullable.get(_validate_col_num(col_num));
     }
     
+    public boolean is_open_statement() {
+        
+        return is_open;
+    }
+    
     public boolean is_open() {
         
         return (use_ssl) ? ss.isOpen() : s.isOpen();

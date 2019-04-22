@@ -915,8 +915,6 @@ public class Connector {
     	if (!is_open)
     		print ("Trying to run a statement that's already been closed");
         
-    	is_open = true;
-        
         if (statement_type!= null && statement_type.equals("INSERT")) {
             _flush(row_counter);
         }

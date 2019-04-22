@@ -148,7 +148,7 @@ class SQResultSet implements ResultSet {
 		try {
 			Boolean res = Client.get_boolean(columnLabel.toLowerCase());
 			isNull = (res == null) ? true : false;
-			return (res == null) ? true : res;
+			return (res == null) ? false : res;
 		} catch (Exception e) {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
@@ -165,7 +165,7 @@ class SQResultSet implements ResultSet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return (res == null) ? true : res;
+		return (res == null) ? false : res;
 
 	}
 

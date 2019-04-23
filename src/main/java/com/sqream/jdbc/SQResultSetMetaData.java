@@ -143,7 +143,8 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 
 	@Override
 	public boolean isAutoIncrement(int column) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		return false;
+		//throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override

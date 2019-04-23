@@ -455,6 +455,7 @@ class SQResultSet implements ResultSet {
 		String res = null;
 		Object res_obj =null;
 		String type = "";
+		columnLabel = columnLabel.toLowerCase();
 		try {
 			type = Client.get_col_type(columnLabel);
 		} catch (ConnException e1) {
@@ -549,6 +550,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Object getObject(String columnLabel) throws SQLException {
 		
+		columnLabel = columnLabel.toLowerCase();
 		String type = "";
 		try {
 			type = Client.get_col_type(columnLabel);

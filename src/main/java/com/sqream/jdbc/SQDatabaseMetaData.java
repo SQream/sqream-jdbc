@@ -146,9 +146,10 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		Connector client = new Connector(Conn.sqlb.ip, Conn.sqlb.port, Conn.sqlb.Cluster, Conn.sqlb.Use_ssl);
 		client.connect(Conn.sqlb.DB_name, Conn.sqlb.User, Conn.sqlb.Password, Conn.sqlb.service);
 		client.execute(sql);
-		print ("pook");
+		
 		return new SQResultSet(client, db_name, true);
 	}
+	
 	
 	@Override
 	public ResultSet getCatalogs() throws SQLException {

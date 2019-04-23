@@ -175,9 +175,10 @@ public class Perf {
         sql = "select get_schemas()";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
-        while(rs.next())  
-            print("item: " + rs.getString(1) + " was null: " + rs.wasNull());
-    	rs.close();
+        while(rs.next()) {  
+            print("item: " + rs.getString("TABLE_SCHEM") + " was null: " + rs.wasNull());
+        	print("item: " + rs.getString(2) + " was null: " + rs.wasNull());
+        }rs.close();
         stmt.close();
         //*/
         

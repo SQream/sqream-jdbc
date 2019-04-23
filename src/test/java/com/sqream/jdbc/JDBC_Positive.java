@@ -309,6 +309,7 @@ public class JDBC_Positive {
         
         boolean a_ok = false;
         String table_name = table_type.contains("varchar(100)") ?  table_type.substring(0,7) : table_type;
+        table_name = table_name.toUpperCase();
         String sql;
 
         conn = DriverManager.getConnection(url,"sqream","sqream");
@@ -316,7 +317,7 @@ public class JDBC_Positive {
         // Prepare Table
 //      print(" - Create Table t_" + table_type);
         stmt = conn.createStatement();
-        sql = MessageFormat.format("create or replace table t_{0} (x {1})", table_name, table_type);
+        sql = MessageFormat.format("create or replace table t_{0} (Xx {1})", table_name, table_type);
         stmt.execute(sql);
         if (stmt != null){
             stmt.close();
@@ -444,47 +445,47 @@ public class JDBC_Positive {
         while(rs.next())
         {
             if (table_type == "bool") {
-            	if (rs.getBoolean(1) != rs.getBoolean("x")) 
+            	if (rs.getBoolean(1) != rs.getBoolean("Xx")) 
             		print ("Different results on getBoolean on index vs column name");
                 res_bool = rs.getBoolean(1);
             }else if (table_type == "tinyint") {
-            	if (rs.getByte(1) != rs.getByte("x")) 
+            	if (rs.getByte(1) != rs.getByte("Xx")) 
             		print ("Different results on getByte on index vs column name");
                 res_ubyte = rs.getByte(1);
             }else if (table_type == "smallint") {
-            	if (rs.getShort(1) != rs.getShort("x")) 
+            	if (rs.getShort(1) != rs.getShort("Xx")) 
             		print ("Different results on getShort on index vs column name");
                 res_short = rs.getShort(1);
             }else if (table_type == "int") {
-            	if (rs.getInt(1) != rs.getInt("x")) 
+            	if (rs.getInt(1) != rs.getInt("Xx")) 
             		print ("Different results on getInt on index vs column name");
                 res_int = rs.getInt(1);
             }else if (table_type == "bigint") {
-            	if (rs.getLong(1) != rs.getLong("x")) 
+            	if (rs.getLong(1) != rs.getLong("Xx")) 
             		print ("Different results on getLong on index vs column name");
                 res_long = rs.getLong(1);
             }else if (table_type == "real") {
-            	if (rs.getFloat(1) != rs.getFloat("x")) 
+            	if (rs.getFloat(1) != rs.getFloat("Xx")) 
             		print ("Different results on getFloat on index vs column name");
                 res_real = rs.getFloat(1);
             }else if (table_type == "double") {
-            	if (rs.getDouble(1) != rs.getDouble("x")) 
+            	if (rs.getDouble(1) != rs.getDouble("Xx")) 
             		print ("Different results on getDouble on index vs column name");
                 res_double = rs.getDouble(1);
             }else if (table_type == "varchar(100)") {
-            	if (!rs.getString(1).equals(rs.getString("x"))) 
+            	if (!rs.getString(1).equals(rs.getString("Xx"))) 
             		print ("Different results on getString on index vs column name");
                 res_varchar = rs.getString(1);
             }else if (table_type == "nvarchar(100)") {
-            	if (!rs.getString(1).equals(rs.getString("x"))) 
+            	if (!rs.getString(1).equals(rs.getString("Xx"))) 
             		print ("Different results on getString on index vs column name");
                 res_varchar = rs.getString(1);
             }else if (table_type == "date") {
-            	if (Math.abs(rs.getDate(1).compareTo(rs.getDate("x"))) > 1) 
+            	if (Math.abs(rs.getDate(1).compareTo(rs.getDate("Xx"))) > 1) 
             		print ("Different results on getDate on index vs column name");
                 res_date = rs.getDate(1);
             }else if (table_type == "datetime") {
-            	if (Math.abs(rs.getTimestamp(1).compareTo(rs.getTimestamp("x"))) > 1) 
+            	if (Math.abs(rs.getTimestamp(1).compareTo(rs.getTimestamp("Xx"))) > 1) 
             		print ("Different results on getTimestamp on index vs column name");
                 res_datetime = rs.getTimestamp(1); 
             }
@@ -736,7 +737,7 @@ public class JDBC_Positive {
         print ("isSigned test - " + (pos_tests.isSigned() ? "OK" : "Fail"));
         print ("Execute batch test - " + (pos_tests.execBatchRes() ? "OK" : "Fail"));
         //*/
-        /*
+        //*
         for (String col_type : typelist)
             if(!pos_tests.insert(col_type))  
                 throw new java.lang.RuntimeException("Not all type checks returned identical");

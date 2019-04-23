@@ -622,7 +622,7 @@ public class Connector {
             col_nullable.set(idx, (boolean)col_data.get("nullable")); 
             col_tvc.set(idx, (boolean)col_data.get("isTrueVarChar")); 
             col_names[idx] = statement_type.equals("SELECT") ? (String)col_data.get("name"): "denied";
-            col_names_map.put(col_names[idx], idx +1);
+            col_names_map.put(col_names[idx].toLowerCase(), idx +1);
             col_types[idx] = (String) col_type_data.get(0);
             col_sizes[idx] = (int) col_type_data.get(1);
         }

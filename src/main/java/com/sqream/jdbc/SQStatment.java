@@ -38,15 +38,6 @@ public class SQStatment implements Statement {
 		Tuple<String ,Integer> params =null;
 		Connection=conn;
 		db_name = catalog;
-
-		// Related to bug #541 - skip the picker if we are in cancel state
-		if (conn.sqlb.Cluster)
-		{
-		  params= Utils.getLBConnection(conn.sqlb.LB_ip,conn.sqlb.LB_port);
-		  conn.sqlb.ip=params.host;
-		  conn.sqlb.port=params.port;
-		}
-		
 		Client = new Connector(conn.sqlb.ip, conn.sqlb.port, conn.sqlb.Cluster, conn.sqlb.Use_ssl);
 		Client.connect(conn.sqlb.DB_name, conn.sqlb.User, conn.sqlb.Password, conn.sqlb.service);
 

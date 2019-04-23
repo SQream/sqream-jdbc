@@ -172,11 +172,11 @@ public class Perf {
         //*/
         
         //*
-        sql = "select max(xint) over (partition by xint) , min(xint) over (partition by xint) , sum(xint) over (partition by xint) , rank() over (partition by xint order by xint,xkey) , row_number() over (partition by xint order by xkey) from t_a";
+        sql = "select * from bo";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next())  
-            print("item: " + rs.getInt(1) + " was null: " + rs.wasNull());
+            print("item: " + rs.getString(1) + " was null: " + rs.wasNull());
     	rs.close();
         stmt.close();
         //*/
@@ -190,7 +190,8 @@ public class Perf {
         // Load JDBC driver - not needed with newer version
         Class.forName("com.sqream.jdbc.SQDriver");
         //Class.forName("com.mysql.jdbc.Driver");  
-        String url_src = "jdbc:Sqream://192.168.1.4:5000/developer_regression_query;user=sqream;password=sqream;cluster=false;ssl=false";
+        //String url_src = "jdbc:Sqream://192.168.1.4:5000/developer_regression_query;user=sqream;password=sqream;cluster=false;ssl=false";
+        String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true";
 
         
         Perf test = new Perf();   

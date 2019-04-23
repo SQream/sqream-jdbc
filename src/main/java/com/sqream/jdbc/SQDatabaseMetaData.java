@@ -579,17 +579,11 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
-		ResultSet rs = null;
-		try {
-			rs = EmptyResultSet();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// TODO Auto-generated method stub
-		return rs;
+		
+		return getSchemas();
 	}
 
+	
 	@Override
 	public String getSearchStringEscape() throws SQLException {
 		// TODO Auto-generated method stub

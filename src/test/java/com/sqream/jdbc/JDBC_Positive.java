@@ -728,9 +728,8 @@ public class JDBC_Positive {
         String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
-        print("dazerodate: " + new Timestamp(0));
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        /*
+        //*
         print ("Cast test - " + (pos_tests.casted_gets() ? "OK" : "Fail"));
         print ("timeZones test - " + (pos_tests.timeZones() ? "OK" : "Fail"));
         print ("getUDF test - " + (pos_tests.getUDF() ? "OK" : "Fail"));

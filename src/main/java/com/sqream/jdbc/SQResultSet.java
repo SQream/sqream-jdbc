@@ -327,77 +327,6 @@ class SQResultSet implements ResultSet {
 	}
 
 	
-	@Override
-	public String getString(String columnLabel) throws SQLException {
-		String res = null;
-		String type = "";
-		try {
-			type = Client.get_col_type(columnLabel);
-		} catch (ConnException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		if (type.equals("ftBlob")) {
-			try {
-				res = Client.get_nvarchar(columnLabel);
-			}catch (ConnException e) {
-				e.printStackTrace();
-			}
-			if (RemoveSpaces) 
-				return res.trim();
-			
-		}
-		else {                    // if (type.equals("Varchar")) {
-			try {
-				res = Client.get_varchar(columnLabel);
-			}catch (ConnException e) {
-				e.printStackTrace();
-			}
-			if (RemoveSpaces) 
-				return res.trim();
-		}
-		isNull = (res == null) ? true : false;
-		
-		return (res == null) ? null : res;
-	}
-
-	@Override
-	public String getString(int columnIndex) throws SQLException {
-		String res = null;
-		String type = "";
-		try {
-			type = Client.get_col_type(columnIndex);
-		} catch (ConnException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		if (type.equals("ftBlob")) {
-			try {
-				res = Client.get_nvarchar(columnIndex);
-			}catch (ConnException e) {
-				e.printStackTrace();
-			}
-			if (RemoveSpaces) 
-				return res.trim();
-			
-		}
-		else {                    // if (type.equals("Varchar")) {
-			try {
-				res = Client.get_varchar(columnIndex);
-			}catch (ConnException e) {
-				e.printStackTrace();
-			}
-			if (RemoveSpaces) 
-				return res.trim();
-		}
-		
-		isNull = (res == null) ? true : false;
-		
-		return (res == null) ? null : res;
-	}
-
 	
 	
 	@Override
@@ -521,6 +450,87 @@ class SQResultSet implements ResultSet {
 		}
 	}
 	
+	@Override
+	public String getString(String columnLabel) throws SQLException {
+		String res = null;
+		Object res_obj =null;
+		String type = "";
+		try {
+			type = Client.get_col_type(columnLabel);
+		} catch (ConnException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		if (type.equals("ftBlob")) {
+			try {
+				res = Client.get_nvarchar(columnLabel);
+			}catch (ConnException e) {
+				e.printStackTrace();
+			}
+		}
+		else if (type.equals("ftVarchar")) {
+			try {
+				res = Client.get_varchar(columnLabel);
+			}catch (ConnException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			res_obj = getObject(columnLabel);
+			res = (res_obj == null) ? null : res_obj.toString();
+		}
+		
+		
+		if (RemoveSpaces && res != null) 
+			res = res.trim();
+		
+		
+		isNull = (res == null) ? true : false;
+		
+		return (res == null) ? null : res;
+	}
+
+	
+	@Override
+	public String getString(int columnIndex) throws SQLException {
+		String res = null;
+		Object res_obj =null;
+		String type = "";
+		try {
+			type = Client.get_col_type(columnIndex);
+		} catch (ConnException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		if (type.equals("ftBlob")) {
+			try {
+				res = Client.get_nvarchar(columnIndex);
+			}catch (ConnException e) {
+				e.printStackTrace();
+			}
+		}
+		else if (type.equals("ftVarchar")) {
+			try {
+				res = Client.get_varchar(columnIndex);
+			}catch (ConnException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			res_obj = getObject(columnIndex);
+			res = (res_obj == null) ? null : res_obj.toString();
+		}
+
+		if (RemoveSpaces && res != null) 
+			res = res.trim();
+		
+		isNull = (res == null) ? true : false;
+		
+		return (res == null) ? null : res;
+	}
+
 
 	@Override
 	public ResultSetMetaData getMetaData() throws SQLException {
@@ -538,11 +548,14 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public Object getObject(String columnLabel) throws SQLException {
-		throw new SQLException("getObject() by column name unsupported");
 		
-		/*
-		ColumnMetadata[] meta = Client.getMetadata();
-		String type = meta[columnIndex-1].type.tid.toString();
+		String type = "";
+		try {
+			type = Client.get_col_type(columnLabel);
+		} catch (ConnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		Object res = null; 
 		
 		if (type.equals("Bool")) 
@@ -568,7 +581,7 @@ class SQResultSet implements ResultSet {
 		else if (type.equals("NVarchar")) 	
 			res =  (String)getString(columnLabel);
 		
-		return res;  */
+		return res;  
 
 	}
 

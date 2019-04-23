@@ -172,7 +172,7 @@ public class Perf {
         //*/
         
         //*
-        sql = "select * from bo";
+        sql = "select get_schemas()";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next())  

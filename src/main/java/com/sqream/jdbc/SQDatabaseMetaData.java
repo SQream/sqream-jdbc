@@ -41,6 +41,10 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	String DriverVersion = "1.0";
 	String db_name;
 	
+	static void print(Object printable) {
+        System.out.println(printable);
+    }
+	
 	public SQDatabaseMetaData(Connector client,SQConnection conn, String user_, String catalog) throws SQLException, NumberFormatException, UnknownHostException, IOException
 			 {
 		Client = client;
@@ -139,14 +143,10 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	
 	SQResultSet metadataStatement(String sql) throws ConnException, IOException, SQLException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
 		
-		Connector client = null;
-		String ip =  Conn.sqlb.ip; //  Conn.sqlb.Cluster ? Conn.sqlb.LB_ip : Conn.sqlb.ip;
-		int port = Conn.sqlb.port; //Conn.sqlb.Cluster ? Conn.sqlb.LB_port : Conn.sqlb.port;
-
-		client = new Connector(ip, port, Conn.sqlb.Cluster, Conn.sqlb.Use_ssl);
+		Connector client = new Connector(Conn.sqlb.ip, Conn.sqlb.port, Conn.sqlb.Cluster, Conn.sqlb.Use_ssl);
 		client.connect(Conn.sqlb.DB_name, Conn.sqlb.User, Conn.sqlb.Password, Conn.sqlb.service);
 		client.execute(sql);
-		
+		print ("pook");
 		return new SQResultSet(client, db_name, true);
 	}
 	

@@ -447,46 +447,64 @@ public class JDBC_Positive {
             if (table_type == "bool") {
             	if (rs.getBoolean(1) != rs.getBoolean("Xx")) 
             		print ("Different results on getBoolean on index vs column name");
-                res_bool = rs.getBoolean(1);
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getBoolean("Xx"))))
+            		print ("Different results on stringified getBoolean vs getString");
+            	res_bool = rs.getBoolean(1);
             }else if (table_type == "tinyint") {
             	if (rs.getByte(1) != rs.getByte("Xx")) 
             		print ("Different results on getByte on index vs column name");
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getByte("Xx")))) 
+            		print ("Different results on stringified getByte vs getString");
                 res_ubyte = rs.getByte(1);
             }else if (table_type == "smallint") {
             	if (rs.getShort(1) != rs.getShort("Xx")) 
             		print ("Different results on getShort on index vs column name");
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getShort("Xx")))) 
+            		print ("Different results on stringified getShort vs getString");
                 res_short = rs.getShort(1);
             }else if (table_type == "int") {
             	if (rs.getInt(1) != rs.getInt("Xx")) 
             		print ("Different results on getInt on index vs column name");
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getInt("Xx")))) 
+            		print ("Different results on stringified getInt vs getString");
                 res_int = rs.getInt(1);
             }else if (table_type == "bigint") {
             	if (rs.getLong(1) != rs.getLong("Xx")) 
             		print ("Different results on getLong on index vs column name");
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getLong("Xx")))) 
+            		print ("Different results on stringified getLong vs getString");
                 res_long = rs.getLong(1);
             }else if (table_type == "real") {
             	if (rs.getFloat(1) != rs.getFloat("Xx")) 
             		print ("Different results on getFloat on index vs column name");
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getFloat("Xx")))) 
+            		print ("Different results on stringified getFloat vs getString");
                 res_real = rs.getFloat(1);
             }else if (table_type == "double") {
-            	if (rs.getDouble(1) != rs.getDouble("Xx")) 
+            	if (rs.getDouble(1) != rs.getDouble("Xx"))
             		print ("Different results on getDouble on index vs column name");
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getDouble("Xx")))) 
+            		print ("Different results on stringified getDouble vs getString");
                 res_double = rs.getDouble(1);
             }else if (table_type == "varchar(100)") {
-            	if (!rs.getString(1).equals(rs.getString("Xx"))) 
+            	if (!rs.getString(1).equals(rs.getString("Xx")))
             		print ("Different results on getString on index vs column name");
                 res_varchar = rs.getString(1);
             }else if (table_type == "nvarchar(100)") {
-            	if (!rs.getString(1).equals(rs.getString("Xx"))) 
+            	if (!rs.getString(1).equals(rs.getString("Xx")))
             		print ("Different results on getString on index vs column name");
                 res_varchar = rs.getString(1);
             }else if (table_type == "date") {
             	if (Math.abs(rs.getDate(1).compareTo(rs.getDate("Xx"))) > 1) 
             		print ("Different results on getDate on index vs column name");
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getDate("Xx")))) 
+            		print ("Different results on stringified getDate vs getString");
                 res_date = rs.getDate(1);
             }else if (table_type == "datetime") {
             	if (Math.abs(rs.getTimestamp(1).compareTo(rs.getTimestamp("Xx"))) > 1) 
             		print ("Different results on getTimestamp on index vs column name");
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getTimestamp("Xx")))) 
+            		print ("Different results on stringified getTimestamp vs getString");
                 res_datetime = rs.getTimestamp(1); 
             }
         }  //*/ 
@@ -730,7 +748,7 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        //*
+        /*
         print ("Cast test - " + (pos_tests.casted_gets() ? "OK" : "Fail"));
         print ("timeZones test - " + (pos_tests.timeZones() ? "OK" : "Fail"));
         print ("getUDF test - " + (pos_tests.getUDF() ? "OK" : "Fail"));

@@ -172,12 +172,12 @@ public class Perf {
         //*/
         
         //*
-        sql = "select get_schemas()";
+        sql = "select * from bongo";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next()) {  
-            print("item: " + rs.getString("TABLE_SCHEM") + " was null: " + rs.wasNull());
-        	print("item: " + rs.getString(2) + " was null: " + rs.wasNull());
+        	print("item: " + rs.getString(1) + " was null: " + rs.wasNull());
+            print("item: " + rs.getString("Xx") + " was null: " + rs.wasNull());
         }rs.close();
         stmt.close();
         //*/

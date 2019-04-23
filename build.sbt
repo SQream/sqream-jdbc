@@ -11,6 +11,9 @@ crossPaths := false
 // This forbids including Scala related libraries into the dependency
 autoScalaLibrary := false
 
+// Manifest file additions. See what happens when I don't use this
+packageOptions := Seq(ManifestAttributes(
+                      ("Implementation-Version", version))))
 
 
 // library dependencies. (orginization name) % (project name) % (version)
@@ -20,3 +23,5 @@ libraryDependencies ++= Seq(
    "org.mockito" % "mockito-core" % "1.9.5" % "test"  
 )
 
+// Fat jar, should be in assembly.sbt
+// addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.8")

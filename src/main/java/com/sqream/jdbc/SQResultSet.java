@@ -560,27 +560,27 @@ class SQResultSet implements ResultSet {
 		}
 		Object res = null; 
 		
-		if (type.equals("Bool")) 
+		if (type.equals("ftBool")) 
 			res =  (Boolean)getBoolean(columnLabel);
-		else if (type.equals("Tinyint"))
+		else if (type.equals("ftUByte"))
 			res =  (Byte)getByte(columnLabel);
-		else if (type.equals("Smallint")) 
+		else if (type.equals("ftShort")) 
 			res =  (Short)getShort(columnLabel);
-		else if (type.equals("Int")) 	
+		else if (type.equals("ftInt")) 	
 			res =  (Integer)getInt(columnLabel);
-		else if (type.equals("Bigint")) 
+		else if (type.equals("ftLong")) 
 			res =  (Long)getLong(columnLabel);
-		else if (type.equals("Real")) 
+		else if (type.equals("ftFloat")) 
 			res =  (Float)getFloat(columnLabel);
-		else if (type.equals("Float"))
+		else if (type.equals("ftDouble"))
 			res =  (Double)getDouble(columnLabel);
-		else if (type.equals("Date")) 
+		else if (type.equals("ftDate")) 
 			res =  (Date)getDate(columnLabel);
-		else if (type.equals("DateTime"))
+		else if (type.equals("ftDateTime"))
 			res =  (Timestamp)getTimestamp(columnLabel);
-		else if (type.equals("Varchar")) 
+		else if (type.equals("ftVarchar")) 
 			res =  (String)getString(columnLabel);
-		else if (type.equals("NVarchar")) 	
+		else if (type.equals("ftBlob")) 	
 			res =  (String)getString(columnLabel);
 		
 		return res;  

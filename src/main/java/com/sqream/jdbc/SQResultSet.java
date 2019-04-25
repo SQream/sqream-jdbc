@@ -545,13 +545,13 @@ class SQResultSet implements ResultSet {
 		
 		columnLabel = columnLabel.toLowerCase();
 		String type = "";
+		Object res = null; 
+		
 		try {
 			type = Client.get_col_type(columnLabel);
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Object res = null; 
 		
 		if (type.equals("ftBool")) 
 			res =  (Boolean)getBoolean(columnLabel);
@@ -576,7 +576,7 @@ class SQResultSet implements ResultSet {
 		else if (type.equals("ftBlob")) 	
 			res =  (String)getString(columnLabel);
 		
-		return res;  
+		return (isNull) ? null : res;  
 
 	}
 
@@ -584,13 +584,13 @@ class SQResultSet implements ResultSet {
 	public Object getObject(int columnIndex) throws SQLException {
 		
 		String type = "";
+		Object res = null; 
+		
 		try {
 			type = Client.get_col_type(columnIndex);
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Object res = null; 
 		
 		if (type.equals("ftBool")) 
 			res =  (Boolean)getBoolean(columnIndex);
@@ -615,7 +615,7 @@ class SQResultSet implements ResultSet {
 		else if (type.equals("ftBlob")) 	
 			res =  (String)getString(columnIndex);
 		
-		return res;
+		return (isNull) ? null : res;
 	}
 
 	
@@ -713,12 +713,12 @@ class SQResultSet implements ResultSet {
 	
 	@Override
 	public byte[] getBytes(String columnLabel) throws SQLException {
-		throw new SQLException("Not supported");
+		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public byte[] getBytes(int columnIndex) throws SQLException {
-		throw new SQLException("Not supported");
+		throw new SQLFeatureNotSupportedException();
 	}
 	
 	@Override
@@ -765,7 +765,6 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public InputStream getBinaryStream(int columnIndex) throws SQLException {
-		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -796,7 +795,6 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public InputStream getBinaryStream(String columnLabel) throws SQLException {
-		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException();
 	}
 
@@ -828,13 +826,11 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public Reader getCharacterStream(int columnIndex) throws SQLException {
-		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public Reader getCharacterStream(String columnLabel) throws SQLException {
-		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException();
 	}
 

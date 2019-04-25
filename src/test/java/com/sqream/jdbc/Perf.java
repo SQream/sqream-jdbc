@@ -172,12 +172,12 @@ public class Perf {
         //*/
         
         //*
-        sql = "select * from bongo";
+        sql = "select * from bo";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next()) {  
         	print("item: " + rs.getString(1) + " was null: " + rs.wasNull());
-            print("item: " + rs.getString("Xx") + " was null: " + rs.wasNull());
+            print("item: " + rs.getString("x") + " was null: " + rs.wasNull());
         }rs.close();
         stmt.close();
         //*/
@@ -192,7 +192,7 @@ public class Perf {
         Class.forName("com.sqream.jdbc.SQDriver");
         //Class.forName("com.mysql.jdbc.Driver");  
         //String url_src = "jdbc:Sqream://192.168.1.4:5000/developer_regression_query;user=sqream;password=sqream;cluster=false;ssl=false";
-        String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true";
+        String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true;service=sqream";
 
         
         Perf test = new Perf();   

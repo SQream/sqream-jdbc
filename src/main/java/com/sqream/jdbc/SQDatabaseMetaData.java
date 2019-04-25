@@ -57,7 +57,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -112,7 +111,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rs;
@@ -124,7 +122,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rs;
@@ -159,7 +156,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		}
 		
 		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		}
@@ -172,7 +168,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rs;
@@ -184,7 +179,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rs;
@@ -203,7 +197,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		}
 		
 		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		}
@@ -218,7 +211,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 			return  client;
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -231,10 +223,8 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// TODO Auto-generated method stub
 		return rs;
 	}
 
@@ -292,7 +282,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// SQResultSet rs = new SQResultSet(CreateKeysMetaData());
@@ -315,7 +304,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rs;
@@ -327,7 +315,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rs;
@@ -344,7 +331,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rs;
@@ -357,7 +343,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return rs;
@@ -486,11 +471,9 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		// TODO Auto-generated method stub
 		return rs;
 		// SQResultSet rs = new SQResultSet(CreatePrimaryKeysMetaData());
 		// rs.MetaDataResultSet = true; // The Hack.
@@ -505,17 +488,14 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		// TODO Auto-generated method stub
 		return rs;
 	}
 
 	@Override
 	public String getProcedureTerm() throws SQLException {
-		
 		return "function"; // Not supported at the moment
 	}
 
@@ -525,41 +505,34 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = metadataStatement("select database_name as PROCEDURE_CAT, null as PROCEDURE_SCHEM, function_name as PROCEDURE_NAME, null as UNUSED, null as UNUSED2, null as UNUSED3, ' ' as REMARKS, 0 as PROCEDURE_TYPE, function_name as SPECIFIC_NAME from sqream_catalog.user_defined_functions");	
 		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		// TODO Auto-generated method stub
 		return rs;
 	}
 
 	@Override
 	public int getResultSetHoldability() throws SQLException {
-		
 		return 0;
 	}
 
 	@Override
 	public RowIdLifetime getRowIdLifetime() throws SQLException {
-		
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public String getSQLKeywords() throws SQLException {
-		
 		return "";
 	}
 
 	@Override
 	public int getSQLStateType() throws SQLException {
-		
 		return 0;
 	}
 
 	@Override
 	public String getSchemaTerm() throws SQLException {
-		
 		return "schema";
 	}
 
@@ -571,38 +544,30 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		}
 		
 		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		}
-		
 	}
 
 	@Override
 	public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
-		
 		return getSchemas();
 	}
 
 	
 	@Override
 	public String getSearchStringEscape() throws SQLException {
-		// TODO Auto-generated method stub
-		
+
 		return "";
 	}
 
 	@Override
 	public String getStringFunctions() throws SQLException {
-		// TODO Auto-generated method stub
-		
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
-		// TODO Auto-generated method stub
-		
 		throw new SQLFeatureNotSupportedException();
 		// return EmptyResultSet();
 	}
@@ -613,17 +578,14 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		// TODO Auto-generated method stub
 		return rs;
 	}
 
 	@Override
 	public String getSystemFunctions() throws SQLException {
-		// TODO Auto-generated method stub
 		
 		return "";
 	}
@@ -634,11 +596,9 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	
-		// TODO Auto-generated method stub
 		return rs;
 	}
 
@@ -648,7 +608,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			return metadataStatement("select get_table_types()");
 		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			// TODO Auto-generated catch block
 			throw new SQLException(e.getMessage());
 		}
 	}
@@ -713,8 +672,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		}
-
-		
 	}
 
 	@Override
@@ -730,10 +687,8 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			return metadataStatement("select get_type_info()");
 		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			// TODO Auto-generated catch block
 			throw new SQLException(e.getMessage());
 		}
-		
 	}
 
 	@Override
@@ -742,10 +697,9 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// TODO Auto-generated method stub
+		
 		return rs;
 	}
 
@@ -764,8 +718,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public String getURL() throws SQLException {
 
-		
-
 		return String.format("jdbc:Sqream://%s:%s/%s;user=%s;password=%s"
 				,Conn.sqlb.Cluster ? Conn.sqlb.LB_ip : Conn.sqlb.ip
 				,Conn.sqlb.Cluster ? Conn.sqlb.LB_port : Conn.sqlb.port
@@ -773,11 +725,9 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 				,Conn.sqlb.User
 				,Conn.sqlb.Password);
 	}
-	
 
 	@Override
 	public String getUserName() throws SQLException {
-		
 		
 		return user;
 	}
@@ -791,10 +741,8 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 			rs = EmptyResultSet();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// TODO Auto-generated method stub
 		// SQResultSet rs = new SQResultSet(CreateVersionColumnsMetaData());
 		// rs.MetaDataResultSet = true; // The Hack.
 		return rs;
@@ -802,73 +750,61 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public boolean insertsAreDetected(int type) throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean isCatalogAtStart() throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean isReadOnly() throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean locatorsUpdateCopy() throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean nullPlusNonNullIsNull() throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean nullsAreSortedAtEnd() throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean nullsAreSortedAtStart() throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean nullsAreSortedHigh() throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean nullsAreSortedLow() throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean othersDeletesAreVisible(int type) throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean othersInsertsAreVisible(int type) throws SQLException {
-		
 		return false;
 	}
 
 	@Override
 	public boolean othersUpdatesAreVisible(int type) throws SQLException {
-		
 		return false;
 	}
 

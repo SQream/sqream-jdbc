@@ -35,7 +35,7 @@ public class SQStatment implements Statement {
 	public SQStatment(Connector client,SQConnection conn, String catalog) throws NumberFormatException,
 			UnknownHostException, IOException, 
 			SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException {
-		Tuple<String ,Integer> params =null;
+		
 		Connection=conn;
 		db_name = catalog;
 		Client = new Connector(conn.sqlb.ip, conn.sqlb.port, conn.sqlb.Cluster, conn.sqlb.Use_ssl);
@@ -45,22 +45,9 @@ public class SQStatment implements Statement {
 
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		// TODO Auto-generated method stub
 		return false;
 	}
-	@Override
-	public <T> T unwrap(Class<T> iface) throws SQLException {
-		// TODO Auto-generated method stub
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public void addBatch(String arg0) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
-	}
-
 	
-
 	@Override
 	public void cancel() throws SQLException  {
 		
@@ -96,7 +83,6 @@ public class SQStatment implements Statement {
 		}
 	}
 
-	
 	@Override
 	public void clearBatch() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
@@ -121,13 +107,25 @@ public class SQStatment implements Statement {
 			e.printStackTrace();
 			throw new SQLException("Statement already closed. Error: " + e);
 		} 
-		
 //		catch (NullPointerException e) {}
 		// TODO Auto-generated catch block
-
-		
 	}	
-
+	
+	@Override
+	public Connection getConnection() throws SQLException {
+		
+		try {
+			//TODO razi
+			SQConnection conn=new SQConnection(Client);
+			conn.sqlb=Connection.sqlb;
+			return conn;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	@Override
 	public boolean execute(String sql) throws SQLException {
 		// TODO Auto-generated method stub
@@ -169,31 +167,6 @@ public class SQStatment implements Statement {
 		return result;
 	}
 
-	@Override
-	public boolean execute(String arg0, int arg1) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public boolean execute(String arg0, int[] arg1) throws SQLException {
-		// TODO Auto-generated method stub
-
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public boolean execute(String arg0, String[] arg1) throws SQLException {
-		// TODO Auto-generated method stub
-
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int[] executeBatch() throws SQLException {
-		// TODO Auto-generated method stub
-
-		throw new SQLFeatureNotSupportedException();
-	}
 
 	private void execute_set(String sql) throws ConnException, SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException {
 		try {
@@ -217,6 +190,7 @@ public class SQStatment implements Statement {
 		} 
 	}
 
+	
 	public ResultSet executeQuery(String sql) throws SQLException {
 		try {
 
@@ -262,72 +236,24 @@ public class SQStatment implements Statement {
 		} 
 		return 0;
 	}
-
+	
+	
 	@Override
-	public int executeUpdate(String arg0, int arg1) throws SQLException {
-
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int executeUpdate(String arg0, int[] arg1) throws SQLException {
-
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int executeUpdate(String arg0, String[] arg1) throws SQLException {
-
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public Connection getConnection() throws SQLException {
-		
-		try {
-			//TODO razi
-			SQConnection conn=new SQConnection(Client);
-			conn.sqlb=Connection.sqlb;
-			return conn;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	@Override
-	public int getFetchDirection() throws SQLException {
-		// TODO Auto-generated method stub
-
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int getFetchSize() throws SQLException {
-		// TODO Auto-generated method stub
-
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public ResultSet getGeneratedKeys() throws SQLException {
-
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int getMaxFieldSize() throws SQLException {
-
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int getMaxRows() throws SQLException {
-
-		throw new SQLFeatureNotSupportedException();
+	public void setFetchSize(int arg0) throws SQLException {
+		SIZE_RESULT = arg0;
 	}
 	
+	
+	@Override
+	public void setMaxRows(int arg0) throws SQLException {
+		
+		if (arg0 != 0) // if zero, use default
+		{
+			SIZE_RESULT = arg0;
+			if (SQRS != null)
+				SQRS.MaxRows = SIZE_RESULT;
+		}
+	}
 	
 	/*
 	 Moves to this Statement object's next result, returns true if it is a ResultSet 
@@ -336,11 +262,11 @@ public class SQStatment implements Statement {
 
 	 There are no more results when the following is true:
 
-     // stmt is a Statement object
-     ((stmt.getMoreResults() == false) && (stmt.getUpdateCount() == -1))
- 
+    // stmt is a Statement object
+    ((stmt.getMoreResults() == false) && (stmt.getUpdateCount() == -1))
+
 	Returns:
-    	true if the next result is a ResultSet object; false if it is an update count or there are no more results
+   	true if the next result is a ResultSet object; false if it is an update count or there are no more results
 	 */
 	@Override
 	public boolean getMoreResults() throws SQLException {
@@ -352,41 +278,13 @@ public class SQStatment implements Statement {
 	public boolean getMoreResults(int arg0) throws SQLException {
 	return false;
 	}
-
-	@Override
-	public int getQueryTimeout() throws SQLException {
-		// TODO Auto-generated method stub
-		throw new SQLFeatureNotSupportedException();
-	}
-
+	
 	@Override
 	public ResultSet getResultSet() throws SQLException {
 
 		return SQRS;
 	}
-
-
-	@Override
-	public int getResultSetConcurrency() throws SQLException {
-		// TODO Auto-generated method stub
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int getResultSetHoldability() throws SQLException {
-		// TODO Auto-generated method stub
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int getResultSetType() throws SQLException {
-
-		throw new SQLFeatureNotSupportedException();
-	}
-	/* Retrieves the current result as an update count; if the result is a ResultSet 
-	* object or there are no more results, -1 is returned. This method should be 
-	* called only once per result.(non-Javadoc)
-	*/
+	
 	@Override
 	public int getUpdateCount() throws SQLException {
 		
@@ -409,31 +307,92 @@ public class SQStatment implements Statement {
 	Returns:
 	    the first SQLWarning object or null if there are no warnings
 	 */
+	
 	@Override
 	public SQLWarning getWarnings() throws SQLException {
 		return null;
-		
-
 	}
-
+	
+	
+	// Unsupported  
+	// -----------
+	
 	@Override
-	public boolean isClosed() throws SQLException {
-		// TODO Auto-generated method stub
+	public void setQueryTimeout(int arg0) throws SQLException {
+		if (arg0 !=0)  // 0 means unlimited timeout
+			throw new SQLFeatureNotSupportedException();
+	}
+	
+	@Override
+	public int executeUpdate(String arg0, int arg1) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public boolean isPoolable() throws SQLException {
-		// TODO Auto-generated method stub
+	public int executeUpdate(String arg0, int[] arg1) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public void setCursorName(String arg0) throws SQLException {
-		// TODO Auto-generated method stub
+	public int executeUpdate(String arg0, String[] arg1) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
+	@Override
+	public boolean execute(String arg0, int arg1) throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public boolean execute(String arg0, int[] arg1) throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public boolean execute(String arg0, String[] arg1) throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public int[] executeBatch() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+	
+	@Override
+	public <T> T unwrap(Class<T> iface) throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public void addBatch(String arg0) throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+	
+	@Override
+	public int getFetchDirection() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public int getFetchSize() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public ResultSet getGeneratedKeys() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public int getMaxFieldSize() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public int getMaxRows() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+	
 	@Override
 	public void setEscapeProcessing(boolean arg0) throws SQLException {
 		/*
@@ -444,53 +403,64 @@ public class SQStatment implements Statement {
 		will have no effect.
 		*/
 	}
-
+	
 	@Override
-	public void setFetchDirection(int arg0) throws SQLException {
-		// TODO Auto-generated method stub
+	public int getQueryTimeout() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public void setFetchSize(int arg0) throws SQLException {
-		// TODO Auto-generated method stub
-		SIZE_RESULT = arg0;
+	public int getResultSetConcurrency() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
 
+	@Override
+	public int getResultSetHoldability() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public int getResultSetType() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+	/* Retrieves the current result as an update count; if the result is a ResultSet 
+	* object or there are no more results, -1 is returned. This method should be 
+	* called only once per result.(non-Javadoc)
+	*/
+
+	@Override
+	public boolean isClosed() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public boolean isPoolable() throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public void setCursorName(String arg0) throws SQLException {
+		throw new SQLFeatureNotSupportedException();
+	}
+
+	@Override
+	public void setFetchDirection(int arg0) throws SQLException {
+		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public void setMaxFieldSize(int arg0) throws SQLException {
 		throw new SQLFeatureNotSupportedException();
 	}
-
-	@Override
-	public void setMaxRows(int arg0) throws SQLException {
-		
-		if (arg0 != 0) // if zero, use default
-		{
-			SIZE_RESULT = arg0;
-			if (SQRS != null)
-				SQRS.MaxRows = SIZE_RESULT;
-		}
-
-	}
-
+	
 	@Override
 	public void setPoolable(boolean arg0) throws SQLException {
             throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
-	public void setQueryTimeout(int arg0) throws SQLException {
-		if (arg0 !=0)  // 0 means unlimited timeout
-			throw new SQLFeatureNotSupportedException();
-
-	}
-
-	@Override
 	public void closeOnCompletion() throws SQLException {
 		throw new SQLFeatureNotSupportedException();
-
 	}
 
 	@Override

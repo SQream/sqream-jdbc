@@ -19,32 +19,6 @@ import javax.script.ScriptException;
 
 public class SQDriver implements java.sql.Driver {
 
-	private DriverPropertyInfo[] DPIArray;
-	static {
-		try {
-
-			DriverManager.registerDriver(new SQDriver());
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
-		}
-
-	}
-
-	@Override
-	public boolean acceptsURL(String url) throws SQLException {
-		// TODO Auto-generated method stub
-
-		uriEx UEX = new uriEx(url); // parse the url to object.
-		if (!UEX.provider.toLowerCase().equals("sqream")) {
-
-			return false; // cause it is an other provider, not us..
-		}
-		return true;
-	}
-
 	// Extended uri data
 	class uriEx {
 		public URI uri;
@@ -122,9 +96,29 @@ public class SQDriver implements java.sql.Driver {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private DriverPropertyInfo[] DPIArray;
+	static {
+		try {
+			DriverManager.registerDriver(new SQDriver());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
 	}
 
+	@Override
+	public boolean acceptsURL(String url) throws SQLException {
+
+		uriEx UEX = new uriEx(url); // parse the url to object.
+		if (!UEX.provider.toLowerCase().equals("sqream")) {
+
+			return false; // cause it is an other provider, not us..
+		}
+		return true;
+	}
+	
 	@Override
 	public java.sql.Connection connect(String url, Properties info) throws SQLException {
 
@@ -145,11 +139,7 @@ public class SQDriver implements java.sql.Driver {
 
 		if (UEX.user == null && info.getProperty("user") == null || UEX.pswd == null && info.getProperty("password") == null) {
 
-			throw new SQLException("please apply user and password"); // in
-																		// sqream
-																		// it's
-																		// a
-																		// must..
+			throw new SQLException("please apply user and password"); 
 		}
 
 		if (UEX.user != null) // override the properties object according to
@@ -177,7 +167,6 @@ public class SQDriver implements java.sql.Driver {
 			info.put("service", UEX.service);
 
 		Boolean logConfigEnabled = UEX.logger != null ? Boolean.valueOf(UEX.logger) : false;
-		Common.setLogEnabled(logConfigEnabled);
 
 		if (UEX.showFullStackTrace != null)
 			info.put("showFullStackTrace", UEX.showFullStackTrace);
@@ -198,22 +187,17 @@ public class SQDriver implements java.sql.Driver {
 
 	@Override
 	public int getMajorVersion() {
-		// TODO Auto-generated method stub
-
 		return 4;
 	}
 
 	@Override
 	public int getMinorVersion() {
-		// TODO Auto-generated method stub
-
 		return 0;
 	}
 
 	@Override
 	public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
 
-		// TODO Auto-generated method stub
 		DPIArray = new DriverPropertyInfo[0];
 
 		return DPIArray;
@@ -221,14 +205,11 @@ public class SQDriver implements java.sql.Driver {
 
 	@Override
 	public boolean jdbcCompliant() {
-		// TODO Auto-generated method stub
-
 		return true;
 	}
 
 	@Override
 	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-		// TODO Auto-generated method stub
 		throw new SQLFeatureNotSupportedException();
 	}
 

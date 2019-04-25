@@ -326,9 +326,6 @@ class SQResultSet implements ResultSet {
 		return (res == null) ? 0 : res;
 	}
 
-	
-	
-	
 	@Override
 	public Date getDate(String columnLabel) throws SQLException {
 		try {
@@ -387,7 +384,6 @@ class SQResultSet implements ResultSet {
 		}
 	}
 	
-	
 	@Override
 	public Timestamp getTimestamp(String columnLabel) throws SQLException {
 		try {
@@ -431,7 +427,6 @@ class SQResultSet implements ResultSet {
 		}
 
 	}
-
 	
 	@Override
 	public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
@@ -491,7 +486,6 @@ class SQResultSet implements ResultSet {
 		
 		return (res == null) ? null : res;
 	}
-
 	
 	@Override
 	public String getString(int columnIndex) throws SQLException {
@@ -531,7 +525,6 @@ class SQResultSet implements ResultSet {
 		
 		return (res == null) ? null : res;
 	}
-
 
 	@Override
 	public ResultSetMetaData getMetaData() throws SQLException {
@@ -704,19 +697,14 @@ class SQResultSet implements ResultSet {
 			try {
 				Client.close();
 			} catch (IOException | ConnException | ScriptException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				throw new SQLException(e.getMessage());
 			}			
 			throw new SQLException(e2.getMessage());
-			
 	   } 
-		
-
 	}
 
 	@Override
-	// TODO fix
 	public boolean wasNull() throws SQLException {
 		//return Client.wasNull();
 		return isNull;

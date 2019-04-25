@@ -35,7 +35,21 @@ import com.sqream.jdbc.Connector.ConnException;
 
 public class SQConnection implements Connection {
 
+	class Params {
 
+		Boolean Cluster;
+		String LB_ip;
+		int LB_port;
+		String ip;
+		int port;
+		String User;
+		String Password;
+		String DB_name;
+		Boolean Use_ssl;
+		String service;
+	}
+
+	
 	private  Vector<SQStatment> Statement_list = new Vector<SQStatment>();
 	
 
@@ -45,7 +59,7 @@ public class SQConnection implements Connection {
 													// show_schema etc..)
 	boolean printouts = false;
 	SQDatabaseMetaData data = null;
-    SQlb sqlb= new SQlb();
+	Params sqlb= new Params();
     AtomicBoolean IsClosed = new AtomicBoolean(true);
     String username;
     Properties connInfo;

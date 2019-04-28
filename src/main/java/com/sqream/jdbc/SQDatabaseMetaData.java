@@ -53,13 +53,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		db_name = catalog;
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-
-	}
-
+	
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		return false;

@@ -53,7 +53,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-
+import java.time.ZonedDateTime;
 // Aux
 import java.util.Arrays;   //  To allow debug prints via Arrays.toString
 import java.util.stream.IntStream;
@@ -260,12 +260,12 @@ public class Connector {
     }
 
     
-    static int date_to_int(Date date) {
+    static int date_to_int(LocalDate local_date) {
         
-        if (date == null) 
+        if (local_date == null) 
             return 0;
         
-        local_date = date.toLocalDate();
+        // local_date = date.toLocalDate();
         year  = local_date.getYear();
         month = local_date.getMonthValue();
         day   = local_date.getDayOfMonth();
@@ -280,12 +280,12 @@ public class Connector {
     }
     
     
-    static long dt_to_long(Timestamp dt) {
+    static long dt_to_long(LocalDateTime local_datetime) {
             
-        if (dt == null) 
+        if (local_datetime == null) 
             return 0;
         
-        local_datetime = dt.toInstant().atZone(system_tz).toLocalDateTime(); 
+        //local_datetime = dt.toInstant().atZone(system_tz).toLocalDateTime(); 
         year  = local_datetime.getYear();
         month = local_datetime.getMonthValue();
         day   = local_datetime.getDayOfMonth();
@@ -912,10 +912,12 @@ public class Connector {
     
     public String close() throws IOException, ScriptException, ConnException {
         
-    	if (!is_open)
-    		print ("Trying to run a statement that's already been closed");
+    	if (!is_open) {
+    		//print ("Trying to run a statement that's already been closed");
+    		return "statement " + statement_id + " already closed";
+    	}
         
-        if (statement_type!= null && statement_type.equals("INSERT")) {
+    	if (statement_type!= null && statement_type.equals("INSERT")) {
             _flush(row_counter);
         }
             // Statement is finished so no need to reset row_counter etc
@@ -1263,10 +1265,12 @@ public class Connector {
     }
     
     
-    public boolean set_date(int col_num, Date value, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
+    public boolean set_date(int col_num, Date date, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
     	_validate_index(col_num);
-        // Set actual value
-        data_columns[col_num].putInt(_validate_set(col_num, value, "ftDate") ? 0 : date_to_int(value));
+        
+    	LocalDate local_date = date.toLocalDate(); 
+    	// Set actual value
+        data_columns[col_num].putInt(_validate_set(col_num, local_date, "ftDate") ? 0 : date_to_int(local_date));
         
         // Mark column as set
         columns_set.set(col_num);
@@ -1275,10 +1279,13 @@ public class Connector {
     }
         
     
-    public boolean set_datetime(int col_num, Timestamp value, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
+    public boolean set_datetime(int col_num, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
     	_validate_index(col_num);
-        // Set actual value
-        data_columns[col_num].putLong(_validate_set(col_num, value, "ftDateTime") ? 0 : dt_to_long(value));
+        
+    	LocalDateTime local_dt = ts.toLocalDateTime(); 
+    	//ZonedDateTime converted_dt = ts.toLocalDateTime().atZone(ZoneId.systemDefault()); 
+    	// Set actual value
+        data_columns[col_num].putLong(_validate_set(col_num, local_dt, "ftDateTime") ? 0 : dt_to_long(local_dt));
         
         // Mark column as set
         columns_set.set(col_num);

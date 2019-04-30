@@ -579,7 +579,8 @@ public class Connector {
     // (5)   /* Send a JSON string to SQream over socket  */
     String _send_message(String message, boolean get_response) throws IOException {
         
-    	message_bytes = message.replace("\n", " ").replace("\t", " ").getBytes();
+    	//message_bytes = message.replace("\n", " ").replace("\t", " ").getBytes();
+    	message_bytes = message.getBytes();
         message_buffer = _generate_headered_buffer((long)message_bytes.length, true);
         message_buffer.put(message_bytes);
         
@@ -765,14 +766,8 @@ public class Connector {
     
     // User API Functions
     /* ------------------
-     * connect() - 
-     * prepare() - 
-     * next() - 
-     * close() - 
-     * close_conenction() - 
-     * get_type() - 
-     * set_x() - 
-     * get_x() - 
+     * connect(), execute(), next(), close(), close_conenction() 
+     * 
      */
     
     public int connect(String _database, String _user, String _password, String _service) throws IOException, ScriptException {
@@ -796,7 +791,7 @@ public class Connector {
     	if (is_open)
     		throw new ConnException("Trying to run a statement when another was not closed");
         is_open = true;
-    	
+        statement = statement.replace("\n", " ").replace("\t", " ").replace("\"","\\\\\"");
     	// Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
         String prepareStr = MessageFormat.format(prepareStatement, statement, 0);  // Random chunkSize to remember it's not really used

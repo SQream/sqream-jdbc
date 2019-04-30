@@ -172,7 +172,7 @@ public class Perf {
         //*/
         
         //*
-        sql = "select * from bo";
+        sql = "SELECT b1.\"x\" AS \"X\" FROM \"public\".\"bla\" b1;";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next()) {  

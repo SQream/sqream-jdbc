@@ -197,11 +197,12 @@ class SQResultSet implements ResultSet {
 		String type = "";
 		columnLabel = columnLabel.toLowerCase();
 		try {
+			/*
 			type = Client.get_col_type(columnLabel);
 			if (type.equals("ftUByte")) 
 				res = (short) (Client.get_ubyte(columnLabel) & 0xFF);
-			else 
-				res = Client.get_short(columnLabel);
+			else //*/ 
+			res = Client.get_short(columnLabel);
 			
 			isNull = (res == null) ? true : false;
 		} 
@@ -217,11 +218,12 @@ class SQResultSet implements ResultSet {
 		Short res = null;
 		String type = "";
 		try {
+			/*
 			type = Client.get_col_type(columnIndex);
 			if (type.equals("ftUByte")) 
 				res = (short) (Client.get_ubyte(columnIndex)  & 0xFF);
-			else 
-				res = Client.get_short(columnIndex);
+			else //*/ 
+			res = Client.get_short(columnIndex);
 			
 			isNull = (res == null) ? true : false;
 		} 
@@ -239,13 +241,14 @@ class SQResultSet implements ResultSet {
 		String type = "";
 		columnLabel = columnLabel.toLowerCase();
 		try {
+			/*
 			type = Client.get_col_type(columnLabel);
 			if (type.equals("ftUByte")) 
 				res = (int) (Client.get_ubyte(columnLabel) & 0xFF);
 			else if (type.equals("ftShort")) 
 				res = (int)Client.get_short(columnLabel);
-			else
-				res = Client.get_int(columnLabel.toLowerCase());
+			else //*/ 
+			res = Client.get_int(columnLabel.toLowerCase());
 			
 			isNull = (res == null) ? true : false;
 		}
@@ -261,13 +264,14 @@ class SQResultSet implements ResultSet {
 		Integer res = null;
 		String type = "";
 		try {
+			/*
 			type = Client.get_col_type(columnIndex);
 			if (type.equals("ftUByte")) 
 				res = (int) (Client.get_ubyte(columnIndex) & 0xFF);
 			else if (type.equals("ftShort")) 
 				res = (int)Client.get_short(columnIndex);
-			else
-				res = Client.get_int(columnIndex);
+			else //*/ 
+			res = Client.get_int(columnIndex);
 			
 			isNull = (res == null) ? true : false;
 		} 
@@ -334,6 +338,7 @@ class SQResultSet implements ResultSet {
 		String type = "";
 		columnLabel = columnLabel.toLowerCase();
 		try {
+			/*
 			type = Client.get_col_type(columnLabel);
 			if (type.equals("ftFloat")) 
 				res = (double) Client.get_float(columnLabel);
@@ -345,8 +350,8 @@ class SQResultSet implements ResultSet {
 				res = (double) Client.get_int(columnLabel);
 			else if (type.equals("ftLong")) 
 				res = (double) Client.get_long(columnLabel);
-			else 
-				res = Client.get_double(columnLabel);
+			else //*/  
+			res = Client.get_double(columnLabel);
 			
 			isNull = (res == null) ? true : false;
 		} 
@@ -362,6 +367,7 @@ class SQResultSet implements ResultSet {
 		Double res = null;
 		String type = "";
 		try {
+			/*
 			type = Client.get_col_type(columnIndex);
 			if (type.equals("ftFloat")) 
 				res = (double) Client.get_float(columnIndex);
@@ -373,8 +379,8 @@ class SQResultSet implements ResultSet {
 				res = (double) Client.get_int(columnIndex);
 			else if (type.equals("ftLong")) 
 				res = (double) Client.get_long(columnIndex);
-			else 
-				res = Client.get_double(columnIndex);
+			else //*/  
+			res = Client.get_double(columnIndex);
 			
 			isNull = (res == null) ? true : false;
 		} 

@@ -984,7 +984,7 @@ public class Connector {
     
     public Integer get_int(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
-    	/*
+    	//*
 	    if (col_types[col_num].equals("ftShort"))
 	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (int)data_columns[col_num].getShort(row_counter * 2) : null;
 	    else if (col_types[col_num].equals("ftUByte"))
@@ -1009,7 +1009,7 @@ public class Connector {
     
     public Double get_double(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
-    	/*
+    	//*
 	    if (col_types[col_num].equals("ftFloat"))
 	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (double)data_columns[col_num].getFloat(row_counter * 4) : null;
 		//*/

@@ -337,6 +337,14 @@ class SQResultSet implements ResultSet {
 			type = Client.get_col_type(columnLabel);
 			if (type.equals("ftFloat")) 
 				res = (double) Client.get_float(columnLabel);
+			else if (type.equals("ftUByte")) 
+				res = (double) Client.get_ubyte(columnLabel);
+			else if (type.equals("ftShort")) 
+				res = (double) Client.get_short(columnLabel);
+			else if (type.equals("ftInt")) 
+				res = (double) Client.get_int(columnLabel);
+			else if (type.equals("ftLong")) 
+				res = (double) Client.get_long(columnLabel);
 			else 
 				res = Client.get_double(columnLabel);
 			
@@ -357,6 +365,14 @@ class SQResultSet implements ResultSet {
 			type = Client.get_col_type(columnIndex);
 			if (type.equals("ftFloat")) 
 				res = (double) Client.get_float(columnIndex);
+			else if (type.equals("ftUByte")) 
+				res = (double) Client.get_ubyte(columnIndex);
+			else if (type.equals("ftShort")) 
+				res = (double) Client.get_short(columnIndex);
+			else if (type.equals("ftInt")) 
+				res = (double) Client.get_int(columnIndex);
+			else if (type.equals("ftLong")) 
+				res = (double) Client.get_long(columnIndex);
 			else 
 				res = Client.get_double(columnIndex);
 			

@@ -83,10 +83,9 @@ public class Perf {
         print ("after network insert");
         //*/
         
-        
-        /*
+        //*
         // create table
-        String sql = "create or replace table perf (bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, strangs nvarchar(10), dates date, dts datetime)";
+        sql = "create or replace table perf (bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, strangs nvarchar(10), dates date, dts datetime)";
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
@@ -124,54 +123,8 @@ public class Perf {
         rs.close();
         stmt.close();
         
+      
         /*
-        sql = "select sum(xbigint) over (partition by xdate) from t_a";
-        stmt = conn.createStatement();
-        rs = stmt.executeQuery(sql);
-        while(rs.next()) 
-            print("item: " + rs.getLong(1));
-        rs.close();
-        stmt.close();
-        //*/
-        
-        /*
-        sql = "select top 1 joinid,dlrstatus,requestrecdtime,enterpriseid,messagetext from otp_dlr_history ";
-  
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
-        while(rs.next()){
-            
-        	print( rs.getLong(1));
-            print( rs.getString(2));
-            print( rs.getTimestamp(3));
-            print( rs.getInt(4));
-            print(rs.getString(5));
-            
-            print(rs.getLong("joinid"));
-            print(rs.getString("dlrstatus"));
-            print(rs.getTimestamp("requestrecdtime"));
-            print(rs.getInt("enterpriseid"));
-            print (rs.getString("messagetext"));
-  
-            conn.close();
-
-        }
-    	//*/
-        
-        /*
-        sql = "create or replace table dt (dts datetime)";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        
-        // Network insert 10 million rows
-        sql = "insert into dt values ('2010-02-19 00:00:00.000')";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        //*/
-        
-        //*
         sql = "SELECT b1.\"x\" AS \"X\" FROM \"public\".\"bla\" b1;";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);

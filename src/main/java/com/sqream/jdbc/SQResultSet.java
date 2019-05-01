@@ -131,10 +131,8 @@ class SQResultSet implements ResultSet {
 					Client.close_connection();
 				}
 			} catch (IOException | ConnException | ScriptException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			// TODO Auto-generated method stub
 		}
 	}
 
@@ -162,7 +160,6 @@ class SQResultSet implements ResultSet {
 			res = Client.get_boolean(columnIndex);
 			isNull = (res == null) ? true : false;
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return (res == null) ? false : res;
@@ -189,7 +186,6 @@ class SQResultSet implements ResultSet {
 			res = Client.get_ubyte(columnIndex);
 			isNull = (res == null) ? true : false;
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return (res == null) ? 0 : res;
@@ -197,54 +193,88 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public short getShort(String columnLabel) throws SQLException {
+		Short res = null;
+		String type = "";
+		columnLabel = columnLabel.toLowerCase();
 		try {
-			Short res = Client.get_short(columnLabel.toLowerCase());
+			type = Client.get_col_type(columnLabel);
+			if (type.equals("ftUByte")) 
+				res = (short) (Client.get_ubyte(columnLabel) & 0xFF);
+			else 
+				res = Client.get_short(columnLabel);
+			
 			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
-		} catch (Exception e) {
+		} 
+		catch (ConnException e) {
 			e.printStackTrace();
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
 		}
+		
+		return (res == null) ? 0 : res;
 	}
-
+	
 	@Override
 	public short getShort(int columnIndex) throws SQLException {
 		Short res = null;
+		String type = "";
 		try {
-			res = Client.get_short(columnIndex);
+			type = Client.get_col_type(columnIndex);
+			if (type.equals("ftUByte")) 
+				res = (short) (Client.get_ubyte(columnIndex)  & 0xFF);
+			else 
+				res = Client.get_short(columnIndex);
+			
 			isNull = (res == null) ? true : false;
-		} catch (ConnException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (ConnException e) {
 			e.printStackTrace();
 		}
+		
 		return (res == null) ? 0 : res;
 	}
 	
 	
 	@Override
 	public int getInt(String columnLabel) throws SQLException {
+		Integer res = null;
+		String type = "";
+		columnLabel = columnLabel.toLowerCase();
 		try {
-			Integer res = Client.get_int(columnLabel.toLowerCase());
+			type = Client.get_col_type(columnLabel);
+			if (type.equals("ftUByte")) 
+				res = (int) (Client.get_ubyte(columnLabel) & 0xFF);
+			else if (type.equals("ftShort")) 
+				res = (int)Client.get_short(columnLabel);
+			else
+				res = Client.get_int(columnLabel.toLowerCase());
+			
 			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
-		} catch (Exception e) {
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
 		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return (res == null) ? 0 : res;
 	}
 
 	@Override
 	public int getInt(int columnIndex) throws SQLException {
 		Integer res = null;
+		String type = "";
 		try {
-			res = Client.get_int(columnIndex);
+			type = Client.get_col_type(columnIndex);
+			if (type.equals("ftUByte")) 
+				res = (int) (Client.get_ubyte(columnIndex) & 0xFF);
+			else if (type.equals("ftShort")) 
+				res = (int)Client.get_short(columnIndex);
+			else
+				res = Client.get_int(columnIndex);
+			
 			isNull = (res == null) ? true : false;
-			//print ("res: " + res + " is null: " + isNull);
-		} catch (ConnException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (ConnException e) {
 			e.printStackTrace();
 		}
+		
 		return (res == null) ? 0 : res;
 	}
 
@@ -271,7 +301,6 @@ class SQResultSet implements ResultSet {
 			throw new SQLException("columnLabel '" + columnIndex
 					+ "' not found");
 		}
-
 	}
 	
 	@Override
@@ -293,36 +322,50 @@ class SQResultSet implements ResultSet {
 			res = Client.get_float(columnIndex);
 			isNull = (res == null) ? true : false;
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return (res == null) ? 0 : res;
 
 	}
 	
-	
 	@Override
 	public double getDouble(String columnLabel) throws SQLException {
+		Double res = null;
+		String type = "";
+		columnLabel = columnLabel.toLowerCase();
 		try {
-			Double res = Client.get_double(columnLabel.toLowerCase());
+			type = Client.get_col_type(columnLabel);
+			if (type.equals("ftFloat")) 
+				res = (double) Client.get_float(columnLabel);
+			else 
+				res = Client.get_double(columnLabel);
+			
 			isNull = (res == null) ? true : false;
-			return (res == null) ? 0 : res;
-		} catch (Exception e) {
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
+		} 
+		catch (ConnException e) {
+			e.printStackTrace();
 		}
+		
+		return (res == null) ? 0 : res;
 	}
 
 	@Override
 	public double getDouble(int columnIndex) throws SQLException {
 		Double res = null;
+		String type = "";
 		try {
-			res = Client.get_double(columnIndex);
+			type = Client.get_col_type(columnIndex);
+			if (type.equals("ftFloat")) 
+				res = (double) Client.get_float(columnIndex);
+			else 
+				res = Client.get_double(columnIndex);
+			
 			isNull = (res == null) ? true : false;
-		} catch (ConnException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (ConnException e) {
 			e.printStackTrace();
 		}
+		
 		return (res == null) ? 0 : res;
 	}
 
@@ -345,7 +388,6 @@ class SQResultSet implements ResultSet {
 			isNull = (res == null) ? true : false;
 			return (res == null) ? null : res;
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException("");
 		}
@@ -403,7 +445,6 @@ class SQResultSet implements ResultSet {
 			res = Client.get_datetime(columnIndex);
 			isNull = (res == null) ? true : false;
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return (res == null) ? null : res;
@@ -421,7 +462,6 @@ class SQResultSet implements ResultSet {
 			isNull = (utcDateTime == null) ? true : false;
 			return (utcDateTime == null) ? null : utcDateTime;
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException("");
 		}
@@ -439,7 +479,6 @@ class SQResultSet implements ResultSet {
 			isNull = (utcDateTime == null) ? true : false;
 			return (utcDateTime == null) ? null : utcDateTime;
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new SQLException("");
 		}
@@ -454,7 +493,6 @@ class SQResultSet implements ResultSet {
 		try {
 			type = Client.get_col_type(columnLabel);
 		} catch (ConnException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -495,7 +533,6 @@ class SQResultSet implements ResultSet {
 		try {
 			type = Client.get_col_type(columnIndex);
 		} catch (ConnException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -528,12 +565,10 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public ResultSetMetaData getMetaData() throws SQLException {
-		// TODO Auto-generated method stub
 		ResultSetMetaData rsmd = null;
 		try {
 			rsmd = new SQResultSetMetaData(Client, db_name);
 		} catch (IOException | ConnException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -625,6 +660,7 @@ class SQResultSet implements ResultSet {
 			if (value[i] == '\0')
 				return i;
 		}
+		
 		return size;
 	}
 
@@ -640,7 +676,6 @@ class SQResultSet implements ResultSet {
 	 */
 
 	
-
 	boolean memFlag = false;
 	Runtime runtime;
 	int mb = 1024 * 1024;
@@ -706,9 +741,13 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public boolean wasNull() throws SQLException {
-		//return Client.wasNull();
 		return isNull;
-
+	}
+	
+	@Override
+	public int findColumn(String columnLabel) throws SQLException {
+		this.baseUsageError();
+		return 0;
 	}
 	
 	@Override
@@ -809,19 +848,12 @@ class SQResultSet implements ResultSet {
 
 		this.baseUsageError(); 
 		throw new SQLFeatureNotSupportedException();
-
 	}
 
 	@Override
 	public String getCursorName() throws SQLException {
 		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int findColumn(String columnLabel) throws SQLException {
-		this.baseUsageError();
-		return 0;
 	}
 
 	@Override

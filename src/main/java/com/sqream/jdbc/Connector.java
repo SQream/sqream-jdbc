@@ -972,21 +972,24 @@ public class Connector {
     
     
     public Short get_short(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-    _validate_index(col_num);
+    	_validate_index(col_num);
+    	/*
     	if (col_types[col_num].equals("ftUByte"))
             return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (short)(data_columns[col_num].get(row_counter) & 0xFF) : null;
-
-		return (_validate_get(col_num, "ftShort")) ? data_columns[col_num].getShort(row_counter * 2) : null;
+		//*/
+		
+    	return (_validate_get(col_num, "ftShort")) ? data_columns[col_num].getShort(row_counter * 2) : null;
     }
     
     
     public Integer get_int(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
+    	/*
 	    if (col_types[col_num].equals("ftShort"))
 	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (int)data_columns[col_num].getShort(row_counter * 2) : null;
 	    else if (col_types[col_num].equals("ftUByte"))
 	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (int)(data_columns[col_num].get(row_counter) & 0xFF) : null;
-
+		//*/
         return (_validate_get(col_num, "ftInt")) ? data_columns[col_num].getInt(row_counter * 4) : null;
         //return (null_balls[col_num].get() == 0) ? data_columns[col_num].getInt() : null;
     }
@@ -1006,9 +1009,10 @@ public class Connector {
     
     public Double get_double(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
+    	/*
 	    if (col_types[col_num].equals("ftFloat"))
 	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (double)data_columns[col_num].getFloat(row_counter * 4) : null;
-
+		//*/
         return (_validate_get(col_num, "ftDouble")) ? data_columns[col_num].getDouble(row_counter * 8) : null;
     }
     

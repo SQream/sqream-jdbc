@@ -973,7 +973,7 @@ public class Connector {
     
     public Short get_short(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
-    	/*
+    	//*
     	if (col_types[col_num].equals("ftUByte"))
             return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (short)(data_columns[col_num].get(row_counter) & 0xFF) : null;
 		//*/

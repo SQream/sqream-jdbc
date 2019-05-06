@@ -6,9 +6,17 @@ import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Map;
+
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -18,6 +26,11 @@ import java.nio.ByteBuffer;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+
+// json related checks
+import jdk.nashorn.internal.parser.JSONParser;
+import jdk.nashorn.internal.runtime.Context;
+import jdk.nashorn.internal.runtime.JSONFunctions;
 
 
 public class Perf {
@@ -40,6 +53,11 @@ public class Perf {
         System.out.println(printable);
     }
     
+    static String format(String pattern, String value) {
+    	
+    	return MessageFormat.format(pattern, value);
+    	
+    }
     static void printbuf(ByteBuffer to_print, String description) {
         System.out.println(description + " : " + to_print);
     }
@@ -83,7 +101,7 @@ public class Perf {
         print ("after network insert");
         //*/
         
-        //*
+        /*
         // create table
         sql = "create or replace table perf (bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, strangs nvarchar(10), dates date, dts datetime)";
         stmt = conn.createStatement();
@@ -122,16 +140,35 @@ public class Perf {
             print("row count: " + rs.getLong(1));
         rs.close();
         stmt.close();
-        
+        //*/
       
-        /*
-        sql = "SELECT b1.\"x\" AS \"X\" FROM \"public\".\"bla\" b1;";
+        //*
+        sql = "create or replace table dt (dt datetime)";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        
+        // Network insert 10 million rows
+        sql = "insert into dt values (?)";
+        ps = conn.prepareStatement(sql);
+        Timestamp test = datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45);
+        print (test);
+        
+        for (int i=0; i < 1; i++) {
+            ps.setTimestamp(1, test);
+            ps.addBatch();
+        }
+        ps.executeBatch();  // Should be done automatically
+        ps.close();
+
+        
+        // Check amount inserted
+        sql = "select * from dt";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
-        while(rs.next()) {  
-        	print("item: " + rs.getString(1) + " was null: " + rs.wasNull());
-            print("item: " + rs.getString("x") + " was null: " + rs.wasNull());
-        }rs.close();
+        while(rs.next()) 
+            print(rs.getTimestamp(1));
+        rs.close();
         stmt.close();
         //*/
         
@@ -139,7 +176,7 @@ public class Perf {
     	//*/
     }     
     
-    public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{
+    public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException, ScriptException, NoSuchMethodException{
         
         // Load JDBC driver - not needed with newer version
         Class.forName("com.sqream.jdbc.SQDriver");
@@ -151,8 +188,35 @@ public class Perf {
         Perf test = new Perf();   
         test.perf(url_src);
         
+        /*
+        //  --------
+        String message = "'{'\"bla\":\"bla\"'}'"; 
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
         
+        Invocable inv = (Invocable) engine;
+        String message = "'{'\"bla\":\"bla\"'}'"; 
         
+        //engine.put("input", new String(sample));
+        String parse = "JSON.parse({0});";
+        engine.put("input", message);
+        String stringify = "JSON.stringify({0});";
+
+        // Object inputjson = engine.eval(MessageFormat.format(parse, message));
+        Object inputjson = engine.eval("JSON.parse(input);");
+
+ 
+        print(inputjson);
+        
+        //print(JSONFunctions.parse((Object)message, (Object)message));
+        
+        //JSONParser parser = new JSONParser(message, Context.getGlobal(), false);        
+        //JSONObject(message).toString();
+        //print(parser.parse());
+
+        Map<String, Object> map1 = (Map<String, Object>)engine.eval(
+          "JSON.parse('{ \"x\": 343, \"y\": \"hello\", \"z\": [2,4,5] }');");
+        print(map1);
+        //*/
     }
 }
 

@@ -280,25 +280,25 @@ public class Connector {
     }
     
     
-    static long dt_to_long(LocalDateTime local_datetime) {
+    static long dt_to_long(ZonedDateTime datetime) {
             
-        if (local_datetime == null) 
+        if (datetime == null) 
             return 0;
         
         //local_datetime = dt.toInstant().atZone(system_tz).toLocalDateTime(); 
-        year  = local_datetime.getYear();
-        month = local_datetime.getMonthValue();
-        day   = local_datetime.getDayOfMonth();
+        year  = datetime.getYear();
+        month = datetime.getMonthValue();
+        day   = datetime.getDayOfMonth();
         
         month = (month + 9) % 12;
         year = year - month / 10;
 
         date_as_int = (365 * year + year / 4 - year / 100 + year / 400 + (month * 306 + 5) / 10 + (day - 1));
     
-        time_as_int =  local_datetime.getHour() * 3600000;
-        time_as_int += local_datetime.getMinute() * 60000;
-        time_as_int += local_datetime.getSecond() * 1000;
-        time_as_int += local_datetime.getNano() / 1000000;
+        time_as_int =  datetime.getHour() * 3600000;
+        time_as_int += datetime.getMinute() * 60000;
+        time_as_int += datetime.getSecond() * 1000;
+        time_as_int += datetime.getNano() / 1000000;
         
         
         return (((long) date_as_int) << 32) | (time_as_int & 0xffffffffL);
@@ -791,7 +791,8 @@ public class Connector {
     		throw new ConnException("Trying to run a statement when another was not closed");
         is_open = true;
         statement = statement.replace("\n", "\\n").replace("\t", "\\t").replace("\"","\\\"");
-    	// Get statement ID, send prepareStatement and get response parameters
+    	
+        // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
         String prepareStr = MessageFormat.format(prepareStatement, statement, 0);  // Random chunkSize to remember it's not really used
         response_json =  _parse_sqream_json(_send_message(prepareStr, true));
@@ -1280,10 +1281,12 @@ public class Connector {
     public boolean set_datetime(int col_num, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
     	_validate_index(col_num);
         
-    	LocalDateTime local_dt = ts.toLocalDateTime(); 
-    	//ZonedDateTime converted_dt = ts.toLocalDateTime().atZone(ZoneId.systemDefault()); 
+    //	LocalDateTime dt = ts.toLocalDateTime(); 
+    	//ZonedDateTime dt = ts.toLocalDateTime().atZone(zone); 
+    	ZonedDateTime dt = ts.toInstant().atZone(zone); 
+
     	// Set actual value
-        data_columns[col_num].putLong(_validate_set(col_num, local_dt, "ftDateTime") ? 0 : dt_to_long(local_dt));
+        data_columns[col_num].putLong(_validate_set(col_num, dt, "ftDateTime") ? 0 : dt_to_long(dt));
         
         // Mark column as set
         columns_set.set(col_num);
@@ -1294,13 +1297,14 @@ public class Connector {
     
     public boolean set_date(int col_num, Date value) throws ConnException, UnsupportedEncodingException { 
         
-        return set_date(col_num, value, UTC);
+        return set_date(col_num, value, UTC); 
     }
         
     
     public boolean set_datetime(int col_num, Timestamp value) throws ConnException, UnsupportedEncodingException {  
-    
-        return set_datetime(col_num, value, UTC);
+    	
+    	ZoneId zone = ZoneId.systemDefault(); // UTC
+        return set_datetime(col_num, value, zone); 
 }
     
     // Metadata

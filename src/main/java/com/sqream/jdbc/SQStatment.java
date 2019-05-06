@@ -34,7 +34,7 @@ public class SQStatment implements Statement {
     	
 	public SQStatment(Connector client,SQConnection conn, String catalog) throws NumberFormatException,
 			UnknownHostException, IOException, 
-			SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException {
+			SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
 		
 		Connection=conn;
 		db_name = catalog;

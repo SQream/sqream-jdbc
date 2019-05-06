@@ -75,7 +75,7 @@ public class SQConnection implements Connection {
 	}
 	
 	public SQConnection(Properties connectionInfo) 
-			throws ScriptException, SQLException, NumberFormatException, IOException, NoSuchAlgorithmException, KeyManagementException {
+			throws ScriptException, SQLException, NumberFormatException, IOException, NoSuchAlgorithmException, KeyManagementException, ConnException {
 		
 		connInfo = connectionInfo;
 		String cluster = connectionInfo.getProperty("cluster");

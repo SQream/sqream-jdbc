@@ -27,6 +27,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 // json related checks
 import jdk.nashorn.internal.parser.JSONParser;
 import jdk.nashorn.internal.runtime.Context;
@@ -142,7 +143,7 @@ public class Perf {
         stmt.close();
         //*/
       
-        //*
+        /*
         sql = "create or replace table dt (dt datetime)";
         stmt = conn.createStatement();
         stmt.execute(sql);
@@ -172,6 +173,29 @@ public class Perf {
         stmt.close();
         //*/
         
+      //*
+        sql = "create or replace table excape (s varchar(50))";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        
+        // Network insert 10 million rows
+        sql = "insert into excape values (\"bla \n bla\")";
+        ps = conn.prepareStatement(sql);
+        ps.executeBatch();  // Should be done automatically
+        ps.close();
+
+        
+        // Check amount inserted
+        sql = "select * from excape";
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        while(rs.next()) 
+            print(rs.getString(1));
+        rs.close();
+        stmt.close();
+        //*/
+        
         
     	//*/
     }     
@@ -186,7 +210,7 @@ public class Perf {
 
         
         Perf test = new Perf();   
-        test.perf(url_src);
+        //test.perf(url_src);
         
         /*
         //  --------
@@ -217,6 +241,16 @@ public class Perf {
           "JSON.parse('{ \"x\": 343, \"y\": \"hello\", \"z\": [2,4,5] }');");
         print(map1);
         //*/
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine engine = sem.getEngineByName("nashorn");
+        ScriptObjectMirror json = (ScriptObjectMirror) engine.eval("JSON");
+        String stmt = "{\"prepareStatement\":\"insert into excape values (\\\"bla \\n bla\\\")\", \"chunkSize\":0}";
+        
+        //Object parsed = json.callMember("parse", stmt);
+
+        String parsed = (String) json.callMember("stringify", json.callMember("parse", stmt));
+        print (stmt);
+        print (parsed);
     }
 }
 

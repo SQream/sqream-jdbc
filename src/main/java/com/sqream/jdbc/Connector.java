@@ -28,6 +28,8 @@ import java.security.cert.X509Certificate;
 //Formatting JSON strings, parsing JSONS
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.runtime.JSONListAdapter;
 import java.util.Map;
 import java.util.HashMap;
@@ -145,6 +147,7 @@ public class Connector {
     
     // JSON parsing related
     ScriptEngine jsEngine;
+    ScriptObjectMirror json;
     String json_wrapper = "Java.asJSONCompatible({0})";
     //@SuppressWarnings("rawtypes") // Remove "Map is a raw type"  warning
     //https://stackoverflow.com/questions/2770321/what-is-a-raw-type-and-why-shouldnt-we-use-it
@@ -333,7 +336,7 @@ public class Connector {
     }
     
 
-    static Timestamp long_to_dt(long dt_as_long) {
+    static Timestamp long_to_dt(long dt_as_long, ZoneId zone) {
         
         date_as_int = (int)(dt_as_long >> 32);
         time_as_int = (int)dt_as_long;       
@@ -343,8 +346,9 @@ public class Connector {
         minutes = (time_as_int / 1000 / 60) % 60 ;
         seconds = ((time_as_int) / 1000) % 60;
         ms = time_as_int % 1000;
+        LocalDateTime local_dt = LocalDateTime.of(_int_to_local_date(date_as_int), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6)));
         
-        return Timestamp.valueOf(LocalDateTime.of(_int_to_local_date(date_as_int), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
+        return Timestamp.valueOf(local_dt);
     }
     
     // Aux Classes
@@ -460,11 +464,12 @@ public class Connector {
     // Constructor  
     // -----------
     
-    public Connector(String _ip, int _port, boolean _cluster, boolean _ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    public Connector(String _ip, int _port, boolean _cluster, boolean _ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException, ScriptException {
         /* JSON parsing engine setup, initial socket connection */
         
         ScriptEngineManager sem = new ScriptEngineManager();
         jsEngine = sem.getEngineByName("javascript");
+        json = (ScriptObjectMirror) jsEngine.eval("JSON");
         
         port = _port;
         ip = _ip;
@@ -523,13 +528,24 @@ public class Connector {
     
     // (1) 
     //@SuppressWarnings("rawtypes")  // Remove "Map is a raw type" warning
-    Map<String,Object> _parse_sqream_json(String json) throws ScriptException { 
-        return (Map<String, Object>) jsEngine.eval(MessageFormat.format(json_wrapper, json));
+    Map<String,Object> _parse_sqream_json(String json) throws ScriptException, ConnException { 
+    	
+    	String error;
+    	
+    	response_json = (Map<String, Object>) jsEngine.eval(MessageFormat.format(json_wrapper, json));
+        if (response_json.containsKey("error")) {
+            error = (String)response_json.get("error");
+            
+            if (!error.contains("stop_statement could not find a statement"))
+        		throw new ConnException("Error from SQream:" + error);
+        }
+    	
+    	return response_json;
     }
     
     String _validate_response(String response, String expected) throws ConnException {
         
-        if (!response.equals(expected))
+        if (!response.equals(expected))  // !response.contains("stop_statement could not find a statement")
             throw new ConnException("Expected message: " + expected + " but got " + response);
         
         return response;
@@ -667,7 +683,7 @@ public class Connector {
     }
     
     
-    int _fetch() throws IOException, ScriptException {
+    int _fetch() throws IOException, ScriptException, ConnException {
         /* Request and get data from SQream following a SELECT query */
         
         // Send fetch request and get metadata on data to be received
@@ -769,7 +785,7 @@ public class Connector {
      * 
      */
     
-    public int connect(String _database, String _user, String _password, String _service) throws IOException, ScriptException {
+    public int connect(String _database, String _user, String _password, String _service) throws IOException, ScriptException, ConnException {
         //"'{'\"username\":\"{0}\", \"password\":\"{1}\", \"connectDatabase\":\"{2}\", \"service\":\"{3}\"'}'";
         
         database = _database;
@@ -778,6 +794,8 @@ public class Connector {
         service = _service;
         
         String connStr = MessageFormat.format(connectDatabase, database, user, password, service);
+        //response_json = _parse_sqream_json(_send_message(connStr, true));
+        
         connection_id = (int) _parse_sqream_json(_send_message(connStr, true)).get("connectionId"); 
 
         return connection_id;
@@ -790,11 +808,13 @@ public class Connector {
     	if (is_open)
     		throw new ConnException("Trying to run a statement when another was not closed");
         is_open = true;
-        statement = statement.replace("\n", "\\n").replace("\t", "\\t").replace("\"","\\\"");
+        //statement = statement.replace("\n", "\\n").replace("\t", "\\t").replace("\"","\\\"");
     	
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
         String prepareStr = MessageFormat.format(prepareStatement, statement, 0);  // Random chunkSize to remember it's not really used
+        prepareStr = (String) json.callMember("stringify", json.callMember("parse", prepareStr));
+        
         response_json =  _parse_sqream_json(_send_message(prepareStr, true));
         
         // Parse response parameters
@@ -1051,9 +1071,17 @@ public class Connector {
     
     
     public Timestamp get_datetime(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-    	_validate_index(col_num);
-        return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(8* row_counter)) : null;
+    	
+    	ZoneId zone = ZoneId.systemDefault();
+    	
+        return get_datetime(col_num, zone);
     }
+    
+    public Timestamp get_datetime(int col_num, ZoneId zone) throws ConnException {   col_num--;  // set / get work with starting index 1
+		_validate_index(col_num);
+	
+    	return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(8* row_counter), zone) : null;
+}
     
     // -o-o-o-o-o  By column name -o-o-o-o-o
     

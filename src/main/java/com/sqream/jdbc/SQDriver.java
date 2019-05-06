@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 
 import javax.script.ScriptException;
 
+import com.sqream.jdbc.Connector.ConnException;
+
 
 
 public class SQDriver implements java.sql.Driver {
@@ -177,7 +179,7 @@ public class SQDriver implements java.sql.Driver {
 			//String[] lables = { "url", "info" };
 			//String[] values = { url, info.toString() };
 
-		} catch (NumberFormatException | IOException | ScriptException| NoSuchAlgorithmException | KeyManagementException  e) {
+		} catch (NumberFormatException | IOException | ScriptException| NoSuchAlgorithmException | KeyManagementException | ConnException  e) {
 			e.printStackTrace();
 			throw new SQLException(e);
 		}

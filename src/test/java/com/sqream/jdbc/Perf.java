@@ -179,12 +179,13 @@ public class Perf {
         stmt.execute(sql);
         stmt.close();
         
+        /*
         // Network insert 10 million rows
-        sql = "insert into excape values (\"bla \n bla\")";
+        sql = "insert into excape values (\"bla bla\")";
         ps = conn.prepareStatement(sql);
         ps.executeBatch();  // Should be done automatically
         ps.close();
-
+		*/
         
         // Check amount inserted
         sql = "select * from excape";
@@ -194,6 +195,7 @@ public class Perf {
             print(rs.getString(1));
         rs.close();
         stmt.close();
+        //conn.close();
         //*/
         
         
@@ -210,7 +212,7 @@ public class Perf {
 
         
         Perf test = new Perf();   
-        //test.perf(url_src);
+        test.perf(url_src);
         
         /*
         //  --------
@@ -240,7 +242,7 @@ public class Perf {
         Map<String, Object> map1 = (Map<String, Object>)engine.eval(
           "JSON.parse('{ \"x\": 343, \"y\": \"hello\", \"z\": [2,4,5] }');");
         print(map1);
-        //*/
+        //*
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine engine = sem.getEngineByName("nashorn");
         ScriptObjectMirror json = (ScriptObjectMirror) engine.eval("JSON");
@@ -251,6 +253,7 @@ public class Perf {
         String parsed = (String) json.callMember("stringify", json.callMember("parse", stmt));
         print (stmt);
         print (parsed);
+        //*/
     }
 }
 

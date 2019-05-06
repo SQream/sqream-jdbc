@@ -181,7 +181,7 @@ public class Connector {
     int []    col_sizes;
     BitSet col_nullable;
     BitSet col_tvc;
-    boolean is_open = false;
+    boolean open_statement = false;
 
     // Column Storage
     ByteBuffer[] data_columns;
@@ -283,7 +283,7 @@ public class Connector {
     }
     
     
-    static long dt_to_long(ZonedDateTime datetime) {
+    static long dt_to_long(LocalDateTime datetime) {  // ZonedDateTime
             
         if (datetime == null) 
             return 0;
@@ -805,15 +805,15 @@ public class Connector {
     public int execute(String statement) throws IOException, ScriptException, ConnException {
         /* getStatementId, prepareStatement, reconnect, execute, queryType  */
         
-    	if (is_open)
+    	if (open_statement)
     		throw new ConnException("Trying to run a statement when another was not closed");
-        is_open = true;
-        //statement = statement.replace("\n", "\\n").replace("\t", "\\t").replace("\"","\\\"");
+    	open_statement = true;
+        statement = statement.replace("\"","\\\"").replace("\n", "\\\n").replace("\t", "\\\t");
     	
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
         String prepareStr = MessageFormat.format(prepareStatement, statement, 0);  // Random chunkSize to remember it's not really used
-        prepareStr = (String) json.callMember("stringify", json.callMember("parse", prepareStr));
+        // prepareStr = (String) json.callMember("stringify", json.callMember("parse", prepareStr));
         
         response_json =  _parse_sqream_json(_send_message(prepareStr, true));
         
@@ -927,19 +927,24 @@ public class Connector {
     
     public String close() throws IOException, ScriptException, ConnException {
         
-    	if (!is_open) {
-    		//print ("Trying to run a statement that's already been closed");
-    		return "statement " + statement_id + " already closed";
+    	String res = "";
+    	
+    	if (is_open()) {
+    		if (open_statement) {
+    			
+    			if (statement_type!= null && statement_type.equals("INSERT")) {
+    	            _flush(row_counter);
+    	        }
+    	            // Statement is finished so no need to reset row_counter etc
+    			
+    			res = _validate_response(_send_message(form_json("closeStatement"), true), form_json("statementClosed"));
+    	        open_statement = false;
+    		}
+    		else
+    			res =  "statement " + statement_id + " already closed";
     	}
-        
-    	if (statement_type!= null && statement_type.equals("INSERT")) {
-            _flush(row_counter);
-        }
-            // Statement is finished so no need to reset row_counter etc
-        
-        String res = _validate_response(_send_message(form_json("closeStatement"), true), form_json("statementClosed"));
-        is_open = false;
-        
+    	else
+    		res =  "connection already closed";
         
         return res;
     }
@@ -948,12 +953,14 @@ public class Connector {
     public boolean close_connection() throws IOException, ScriptException, ConnException {
         
         _validate_response(_send_message(form_json("closeConnection"), true), form_json("connectionClosed"));
-
+        
         if (use_ssl) {
-            ss.close(); // finish ssl communcication and close SSLEngine
+        	if (ss.isOpen())
+        		ss.close(); // finish ssl communcication and close SSLEngine
         }
         
-        s.close();
+        if (s.isOpen())
+        	s.close();
         
         return true;
     }
@@ -1018,6 +1025,11 @@ public class Connector {
     
     public Long get_long(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
+    	
+    	if (col_types[col_num].equals("ftInt"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (long)data_columns[col_num].getInt(row_counter * 4) : null;
+        
+	        
         return (_validate_get(col_num, "ftLong")) ? data_columns[col_num].getLong(row_counter * 8) : null;
     }
     
@@ -1070,19 +1082,17 @@ public class Connector {
     }
     
     
-    public Timestamp get_datetime(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-    	
-    	ZoneId zone = ZoneId.systemDefault();
-    	
-        return get_datetime(col_num, zone);
-    }
-    
     public Timestamp get_datetime(int col_num, ZoneId zone) throws ConnException {   col_num--;  // set / get work with starting index 1
 		_validate_index(col_num);
-	
     	return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(8* row_counter), zone) : null;
-}
+    }
     
+    
+    public Timestamp get_datetime(int col_num) throws ConnException {   // set / get work with starting index 1
+    	
+        return get_datetime(col_num, system_tz);
+    }
+
     // -o-o-o-o-o  By column name -o-o-o-o-o
     
     public Boolean get_boolean(String col_name) throws ConnException {  
@@ -1309,9 +1319,9 @@ public class Connector {
     public boolean set_datetime(int col_num, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
     	_validate_index(col_num);
         
-    //	LocalDateTime dt = ts.toLocalDateTime(); 
+    	LocalDateTime dt = ts.toLocalDateTime(); 
     	//ZonedDateTime dt = ts.toLocalDateTime().atZone(zone); 
-    	ZonedDateTime dt = ts.toInstant().atZone(zone); 
+    	// ZonedDateTime dt = ts.toInstant().atZone(zone); 
 
     	// Set actual value
         data_columns[col_num].putLong(_validate_set(col_num, dt, "ftDateTime") ? 0 : dt_to_long(dt));
@@ -1325,14 +1335,13 @@ public class Connector {
     
     public boolean set_date(int col_num, Date value) throws ConnException, UnsupportedEncodingException { 
         
-        return set_date(col_num, value, UTC); 
+        return set_date(col_num, value, system_tz); // system_tz, UTC
     }
         
     
     public boolean set_datetime(int col_num, Timestamp value) throws ConnException, UnsupportedEncodingException {  
     	
-    	ZoneId zone = ZoneId.systemDefault(); // UTC
-        return set_datetime(col_num, value, zone); 
+        return set_datetime(col_num, value, system_tz); // system_tz, UTC
 }
     
     // Metadata
@@ -1385,7 +1394,7 @@ public class Connector {
     
     public boolean is_open_statement() {
         
-        return is_open;
+        return open_statement;
     }
     
     public boolean is_open() {

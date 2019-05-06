@@ -127,7 +127,8 @@ class SQResultSet implements ResultSet {
 		if (!Empty) {  // Empty result sets don't start with a Client
 			try {
 				if (Client!= null && Client.is_open()) {
-					Client.close();
+					if (Client.is_open_statement()) 
+						Client.close();
 					Client.close_connection();
 				}
 			} catch (IOException | ConnException | ScriptException e) {
@@ -148,6 +149,7 @@ class SQResultSet implements ResultSet {
 			isNull = (res == null) ? true : false;
 			return (res == null) ? false : res;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}
@@ -173,6 +175,7 @@ class SQResultSet implements ResultSet {
 			isNull = (res == null) ? true : false;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}
@@ -289,7 +292,7 @@ class SQResultSet implements ResultSet {
 			isNull = (res == null) ? true : false;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			throw new SQLException("Exception on getLong:" + e.toString());
 		}
 	}
@@ -314,6 +317,7 @@ class SQResultSet implements ResultSet {
 			isNull = (res == null) ? true : false;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}
@@ -398,6 +402,7 @@ class SQResultSet implements ResultSet {
 			isNull = (res == null) ? true : false;
 			return (res == null) ? null : res;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}
@@ -455,6 +460,7 @@ class SQResultSet implements ResultSet {
 			isNull = (res == null) ? true : false;
 			return (res == null) ? null : res;
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}

@@ -55,6 +55,9 @@ public class SQPreparedStatment implements PreparedStatement {
     int rowsInBatch = 0;
     List<Integer> setsPerBatch = new ArrayList<>(); 
 
+    static void print(Object printable) {
+        System.out.println(printable);
+    }
     
     public SQPreparedStatment(Connector client, String Sql, SQConnection conn, String catalog) throws SQLException, IOException, KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
         
@@ -71,9 +74,16 @@ public class SQPreparedStatment implements PreparedStatement {
     
     @Override
     public void close() throws SQLException {
-
+    	
         try {
-            Client.close();
+        	if (Client!= null && Client.is_open()) {
+            	print ("inside open connection");
+				if (Client.is_open_statement()) {
+	            	print ("inside open statement");
+					Client.close();
+				}
+        	}
+        	print ("after close() of preparedstatement");
         } catch (IOException | ConnException | ScriptException e) {
         	e.printStackTrace();
             throw new SQLException(e);

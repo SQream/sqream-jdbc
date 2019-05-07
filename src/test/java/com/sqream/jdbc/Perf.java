@@ -252,14 +252,17 @@ public class Perf {
         ScriptObjectMirror json = (ScriptObjectMirror) engine.eval("JSON");
         String stmt = "{\"prepareStatement\":\"insert into excape values (\\\"bla \\n bla\\\")\", \"chunkSize\":0}";
         Bindings bindings = engine.createBindings();
-        bindings.put("prepareStatement", "insert into excape values (\"bla bla\")");
-        Object bindingsResult = engine.eval("JSON.parse(prepareStatement)", bindings);
+        //bindings.put("prepareStatement", "insert into excape values (\"bla bla\")");
+        //Object bindingsResult = engine.eval("JSON.parse(prepareStatement)", bindings);
         
         //Object parsed = json.callMember("parse", stmt);
 
         Object parsed =  json.callMember("stringify", prep);
-        print (bindingsResult);
-        print (parsed);
+        //print (bindingsResult);
+        //String map_maker = "var prep = {prepareStatement: \"insert into excape values (\"bla bla\")\")};" + 
+      //                 "JSON.Stringify(prep);";
+        
+        print (engine.eval("bla"));
         //*/
     }
 }

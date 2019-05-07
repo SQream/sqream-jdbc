@@ -155,6 +155,7 @@ public class Connector {
     JSONListAdapter query_type; // JSONListAdapter represents a list inside a JSON
     JSONListAdapter col_type_data; 
     JSONListAdapter fetch_sizes;
+    Map<String, String> prepare_map;
     
     // Message sending related
     ByteBuffer message_buffer;
@@ -813,10 +814,15 @@ public class Connector {
     	if (open_statement)
     		throw new ConnException("Trying to run a statement when another was not closed");
     	open_statement = true;
+    	prepare_map = new HashMap<>();
+    	prepare_map.put("prepareStatement", statement);
+        
+        
         statement = statement.replace("\"","\\\"").replace("\n", "\\\n").replace("\t", "\\\t");
     	
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
+        
         String prepareStr = MessageFormat.format(prepareStatement, statement, 0);  // Random chunkSize to remember it's not really used
         // prepareStr = (String) json.callMember("stringify", json.callMember("parse", prepareStr));
         

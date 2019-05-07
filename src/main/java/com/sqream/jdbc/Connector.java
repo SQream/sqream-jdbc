@@ -930,7 +930,7 @@ public class Connector {
     }
     
     
-    public String close() throws IOException, ScriptException, ConnException {
+    public Boolean close() throws IOException, ScriptException, ConnException {
         
     	String res = "";
     	
@@ -946,17 +946,18 @@ public class Connector {
     	        open_statement = false;
     		}
     		else
-    			res =  "statement " + statement_id + " already closed";
+    			return false;  //res =  "statement " + statement_id + " already closed";
     	}
     	else
-    		res =  "connection already closed";
+    		return false;  //res =  "connection already closed";
         
-        return res;
+        return true;
     }
     
     
     public boolean close_connection() throws IOException, ScriptException, ConnException {
         
+    	close();
         _validate_response(_send_message(form_json("closeConnection"), true), form_json("connectionClosed"));
         
         if (use_ssl) {

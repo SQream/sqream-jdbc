@@ -15,6 +15,7 @@ import java.util.Map;
 
 import javax.script.Bindings;
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -154,7 +155,7 @@ public class Perf {
         // Network insert 10 million rows
         sql = "insert into dt values (?)";
         ps = conn.prepareStatement(sql);
-        Timestamp test = datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45);
+        Timestamp test = datetime_from_tuple(2018, 3, 23, 3, 54, 38, 0);
         print (test);
         
         for (int i=0; i < 1; i++) {
@@ -250,19 +251,26 @@ public class Perf {
          
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
         ScriptObjectMirror json = (ScriptObjectMirror) engine.eval("JSON");
-        String stmt = "{\"prepareStatement\":\"insert into excape values (\\\"bla \\n bla\\\")\", \"chunkSize\":0}";
-        Bindings bindings = engine.createBindings();
+        engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE).put ("statement", "insert into excape values (\"bla \n bla\")");
+
+        
+        //String stmt = "{\"prepareStatement\":\"insert into excape values (\\\"bla \\n bla\\\")\", \"chunkSize\":0}";
+        //Bindings bindings = engine.createBindings();
         //bindings.put("prepareStatement", "insert into excape values (\"bla bla\")");
         //Object bindingsResult = engine.eval("JSON.parse(prepareStatement)", bindings);
         
         //Object parsed = json.callMember("parse", stmt);
 
-        Object parsed =  json.callMember("stringify", prep);
+        //Object parsed =  json.callMember("stringify", prep);
+        //Object obj = engine.eval("var j = Java.asJSONCompatible({ prepareStatement: 'insert into excape values (\"bla bla\")'}); JSON.stringify(j);");
+        String parsed = (String) engine.eval("var prop = {prepareStatement: statement}; JSON.stringify(prop)");
+
+        //Map<String, Object> map = (Map<String, Object>)obj;
         //print (bindingsResult);
         //String map_maker = "var prep = {prepareStatement: \"insert into excape values (\"bla bla\")\")};" + 
-      //                 "JSON.Stringify(prep);";
+      //                 "JSON.Stringify(preps);";
         
-        print (engine.eval("bla"));
+        print (parsed);
         //*/
     }
 }

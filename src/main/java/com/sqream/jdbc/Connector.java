@@ -25,6 +25,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.X509Certificate;
 
+import javax.script.Bindings;
+import javax.script.ScriptContext;
 //Formatting JSON strings, parsing JSONS
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -146,7 +148,8 @@ public class Connector {
     boolean reconnect;
     
     // JSON parsing related
-    ScriptEngine jsEngine;
+    ScriptEngine engine;
+    Bindings bindings;
     ScriptObjectMirror json;
     String json_wrapper = "Java.asJSONCompatible({0})";
     //@SuppressWarnings("rawtypes") // Remove "Map is a raw type"  warning
@@ -469,9 +472,9 @@ public class Connector {
         /* JSON parsing engine setup, initial socket connection */
         
         ScriptEngineManager sem = new ScriptEngineManager();
-        jsEngine = sem.getEngineByName("javascript");
-        json = (ScriptObjectMirror) jsEngine.eval("JSON");
-        
+        engine = sem.getEngineByName("javascript");
+        json = (ScriptObjectMirror) engine.eval("JSON");
+        bindings = engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE);
         port = _port;
         ip = _ip;
         use_ssl = _ssl;
@@ -533,7 +536,7 @@ public class Connector {
     	
     	String error;
     	
-    	response_json = (Map<String, Object>) jsEngine.eval(MessageFormat.format(json_wrapper, json));
+    	response_json = (Map<String, Object>) engine.eval(MessageFormat.format(json_wrapper, json));
         if (response_json.containsKey("error")) {
             error = (String)response_json.get("error");
             
@@ -816,17 +819,20 @@ public class Connector {
     	open_statement = true;
     	prepare_map = new HashMap<>();
     	prepare_map.put("prepareStatement", statement);
-        
-        
-        statement = statement.replace("\"","\\\"").replace("\n", "\\\n").replace("\t", "\\\t");
+    	bindings.put("statement", statement);
+
+        //statement = statement.replace("\"","\\\"").replace("\n", "\\\n").replace("\t", "\\\t");
     	
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
         
         String prepareStr = MessageFormat.format(prepareStatement, statement, 0);  // Random chunkSize to remember it's not really used
+        prepareStr = (String) engine.eval("var prep = {prepareStatement: statement, chunkSize: 0}; JSON.stringify(prep)");
         // prepareStr = (String) json.callMember("stringify", json.callMember("parse", prepareStr));
         
+        // response_json =  _parse_sqream_json(_send_message(prepareStr, true));
         response_json =  _parse_sqream_json(_send_message(prepareStr, true));
+
         
         // Parse response parameters
         listener_id =   (int) response_json.get("listener_id");

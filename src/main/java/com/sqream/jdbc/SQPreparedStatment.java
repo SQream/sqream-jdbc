@@ -77,13 +77,10 @@ public class SQPreparedStatment implements PreparedStatement {
     	
         try {
         	if (Client!= null && Client.is_open()) {
-            	print ("inside open connection");
 				if (Client.is_open_statement()) {
-	            	print ("inside open statement");
 					Client.close();
 				}
         	}
-        	print ("after close() of preparedstatement");
         } catch (IOException | ConnException | ScriptException e) {
         	e.printStackTrace();
             throw new SQLException(e);

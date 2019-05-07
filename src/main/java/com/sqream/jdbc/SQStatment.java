@@ -68,9 +68,10 @@ public class SQStatment implements Statement {
 		} 
 		finally  {
 			// TODO Auto-generated catch block
-			if(cancel !=null)
+			if(cancel !=null && cancel.is_open())
 				try {
-					cancel.close();
+					if (Client.is_open_statement())
+						cancel.close();
 					cancel.close_connection();
 				} catch (IOException | ConnException | ScriptException e) {
 					// TODO Auto-generated catch block
@@ -178,11 +179,12 @@ public class SQStatment implements Statement {
 			// Omer and Razi - support cancel
 			if (IsCancelStatement.get()) {
 				//Close the connection of cancel statement
+				if(Client !=null && Client.is_open())
 				Client.close_connection();
 				throw new SQLException("Statement cancelled by user");
 			}
-
-			Client.close();
+			if(Client !=null && Client.is_open() && Client.is_open_statement())
+				Client.close();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

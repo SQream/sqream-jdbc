@@ -758,7 +758,8 @@ class SQResultSet implements ResultSet {
 			 return nextResult;
 		} catch (Exception e2) {
 			try {
-				Client.close();
+				if (Client!= null && Client.is_open() && Client.is_open_statement()) 
+					Client.close();
 			} catch (IOException | ConnException | ScriptException e) {
 				e.printStackTrace();
 				throw new SQLException(e.getMessage());

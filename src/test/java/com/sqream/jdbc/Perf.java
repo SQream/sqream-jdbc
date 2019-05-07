@@ -10,8 +10,10 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.Map;
 
+import javax.script.Bindings;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -212,7 +214,7 @@ public class Perf {
 
         
         Perf test = new Perf();   
-        test.perf(url_src);
+        // test.perf(url_src);
         
         /*
         //  --------
@@ -238,20 +240,25 @@ public class Perf {
         //JSONParser parser = new JSONParser(message, Context.getGlobal(), false);        
         //JSONObject(message).toString();
         //print(parser.parse());
-
-        Map<String, Object> map1 = (Map<String, Object>)engine.eval(
-          "JSON.parse('{ \"x\": 343, \"y\": \"hello\", \"z\": [2,4,5] }');");
-        print(map1);
+		//*/
+        // Map<String, String> map1 = (Map<String, Object>)engine.eval(
+        //"JSON.parse('{ \"x\": 343, \"y\": \"hello\", \"z\": [2,4,5] }');");
+        //print(map1);
         //*
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine engine = sem.getEngineByName("nashorn");
+         Map<String, String> prep = new HashMap<>();
+         prep.put("prepareStatement", "insert into excape values (\"bla bla\")");
+         
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
         ScriptObjectMirror json = (ScriptObjectMirror) engine.eval("JSON");
         String stmt = "{\"prepareStatement\":\"insert into excape values (\\\"bla \\n bla\\\")\", \"chunkSize\":0}";
+        Bindings bindings = engine.createBindings();
+        bindings.put("prepareStatement", "insert into excape values (\"bla bla\")");
+        Object bindingsResult = engine.eval("JSON.parse(prepareStatement)", bindings);
         
         //Object parsed = json.callMember("parse", stmt);
 
-        String parsed = (String) json.callMember("stringify", json.callMember("parse", stmt));
-        print (stmt);
+        Object parsed =  json.callMember("stringify", prep);
+        print (bindingsResult);
         print (parsed);
         //*/
     }

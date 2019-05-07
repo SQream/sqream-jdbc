@@ -229,17 +229,14 @@ public class SQConnection implements Connection {
 	public void close() throws SQLException {
 
 		try {
-
-			if(Statement_list!=null)
-			{
-				for(SQStatment item : Statement_list)
-				{
+			if(Statement_list!=null) {
+				for(SQStatment item : Statement_list) {
 					item.cancel();
 				}
 				Statement_list.clear();
 			}
-			
-			globalClient.close_connection();      // Closing Connector
+			if(globalClient !=null && globalClient.is_open())
+				globalClient.close_connection();      // Closing Connector
 			IsClosed.set(true);
 
 		} catch (IOException | ScriptException | ConnException e) {

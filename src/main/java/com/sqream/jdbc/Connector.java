@@ -557,13 +557,18 @@ public class Connector {
     }
     
     // (3)  /* Used by _send_data()  (merge if only one )  */
-    int _get_parse_header() throws IOException {
+    int _get_parse_header() throws IOException, ConnException {
         header.clear();
         bytes_read = (use_ssl) ? ss.read(header) : s.read(header);
+        if (header.position() != 10)
+        	throw new ConnException("bad header size from SQream - " + header.position() + ", possibly reading out of order");
+        	
         header.flip();
         //print ("header: " + header);
     	protocol_version = header.get(); // java.nio.BufferUnderflowException - internal runtime error
-        	
+    	if (protocol_version != 6)
+        	throw new ConnException("bad protocol version returned - " + protocol_version + " perhaps an older version of SQream or reading out of oreder");
+    	
     	is_text = header.get();
         response_length = header.getLong();
         
@@ -571,7 +576,7 @@ public class Connector {
     }
     
     // (4) /* Manage actual sending and receiving of ByteBuffers over exising socket  */
-    String _send_data (ByteBuffer data, boolean get_response) throws IOException {
+    String _send_data (ByteBuffer data, boolean get_response) throws IOException, ConnException {
            /* Used by _send_message(), _flush()   */
         
         response_buffer.clear();    
@@ -593,7 +598,7 @@ public class Connector {
     }
     
     // (5)   /* Send a JSON string to SQream over socket  */
-    String _send_message(String message, boolean get_response) throws IOException {
+    String _send_message(String message, boolean get_response) throws IOException, ConnException {
         
     	message_bytes = message.getBytes();
         message_buffer = _generate_headered_buffer((long)message_bytes.length, true);
@@ -1372,12 +1377,18 @@ public class Connector {
         
     public String get_col_type(int col_num) throws ConnException {  
         
+    	
+    	
         return col_types[_validate_col_num(col_num)];
     }
     
     
     public String get_col_type(String col_name) throws ConnException {  
         
+    	Integer col_num = col_names_map.get(col_name);
+    	if (col_num == null)
+    		throw new ConnException("\nno column found for name: " + col_name + "\nExisting columns: \n" + col_names_map.keySet());
+    	
         return get_col_type(col_names_map.get(col_name));
     }
 

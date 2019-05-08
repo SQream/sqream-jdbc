@@ -29,6 +29,12 @@ import java.security.cert.X509Certificate;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+//Minimalist JSON parsing
+import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.WriterConfig;
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.runtime.JSONListAdapter;
 import java.util.Map;
@@ -220,7 +226,6 @@ public class Connector {
     // ---------------------
 
     String connectDatabase = "'{'\"connectDatabase\":\"{0}\", \"username\":\"{1}\", \"password\":\"{2}\", \"service\":\"{3}\"'}'";
-    String prepareStatement = "'{'\"prepareStatement\":\"{0}\", \"chunkSize\":{1}'}'";
     String reconnectDatabase = "'{'\"reconnectDatabase\":\"{0}\", \"username\":\"{1}\", \"password\":\"{2}\", \"service\":\"{3}\", \"connectionId\":{4, number, #}, \"listenerId\":{5, number, #}'}'";
     String reconstructStatement = "'{'\"reconstructStatement\":{0, number, #}'}'";
     String put = "'{'\"put\":{0, number, #}'}'";
@@ -817,10 +822,20 @@ public class Connector {
     	
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
-        String prepareStr = MessageFormat.format(prepareStatement, statement, 0);  // Random chunkSize to remember it's not really used
-        // prepareStr = (String) json.callMember("stringify", json.callMember("parse", prepareStr));
+        JsonObject prepare_jsonify;
         
-        response_json =  _parse_sqream_json(_send_message(prepareStr, true));
+        try
+        {
+	        prepare_jsonify = Json.object()
+		    		.add("prepareStatement", statement)
+		    		.add("chunkSize", 0);  // Random chunkSize to remember it's not really used
+        }
+    	catch(ParseException e)
+        {
+    		throw new ConnException ("Could not parse the statement for PrepareStatement");
+        }
+        
+        response_json =  _parse_sqream_json(_send_message(prepare_jsonify.toString(WriterConfig.MINIMAL), true));
         
         // Parse response parameters
         listener_id =   (int) response_json.get("listener_id");

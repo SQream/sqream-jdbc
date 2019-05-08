@@ -294,9 +294,9 @@ public class Connector {
         if (ts == null) 
             return 0;
         
-        LocalDateTime datetime = ts.toInstant().atZone(zone).toLocalDateTime(); 
+        //LocalDateTime datetime = ts.toInstant().atZone(zone).toLocalDateTime(); 
         
-        //LocalDateTime datetime = ts.toLocalDateTime(); 
+        LocalDateTime datetime = ts.toLocalDateTime(); 
         year  = datetime.getYear();
         month = datetime.getMonthValue();
         day   = datetime.getDayOfMonth();
@@ -356,8 +356,8 @@ public class Connector {
         ms = time_as_int % 1000;
         LocalDateTime local_dt = LocalDateTime.of(_int_to_local_date(date_as_int), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6)));
         
-        //return Timestamp.valueOf(local_dt);
-        return Timestamp.from(local_dt.atZone(zone).toInstant());
+        return Timestamp.valueOf(local_dt);
+        //return Timestamp.from(local_dt.atZone(zone).toInstant());
 
     }
     
@@ -999,7 +999,7 @@ public class Connector {
     
     boolean _validate_index(int col_num) throws ConnException {
     	if (col_num <0 || col_num > row_length)
-    		 throw new ConnException("Illegal index on get/set. Allowed indices are 0-" + (row_length -1));
+    		 throw new ConnException("Illegal index on get/set\nAllowed indices are 0-" + (row_length -1));
     	
     	return true;
     }
@@ -1115,7 +1115,7 @@ public class Connector {
     }
     
     
-    public Date get_date(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
+    public Date get_date(int col_num) throws ConnException {  
     
     	return get_date(col_num, UTC); // system_tz, UTC
     }
@@ -1344,9 +1344,8 @@ public class Connector {
     public boolean set_date(int col_num, Date date, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
     	_validate_index(col_num);
         
-    	LocalDate local_date = date.toLocalDate(); 
     	// Set actual value
-        data_columns[col_num].putInt(_validate_set(col_num, local_date, "ftDate") ? 0 : date_to_int(date, zone));
+        data_columns[col_num].putInt(_validate_set(col_num, date, "ftDate") ? 0 : date_to_int(date, zone));
         
         // Mark column as set
         columns_set.set(col_num);
@@ -1358,12 +1357,11 @@ public class Connector {
     public boolean set_datetime(int col_num, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
     	_validate_index(col_num);
         
-    	LocalDateTime dt = ts.toLocalDateTime(); 
     	//ZonedDateTime dt = ts.toLocalDateTime().atZone(zone); 
     	// ZonedDateTime dt = ts.toInstant().atZone(zone); 
 
     	// Set actual value
-        data_columns[col_num].putLong(_validate_set(col_num, dt, "ftDateTime") ? 0 : dt_to_long(ts, zone));
+        data_columns[col_num].putLong(_validate_set(col_num, ts, "ftDateTime") ? 0 : dt_to_long(ts, zone));
         
         // Mark column as set
         columns_set.set(col_num);
@@ -1374,13 +1372,13 @@ public class Connector {
     
     public boolean set_date(int col_num, Date value) throws ConnException, UnsupportedEncodingException { 
         
-        return set_date(col_num, value, UTC); // system_tz, UTC
+        return set_date(col_num, value, system_tz); // system_tz, UTC
     }
         
     
     public boolean set_datetime(int col_num, Timestamp value) throws ConnException, UnsupportedEncodingException {  
     	
-        return set_datetime(col_num, value, UTC); // system_tz, UTC
+        return set_datetime(col_num, value, system_tz); // system_tz, UTC
 }
     
     // Metadata

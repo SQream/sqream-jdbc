@@ -188,14 +188,15 @@ public class Perf {
         ps = conn.prepareStatement(sql);
         ps.executeBatch();  // Should be done automatically
         ps.close();
-		
+		//*/
         
+        /*
         // Check amount inserted
-        sql = "select * from excape";
+        sql = "select case when xint2%2=0 then xdate else '2015-01-01' end from t_a";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next()) 
-            print(rs.getString(1));
+            print(rs.getDate(1));
         rs.close();
         stmt.close();
         //conn.close();
@@ -210,8 +211,8 @@ public class Perf {
         // Load JDBC driver - not needed with newer version
         Class.forName("com.sqream.jdbc.SQDriver");
         //Class.forName("com.mysql.jdbc.Driver");  
-        //String url_src = "jdbc:Sqream://192.168.1.4:5000/developer_regression_query;user=sqream;password=sqream;cluster=false;ssl=false";
-        String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true;service=sqream";
+        String url_src = "jdbc:Sqream://192.168.1.4:5000/developer_regression_query;user=sqream;password=sqream;cluster=false;ssl=false";
+        //String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true;service=sqream";
 
         
         Perf test = new Perf();   

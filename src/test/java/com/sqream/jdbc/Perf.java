@@ -146,7 +146,7 @@ public class Perf {
         stmt.close();
         //*/
       
-        //*
+        /*
         sql = "create or replace table dt (dt datetime)";
         stmt = conn.createStatement();
         stmt.execute(sql);
@@ -190,7 +190,7 @@ public class Perf {
         ps.close();
 		//*/
         
-        /*
+        //*  
         // Check amount inserted
         sql = "select case when xint2%2=0 then xdate else '2015-01-01' end from t_a";
         stmt = conn.createStatement();

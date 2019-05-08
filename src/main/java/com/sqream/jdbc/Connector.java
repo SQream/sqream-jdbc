@@ -300,9 +300,9 @@ public class Connector {
         if (ts == null) 
             return 0;
         
-        //LocalDateTime datetime = ts.toInstant().atZone(zone).toLocalDateTime(); 
+        LocalDateTime datetime = ts.toInstant().atZone(zone).toLocalDateTime(); 
         
-        LocalDateTime datetime = ts.toLocalDateTime(); 
+        //LocalDateTime datetime = ts.toLocalDateTime(); 
         year  = datetime.getYear();
         month = datetime.getMonthValue();
         day   = datetime.getDayOfMonth();
@@ -1137,21 +1137,21 @@ public class Connector {
     }
     
     
-    public Date get_date(int col_num) throws ConnException {  
-    
-    	return get_date(col_num, UTC); // system_tz, UTC
-    }
-    
-    
     public Timestamp get_datetime(int col_num, ZoneId zone) throws ConnException {   col_num--;  // set / get work with starting index 1
 		_validate_index(col_num);
-    	return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(8* row_counter), zone) : null;
+		return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(8* row_counter), zone) : null;
+	}
+
+    
+    public Date get_date(int col_num) throws ConnException {  
+    
+    	return get_date(col_num, system_tz); // system_tz, UTC
     }
     
     
     public Timestamp get_datetime(int col_num) throws ConnException {   // set / get work with starting index 1
     	
-        return get_datetime(col_num, UTC); // system_tz, UTC
+        return get_datetime(col_num, system_tz); // system_tz, UTC
     }
 
     // -o-o-o-o-o  By column name -o-o-o-o-o

@@ -25,6 +25,12 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.X509Certificate;
 
+// JSON parsing library
+import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.WriterConfig;
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 //Formatting JSON strings, parsing JSONS
@@ -842,9 +848,25 @@ public class Connector {
 
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
-     
-        engine_bindings.put("statement", statement);
-        String prepareStr = (String) engine.eval("JSON.stringify({prepareStatement: statement, chunkSize: 0})");
+        
+        // Generating a valid json string via external library
+        JsonObject prepare_jsonify;
+        try
+        {
+	        prepare_jsonify = Json.object()
+		    		.add("prepareStatement", statement)
+		    		.add("chunkSize", 0);  // Random chunkSize to remember it's not really used
+        }
+    	catch(ParseException e)
+        {
+    		throw new ConnException ("Could not parse the statement for PrepareStatement");
+        }
+        
+        // Jsonifying via standard library - verify with test
+        //engine_bindings.put("statement", statement);
+        //String prepareStr = (String) engine.eval("JSON.stringify({prepareStatement: statement, chunkSize: 0})");
+        
+        String prepareStr = prepare_jsonify.toString(WriterConfig.MINIMAL);
         
         response_json =  _parse_sqream_json(_send_message(prepareStr, true));
         

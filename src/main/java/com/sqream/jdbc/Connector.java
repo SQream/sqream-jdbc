@@ -149,7 +149,7 @@ public class Connector {
     
     // JSON parsing related
     ScriptEngine engine;
-    Bindings bindings;
+    Bindings engine_bindings;
     ScriptObjectMirror json;
     String json_wrapper = "Java.asJSONCompatible({0})";
     //@SuppressWarnings("rawtypes") // Remove "Map is a raw type"  warning
@@ -267,15 +267,17 @@ public class Connector {
     }
 
     
-    static int date_to_int(LocalDate local_date) {
+    static int date_to_int(Date d ,ZoneId zone) {
         
         if (local_date == null) 
             return 0;
         
-        // local_date = date.toLocalDate();
-        year  = local_date.getYear();
-        month = local_date.getMonthValue();
-        day   = local_date.getDayOfMonth();
+        //ZonedDateTime zoned_date = d.toInstant().atZone(zone);
+        
+        LocalDate date = d.toLocalDate();
+        year  = date.getYear();
+        month = date.getMonthValue();
+        day   = date.getDayOfMonth();
 
         month = (month + 9) % 12;
         year = year - month / 10;
@@ -287,12 +289,14 @@ public class Connector {
     }
     
     
-    static long dt_to_long(LocalDateTime datetime) {  // ZonedDateTime
-            
-        if (datetime == null) 
+    static long dt_to_long(Timestamp ts, ZoneId zone) {  // ZonedDateTime
+        
+        if (ts == null) 
             return 0;
         
-        //local_datetime = dt.toInstant().atZone(system_tz).toLocalDateTime(); 
+        LocalDateTime datetime = ts.toInstant().atZone(zone).toLocalDateTime(); 
+        
+        //LocalDateTime datetime = ts.toLocalDateTime(); 
         year  = datetime.getYear();
         month = datetime.getMonthValue();
         day   = datetime.getDayOfMonth();
@@ -334,7 +338,7 @@ public class Connector {
     }
     
     
-    static Date int_to_date(int date_as_int) {
+    static Date int_to_date(int date_as_int, ZoneId zone) {
         
         return Date.valueOf(_int_to_local_date(date_as_int));                   
     }
@@ -352,8 +356,11 @@ public class Connector {
         ms = time_as_int % 1000;
         LocalDateTime local_dt = LocalDateTime.of(_int_to_local_date(date_as_int), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6)));
         
-        return Timestamp.valueOf(local_dt);
+        //return Timestamp.valueOf(local_dt);
+        return Timestamp.from(local_dt.atZone(zone).toInstant());
+
     }
+    
     
     // Aux Classes
     // -----------
@@ -474,7 +481,7 @@ public class Connector {
         ScriptEngineManager sem = new ScriptEngineManager();
         engine = sem.getEngineByName("javascript");
         json = (ScriptObjectMirror) engine.eval("JSON");
-        bindings = engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE);
+        engine_bindings = engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE);
         port = _port;
         ip = _ip;
         use_ssl = _ssl;
@@ -546,6 +553,21 @@ public class Connector {
     	
     	return response_json;
     }
+    
+    
+    Boolean _validate_open(String statement_type) throws ConnException {
+    	
+    	if (!is_open()) { 
+    		throw new ConnException("Trying to run command " + statement_type + " but connection closed");
+    	}
+    	
+		if (!open_statement) { 
+			throw new ConnException("Trying to run command " + statement_type + " but statement closed");
+		}
+    	
+    	return true;
+    }
+    
     
     String _validate_response(String response, String expected) throws ConnException {
         
@@ -817,22 +839,14 @@ public class Connector {
     	if (open_statement)
     		throw new ConnException("Trying to run a statement when another was not closed");
     	open_statement = true;
-    	prepare_map = new HashMap<>();
-    	prepare_map.put("prepareStatement", statement);
-    	bindings.put("statement", statement);
 
-        //statement = statement.replace("\"","\\\"").replace("\n", "\\\n").replace("\t", "\\\t");
-    	
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
+     
+        engine_bindings.put("statement", statement);
+        String prepareStr = (String) engine.eval("JSON.stringify({prepareStatement: statement, chunkSize: 0})");
         
-        String prepareStr = MessageFormat.format(prepareStatement, statement, 0);  // Random chunkSize to remember it's not really used
-        prepareStr = (String) engine.eval("var prep = {prepareStatement: statement, chunkSize: 0}; JSON.stringify(prep)");
-        // prepareStr = (String) json.callMember("stringify", json.callMember("parse", prepareStr));
-        
-        // response_json =  _parse_sqream_json(_send_message(prepareStr, true));
         response_json =  _parse_sqream_json(_send_message(prepareStr, true));
-
         
         // Parse response parameters
         listener_id =   (int) response_json.get("listener_id");
@@ -1094,9 +1108,16 @@ public class Connector {
     }
     
     
+    public Date get_date(int col_num, ZoneId zone) throws ConnException {   col_num--;  // set / get work with starting index 1
+		_validate_index(col_num);
+        
+		return (_validate_get(col_num, "ftDate")) ? int_to_date(data_columns[col_num].getInt(4*row_counter), zone) : null;
+    }
+    
+    
     public Date get_date(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-    	_validate_index(col_num);
-        return (_validate_get(col_num, "ftDate")) ? int_to_date(data_columns[col_num].getInt(4*row_counter)) : null;
+    
+    	return get_date(col_num, UTC); // system_tz, UTC
     }
     
     
@@ -1108,7 +1129,7 @@ public class Connector {
     
     public Timestamp get_datetime(int col_num) throws ConnException {   // set / get work with starting index 1
     	
-        return get_datetime(col_num, system_tz);
+        return get_datetime(col_num, UTC); // system_tz, UTC
     }
 
     // -o-o-o-o-o  By column name -o-o-o-o-o
@@ -1325,7 +1346,7 @@ public class Connector {
         
     	LocalDate local_date = date.toLocalDate(); 
     	// Set actual value
-        data_columns[col_num].putInt(_validate_set(col_num, local_date, "ftDate") ? 0 : date_to_int(local_date));
+        data_columns[col_num].putInt(_validate_set(col_num, local_date, "ftDate") ? 0 : date_to_int(date, zone));
         
         // Mark column as set
         columns_set.set(col_num);
@@ -1342,7 +1363,7 @@ public class Connector {
     	// ZonedDateTime dt = ts.toInstant().atZone(zone); 
 
     	// Set actual value
-        data_columns[col_num].putLong(_validate_set(col_num, dt, "ftDateTime") ? 0 : dt_to_long(dt));
+        data_columns[col_num].putLong(_validate_set(col_num, dt, "ftDateTime") ? 0 : dt_to_long(ts, zone));
         
         // Mark column as set
         columns_set.set(col_num);
@@ -1353,13 +1374,13 @@ public class Connector {
     
     public boolean set_date(int col_num, Date value) throws ConnException, UnsupportedEncodingException { 
         
-        return set_date(col_num, value, system_tz); // system_tz, UTC
+        return set_date(col_num, value, UTC); // system_tz, UTC
     }
         
     
     public boolean set_datetime(int col_num, Timestamp value) throws ConnException, UnsupportedEncodingException {  
     	
-        return set_datetime(col_num, value, system_tz); // system_tz, UTC
+        return set_datetime(col_num, value, UTC); // system_tz, UTC
 }
     
     // Metadata

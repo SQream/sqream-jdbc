@@ -146,7 +146,7 @@ public class Perf {
         stmt.close();
         //*/
       
-        /*
+        //*
         sql = "create or replace table dt (dt datetime)";
         stmt = conn.createStatement();
         stmt.execute(sql);
@@ -176,7 +176,7 @@ public class Perf {
         stmt.close();
         //*/
         
-      //*
+      /*
         sql = "create or replace table excape (s varchar(50))";
         stmt = conn.createStatement();
         stmt.execute(sql);
@@ -188,7 +188,7 @@ public class Perf {
         ps = conn.prepareStatement(sql);
         ps.executeBatch();  // Should be done automatically
         ps.close();
-		*/
+		
         
         // Check amount inserted
         sql = "select * from excape";
@@ -215,7 +215,7 @@ public class Perf {
 
         
         Perf test = new Perf();   
-        // test.perf(url_src);
+        test.perf(url_src);
         
         /*
         //  --------
@@ -241,11 +241,9 @@ public class Perf {
         //JSONParser parser = new JSONParser(message, Context.getGlobal(), false);        
         //JSONObject(message).toString();
         //print(parser.parse());
-		//*/
         // Map<String, String> map1 = (Map<String, Object>)engine.eval(
         //"JSON.parse('{ \"x\": 343, \"y\": \"hello\", \"z\": [2,4,5] }');");
         //print(map1);
-        //*
          Map<String, String> prep = new HashMap<>();
          prep.put("prepareStatement", "insert into excape values (\"bla bla\")");
          

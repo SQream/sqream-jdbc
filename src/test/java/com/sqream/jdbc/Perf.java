@@ -15,7 +15,6 @@ import java.util.Map;
 
 import javax.script.Bindings;
 import javax.script.Invocable;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -146,7 +145,7 @@ public class Perf {
         stmt.close();
         //*/
       
-        //*
+        /*
         sql = "create or replace table dt (dt datetime)";
         stmt = conn.createStatement();
         stmt.execute(sql);
@@ -155,7 +154,7 @@ public class Perf {
         // Network insert 10 million rows
         sql = "insert into dt values (?)";
         ps = conn.prepareStatement(sql);
-        Timestamp test = datetime_from_tuple(2018, 3, 23, 3, 54, 38, 0);
+        Timestamp test = datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45);
         print (test);
         
         for (int i=0; i < 1; i++) {
@@ -176,7 +175,7 @@ public class Perf {
         stmt.close();
         //*/
         
-      /*
+      //*
         sql = "create or replace table excape (s varchar(50))";
         stmt = conn.createStatement();
         stmt.execute(sql);
@@ -188,7 +187,7 @@ public class Perf {
         ps = conn.prepareStatement(sql);
         ps.executeBatch();  // Should be done automatically
         ps.close();
-		
+		*/
         
         // Check amount inserted
         sql = "select * from excape";
@@ -215,7 +214,7 @@ public class Perf {
 
         
         Perf test = new Perf();   
-        test.perf(url_src);
+        // test.perf(url_src);
         
         /*
         //  --------
@@ -241,33 +240,25 @@ public class Perf {
         //JSONParser parser = new JSONParser(message, Context.getGlobal(), false);        
         //JSONObject(message).toString();
         //print(parser.parse());
+		//*/
         // Map<String, String> map1 = (Map<String, Object>)engine.eval(
         //"JSON.parse('{ \"x\": 343, \"y\": \"hello\", \"z\": [2,4,5] }');");
         //print(map1);
+        //*
          Map<String, String> prep = new HashMap<>();
          prep.put("prepareStatement", "insert into excape values (\"bla bla\")");
          
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
         ScriptObjectMirror json = (ScriptObjectMirror) engine.eval("JSON");
-        engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE).put ("statement", "insert into excape values (\"bla \n bla\")");
-
-        
-        //String stmt = "{\"prepareStatement\":\"insert into excape values (\\\"bla \\n bla\\\")\", \"chunkSize\":0}";
-        //Bindings bindings = engine.createBindings();
-        //bindings.put("prepareStatement", "insert into excape values (\"bla bla\")");
-        //Object bindingsResult = engine.eval("JSON.parse(prepareStatement)", bindings);
+        String stmt = "{\"prepareStatement\":\"insert into excape values (\\\"bla \\n bla\\\")\", \"chunkSize\":0}";
+        Bindings bindings = engine.createBindings();
+        bindings.put("prepareStatement", "insert into excape values (\"bla bla\")");
+        Object bindingsResult = engine.eval("JSON.parse(prepareStatement)", bindings);
         
         //Object parsed = json.callMember("parse", stmt);
 
-        //Object parsed =  json.callMember("stringify", prep);
-        //Object obj = engine.eval("var j = Java.asJSONCompatible({ prepareStatement: 'insert into excape values (\"bla bla\")'}); JSON.stringify(j);");
-        String parsed = (String) engine.eval("var prop = {prepareStatement: statement}; JSON.stringify(prop)");
-
-        //Map<String, Object> map = (Map<String, Object>)obj;
-        //print (bindingsResult);
-        //String map_maker = "var prep = {prepareStatement: \"insert into excape values (\"bla bla\")\")};" + 
-      //                 "JSON.Stringify(preps);";
-        
+        Object parsed =  json.callMember("stringify", prep);
+        print (bindingsResult);
         print (parsed);
         //*/
     }

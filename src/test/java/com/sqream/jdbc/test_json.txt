@@ -1,0 +1,1 @@
+insert into parse_json values("this is a string\nAnd here is a new line\tl made a tab here")

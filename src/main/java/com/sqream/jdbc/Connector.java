@@ -1414,6 +1414,12 @@ public class Connector {
         return --col_num;
     }
     
+    public int get_statement_id() {
+
+        return statement_id;
+    }
+
+
     public String get_query_type() {
         
         return statement_type;

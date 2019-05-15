@@ -59,7 +59,8 @@ public class SQStatment implements Statement {
 		
 		if (IsCancelStatement.get())
 			return;
-
+		
+		statement_id = Client.get_statement_id();
 		String sql = "select stop_statement(" + statement_id + ")";
 		IsCancelStatement.set(true);
 		

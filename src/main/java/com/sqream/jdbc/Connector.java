@@ -133,7 +133,8 @@ public class Connector {
     byte protocol_version = 6;
     byte is_text;  // Catching the 2nd byte of a response
     long response_length;
-    int connection_id, statement_id;
+    int connection_id = -1;
+    int statement_id = -1;
     static Charset UTF8 = StandardCharsets.UTF_8;
     
     // Connection related

@@ -501,7 +501,9 @@ public class Connector {
             response_buffer.clear();
             bytes_read = s.read(response_buffer);
             response_buffer.flip();     
-            
+			if (read == -1) {
+			  throw new IOException("Socket closed");
+            }            
             // Read size of IP address (7-15 bytes) and get the IP
             byte [] ip_bytes = new byte[response_buffer.getInt()]; // Retreiving ip from clustered connection
             response_buffer.get(ip_bytes);
@@ -592,9 +594,12 @@ public class Connector {
     int _get_parse_header() throws IOException, ConnException {
         header.clear();
         bytes_read = (use_ssl) ? ss.read(header) : s.read(header);
+        // is connection open
+        if (bytes_read == -1) {
+  			throw new IOException("Socket closed");
+ 		}
         if (header.position() != 10)
         	throw new ConnException("bad header size from SQream - " + header.position() + ", possibly reading out of order");
-        	
         header.flip();
         //print ("header: " + header);
     	protocol_version = header.get(); // java.nio.BufferUnderflowException - internal runtime error
@@ -615,8 +620,9 @@ public class Connector {
         
         if (data != null ) {
             data.flip();
-            while(data.hasRemaining()) 
-                written = (use_ssl) ? ss.write(data) : s.write(data);
+            while(data.hasRemaining()) {
+				written = (use_ssl) ? ss.write(data) : s.write(data);
+            }
         }
         
         // Sending null for data will get us here directly, allowing to only get socket response if needed
@@ -624,6 +630,9 @@ public class Connector {
             response_message = ByteBuffer.allocate(_get_parse_header());
             bytes_read = (use_ssl) ? ss.read(response_message) : s.read(response_message);
             response_message.flip();
+	        if (bytes_read == -1) {
+  				throw new IOException("Socket closed");
+ 			}
         }   
         
         return (get_response) ? decode(response_message) : "" ;
@@ -761,6 +770,9 @@ public class Connector {
             bytes_read = _get_parse_header();   // Get header out of the way
             do {
                 bytes_read = (int)((use_ssl) ? ss.read(fetch_buffers) : s.read(fetch_buffers));
+        		if (bytes_read == -1) {
+  					throw new IOException("Socket closed");
+ 				}
                 //print ("binary bytes read: " + bytes_read);
             }
             while (bytes_read >0);

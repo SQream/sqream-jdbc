@@ -192,7 +192,8 @@ public class Perf {
         
         //*  
         // Check amount inserted
-        sql = "select case when xint2%2=0 then xdate else '2015-01-01' end from t_a";
+        // sql = "select case when xint2%2=0 then xdate else '2015-01-01' end from t_a";
+        sql = "select 1";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next()) 
@@ -211,7 +212,7 @@ public class Perf {
         // Load JDBC driver - not needed with newer version
         Class.forName("com.sqream.jdbc.SQDriver");
         //Class.forName("com.mysql.jdbc.Driver");  
-        String url_src = "jdbc:Sqream://192.168.1.4:5000/developer_regression_query;user=sqream;password=sqream;cluster=false;ssl=false";
+        String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true;ssl=false";
         //String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true;service=sqream";
 
         

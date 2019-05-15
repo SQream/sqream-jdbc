@@ -928,7 +928,7 @@ public class Connector {
             // Were all columns set
             //if (!IntStream.range(0, columns_set.length).allMatch(i -> columns_set[i]))
             if (columns_set.cardinality() < row_length)
-                throw new ConnException ("All columns must be set before calling next()");
+                throw new ConnException ("All columns must be set before calling next(). Set " + columns_set.cardinality() +  " columns out of "  + row_length);
             
             // Nullify column flags and update counter
             columns_set.clear();  
@@ -1005,7 +1005,7 @@ public class Connector {
     
     public boolean close_connection() throws IOException, ScriptException, ConnException {
         
-    	close();
+    	// close();
         _validate_response(_send_message(form_json("closeConnection"), true), form_json("connectionClosed"));
         
         if (use_ssl) {

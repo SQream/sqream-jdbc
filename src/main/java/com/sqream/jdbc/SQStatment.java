@@ -51,6 +51,12 @@ public class SQStatment implements Statement {
 	@Override
 	public void cancel() throws SQLException  {
 		
+		/*
+		if (!Client.is_open_statement())
+			return;
+		//*/
+		
+		
 		if (IsCancelStatement.get())
 			return;
 

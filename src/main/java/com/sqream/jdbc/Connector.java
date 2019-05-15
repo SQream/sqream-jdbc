@@ -133,7 +133,8 @@ public class Connector {
     byte protocol_version = 6;
     byte is_text;  // Catching the 2nd byte of a response
     long response_length;
-    int connection_id, statement_id;
+    int connection_id = -1;
+    int statement_id = -1;
     static Charset UTF8 = StandardCharsets.UTF_8;
     
     // Connection related
@@ -300,9 +301,9 @@ public class Connector {
         if (ts == null) 
             return 0;
         
-        //LocalDateTime datetime = ts.toInstant().atZone(zone).toLocalDateTime(); 
+        LocalDateTime datetime = ts.toInstant().atZone(zone).toLocalDateTime(); 
         
-        LocalDateTime datetime = ts.toLocalDateTime(); 
+        //LocalDateTime datetime = ts.toLocalDateTime(); 
         year  = datetime.getYear();
         month = datetime.getMonthValue();
         day   = datetime.getDayOfMonth();
@@ -940,7 +941,7 @@ public class Connector {
             // Were all columns set
             //if (!IntStream.range(0, columns_set.length).allMatch(i -> columns_set[i]))
             if (columns_set.cardinality() < row_length)
-                throw new ConnException ("All columns must be set before calling next()");
+                throw new ConnException ("All columns must be set before calling next(). Set " + columns_set.cardinality() +  " columns out of "  + row_length);
             
             // Nullify column flags and update counter
             columns_set.clear();  
@@ -1017,7 +1018,7 @@ public class Connector {
     
     public boolean close_connection() throws IOException, ScriptException, ConnException {
         
-    	close();
+    	// close();
         _validate_response(_send_message(form_json("closeConnection"), true), form_json("connectionClosed"));
         
         if (use_ssl) {
@@ -1149,21 +1150,21 @@ public class Connector {
     }
     
     
-    public Date get_date(int col_num) throws ConnException {  
-    
-    	return get_date(col_num, UTC); // system_tz, UTC
-    }
-    
-    
     public Timestamp get_datetime(int col_num, ZoneId zone) throws ConnException {   col_num--;  // set / get work with starting index 1
 		_validate_index(col_num);
-    	return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(8* row_counter), zone) : null;
+		return (_validate_get(col_num, "ftDateTime")) ? long_to_dt(data_columns[col_num].getLong(8* row_counter), zone) : null;
+	}
+
+    
+    public Date get_date(int col_num) throws ConnException {  
+    
+    	return get_date(col_num, system_tz); // system_tz, UTC
     }
     
     
     public Timestamp get_datetime(int col_num) throws ConnException {   // set / get work with starting index 1
     	
-        return get_datetime(col_num, UTC); // system_tz, UTC
+        return get_datetime(col_num, system_tz); // system_tz, UTC
     }
 
     // -o-o-o-o-o  By column name -o-o-o-o-o
@@ -1426,6 +1427,12 @@ public class Connector {
         return --col_num;
     }
     
+    public int get_statement_id() {
+
+        return statement_id;
+    }
+
+
     public String get_query_type() {
         
         return statement_type;

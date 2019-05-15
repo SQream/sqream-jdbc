@@ -51,9 +51,16 @@ public class SQStatment implements Statement {
 	@Override
 	public void cancel() throws SQLException  {
 		
+		/*
+		if (!Client.is_open_statement())
+			return;
+		//*/
+		
+		
 		if (IsCancelStatement.get())
 			return;
-
+		
+		statement_id = Client.get_statement_id();
 		String sql = "select stop_statement(" + statement_id + ")";
 		IsCancelStatement.set(true);
 		

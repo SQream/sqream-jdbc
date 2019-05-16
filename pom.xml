@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sqream</groupId>
     <artifactId>sqream-jdbc</artifactId>
-    <version>2.9.4</version>
+    <version>2.9.5</version>
     <name>SQream JDBC</name>
     <packaging>jar</packaging>
     <url>http://maven.apache.org</url>

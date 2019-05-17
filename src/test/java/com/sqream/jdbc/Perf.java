@@ -197,7 +197,7 @@ public class Perf {
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next()) 
-            print(rs.getDate(1));
+            print(rs.getInt(1));
         rs.close();
         stmt.close();
         //conn.close();

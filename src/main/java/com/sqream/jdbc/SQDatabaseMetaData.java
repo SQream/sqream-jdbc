@@ -33,9 +33,9 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	String DatabaseProductVersion = "";
 	int DatabaseMajorVersion = 0;
 	int DatabaseMinorVersion = 0;
-	int DriverMajorVersion = 1;
-	int DriverMinorVersion = 5;
-	String DriverVersion = "1.0";
+	int DriverMajorVersion = 4;
+	int DriverMinorVersion = 0;
+	String DriverVersion = "4.0";
 	String db_name;
 	
 	static void print(Object printable) {

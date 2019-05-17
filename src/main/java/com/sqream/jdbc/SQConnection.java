@@ -325,7 +325,7 @@ public class SQConnection implements Connection {
 	@Override
 	public boolean isValid(int timeout) throws SQLException {
 		// System.out.println("isValid");
-		return false;
+		return globalClient.is_open();
 	}
 	
 	@Override

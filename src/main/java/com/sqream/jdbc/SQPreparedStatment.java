@@ -54,7 +54,8 @@ public class SQPreparedStatment implements PreparedStatement {
     int setCounter = 0;
     int rowsInBatch = 0;
     List<Integer> setsPerBatch = new ArrayList<>(); 
-
+    boolean is_closed = true;
+    
     static void print(Object printable) {
         System.out.println(printable);
     }
@@ -63,7 +64,7 @@ public class SQPreparedStatment implements PreparedStatement {
         
         Connection = conn;
         db_name = catalog;
-    
+        is_closed = false;
         Client = new Connector(Connection.sqlb.ip, Connection.sqlb.port, conn.sqlb.Cluster, Connection.sqlb.Use_ssl);
         Client.connect(Connection.sqlb.DB_name, Connection.sqlb.User, Connection.sqlb.Password, "sqream");  // default service
         sql = Sql;
@@ -74,7 +75,7 @@ public class SQPreparedStatment implements PreparedStatement {
     
     @Override
     public void close() throws SQLException {
-    	
+    	//print ("inside SQPreparedStatement close");
         try {
         	if (Client!= null && Client.is_open()) {
 				if (Client.is_open_statement()) {
@@ -85,6 +86,7 @@ public class SQPreparedStatment implements PreparedStatement {
         	e.printStackTrace();
             throw new SQLException(e);
         } 
+        is_closed = true;
     }
 
     @Override
@@ -467,7 +469,7 @@ public class SQPreparedStatment implements PreparedStatement {
     
     @Override
     public boolean isClosed() throws SQLException {
-        return false;
+    	return is_closed;
     }
     
     @Override

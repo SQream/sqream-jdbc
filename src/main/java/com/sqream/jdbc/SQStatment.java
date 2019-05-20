@@ -30,7 +30,7 @@ public class SQStatment implements Statement {
     AtomicBoolean IsCancelStatement = new AtomicBoolean(false);
     enum statementType {DML, INSERT, SELECT};
     String db_name;
-    
+    boolean is_closed = true;
     	
 	public SQStatment(Connector client,SQConnection conn, String catalog) throws NumberFormatException,
 			UnknownHostException, IOException, 
@@ -40,10 +40,14 @@ public class SQStatment implements Statement {
 		db_name = catalog;
 		Client = new Connector(conn.sqlb.ip, conn.sqlb.port, conn.sqlb.Cluster, conn.sqlb.Use_ssl);
 		Client.connect(conn.sqlb.DB_name, conn.sqlb.User, conn.sqlb.Password, conn.sqlb.service);
-
+		is_closed = false;
 	}
-
-	@Override
+	
+	static void print(Object printable) {
+	        System.out.println(printable);
+    }
+	
+	 @Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		return false;
 	}
@@ -54,9 +58,9 @@ public class SQStatment implements Statement {
 		/*
 		if (!Client.is_open_statement())
 			return;
-		//*/
+		*/
 		
-		
+		print ("\n*** Inside cancel *** \n");
 		if (IsCancelStatement.get())
 			return;
 		
@@ -103,6 +107,7 @@ public class SQStatment implements Statement {
 
 	@Override
 	public void close() throws SQLException {
+		//print ("inside SQStatement close");
 		try {
 			if(Client !=null && Client.is_open()) {
 				if (Client.is_open_statement())
@@ -115,6 +120,8 @@ public class SQStatment implements Statement {
 			e.printStackTrace();
 			throw new SQLException("Statement already closed. Error: " + e);
 		} 
+	    is_closed = true;
+
 //		catch (NullPointerException e) {}
 		// TODO Auto-generated catch block
 	}	
@@ -175,7 +182,7 @@ public class SQStatment implements Statement {
 		return result;
 	}
 
-
+	/*
 	private void execute_set(String sql) throws ConnException, SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException {
 		try {
 			Client.execute(sql);
@@ -198,7 +205,7 @@ public class SQStatment implements Statement {
 			throw new SQLException(e);
 		} 
 	}
-
+	//*/
 	
 	public ResultSet executeQuery(String sql) throws SQLException {
 		try {
@@ -439,7 +446,7 @@ public class SQStatment implements Statement {
 
 	@Override
 	public boolean isClosed() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		return is_closed;
 	}
 
 	@Override

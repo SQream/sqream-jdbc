@@ -695,7 +695,7 @@ public class Connector {
             // Calculate number of rows to flush at
             row_size = IntStream.of(col_sizes).sum() + col_nullable.cardinality();    // not calculating nvarc lengths for now
             rows_per_flush = FLUSH_SIZE / row_size;
-            //rows_per_flush = 10000;
+            rows_per_flush = 500000;
             // Buffer arrays for column storage
             data_columns = new ByteBuffer[row_length];
             null_columns = new ByteBuffer[row_length];

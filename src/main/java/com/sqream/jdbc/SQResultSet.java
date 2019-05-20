@@ -50,7 +50,8 @@ class SQResultSet implements ResultSet {
 	boolean Empty = false;
 	boolean RemoveSpaces = false;
 	boolean isNull = true;
-	
+    boolean is_closed = true;
+
     
 	static void print(Object printable) {
         System.out.println(printable);
@@ -108,6 +109,8 @@ class SQResultSet implements ResultSet {
 		Status = RS_STAT.OPEN;
 		db_name = catalog;
 		RemoveSpaces = removeSpaces;
+	    is_closed = false;
+
 	}
 	
 	
@@ -123,7 +126,7 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public void close() throws SQLException {
-		
+		print ("inside SQResultSet close()");
 		if (!Empty) {  // Empty result sets don't start with a Client
 			try {
 				if (Client!= null && Client.is_open()) {
@@ -134,6 +137,8 @@ class SQResultSet implements ResultSet {
 			} catch (IOException | ConnException | ScriptException e) {
 				e.printStackTrace();
 			}
+		    is_closed = true;
+
 		}
 	}
 
@@ -758,12 +763,14 @@ class SQResultSet implements ResultSet {
 			 return nextResult;
 		} catch (Exception e2) {
 			try {
+				print ("\n***trying to close inside SQResultSet next()***\n");
 				if (Client!= null && Client.is_open() && Client.is_open_statement()) 
 					Client.close();
 			} catch (IOException | ConnException | ScriptException e) {
 				e.printStackTrace();
 				throw new SQLException(e.getMessage());
-			}			
+			}
+			e2.printStackTrace();
 			throw new SQLException(e2.getMessage());
 	   } 
 	}
@@ -1476,8 +1483,7 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public boolean isClosed() throws SQLException {
-		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		return is_closed;
 	}
 
 	@Override

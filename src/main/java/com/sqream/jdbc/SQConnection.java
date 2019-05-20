@@ -47,7 +47,10 @@ public class SQConnection implements Connection {
 		Boolean Use_ssl;
 		String service;
 	}
-
+	
+	 static void print(Object printable) {
+	        System.out.println(printable);
+    }
 	
 	private  Vector<SQStatment> Statement_list = new Vector<SQStatment>();
 
@@ -227,7 +230,7 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public void close() throws SQLException {
-
+		print ("inside SQConnection close");
 		try {
 			if(Statement_list!=null) {
 				for(SQStatment item : Statement_list) {
@@ -313,8 +316,7 @@ public class SQConnection implements Connection {
 
 	@Override
 	public SQLWarning getWarnings() throws SQLException {
-		// System.out.println("getWarnings");
-		return null;
+		return null; // Returns: the first SQLWarning object or null if there are none
 	}
 	@Override
 	public boolean isReadOnly() throws SQLException {
@@ -380,7 +382,8 @@ public class SQConnection implements Connection {
 	@Override
 	public <T> T unwrap(Class<T> arg0) throws SQLException {
 //		System.out.println("unwrap");
-		return null;
+		throw new SQLFeatureNotSupportedException("unwrap in SQConnection");
+
 	}
 
 	@Override

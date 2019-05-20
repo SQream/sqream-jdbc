@@ -55,17 +55,14 @@ public class SQStatment implements Statement {
 	@Override
 	public void cancel() throws SQLException  {
 		
-		/*
-		if (!Client.is_open_statement())
+		if (Client.IsCancelStatement.getAndSet(true))
 			return;
-		//*/
 		
-		if (Client.IsCancelStatement.get())
+		if (!Client.is_open_statement())
 			return;
 		
 		statement_id = Client.get_statement_id();
 		String sql = "select stop_statement(" + statement_id + ")";
-		IsCancelStatement.set(true);
 		
 		Connector cancel=null;
 		try {
@@ -92,6 +89,7 @@ public class SQStatment implements Statement {
 						throw new SQLException(e.getMessage());
 					}
 				}
+			IsCancelStatement.set(false);
 		}
 		
 	}

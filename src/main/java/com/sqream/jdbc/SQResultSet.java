@@ -126,7 +126,9 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public void close() throws SQLException {
-		print ("inside SQResultSet close()");
+		
+		is_closed = true;
+		/*
 		if (!Empty) {  // Empty result sets don't start with a Client
 			try {
 				if (Client!= null && Client.is_open()) {
@@ -138,8 +140,8 @@ class SQResultSet implements ResultSet {
 				e.printStackTrace();
 			}
 		    is_closed = true;
-
 		}
+		//*/
 	}
 
 	@Override
@@ -762,6 +764,7 @@ class SQResultSet implements ResultSet {
 			 boolean nextResult = this.Client.next();
 			 return nextResult;
 		} catch (Exception e2) {
+			//e2.printStackTrace();
 			try {
 				print ("\n***trying to close inside SQResultSet next()***\n");
 				if (Client!= null && Client.is_open() && Client.is_open_statement()) 

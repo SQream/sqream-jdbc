@@ -58,10 +58,9 @@ public class SQStatment implements Statement {
 		/*
 		if (!Client.is_open_statement())
 			return;
-		*/
+		//*/
 		
-		print ("\n*** Inside cancel *** \n");
-		if (IsCancelStatement.get())
+		if (Client.IsCancelStatement.get())
 			return;
 		
 		statement_id = Client.get_statement_id();
@@ -72,7 +71,8 @@ public class SQStatment implements Statement {
 		try {
 			cancel = new Connector(Connection.sqlb.ip, Connection.sqlb.port, Connection.sqlb.Cluster, Connection.sqlb.Use_ssl);
 			cancel.connect(Connection.sqlb.DB_name, Connection.sqlb.User, Connection.sqlb.Password, Connection.sqlb.service);
-			cancel.execute(sql);			
+			cancel.execute(sql);	
+			Client.open_statement = false;
 		}catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
@@ -93,6 +93,7 @@ public class SQStatment implements Statement {
 					}
 				}
 		}
+		
 	}
 
 	@Override
@@ -107,7 +108,6 @@ public class SQStatment implements Statement {
 
 	@Override
 	public void close() throws SQLException {
-		//print ("inside SQStatement close");
 		try {
 			if(Client !=null && Client.is_open()) {
 				if (Client.is_open_statement())

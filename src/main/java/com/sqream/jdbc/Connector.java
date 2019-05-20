@@ -40,6 +40,7 @@ import javax.script.ScriptEngineManager;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.runtime.JSONListAdapter;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.HashMap;
 import java.text.MessageFormat;
 
@@ -226,6 +227,9 @@ public class Connector {
     static LocalDate local_date;
     static LocalDateTime local_datetime;
 
+    // Managing stop_statement
+    AtomicBoolean IsCancelStatement = new AtomicBoolean(false);
+    
     
     // Communication Strings
     // ---------------------

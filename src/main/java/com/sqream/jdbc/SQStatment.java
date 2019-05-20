@@ -81,7 +81,7 @@ public class SQStatment implements Statement {
 			// TODO Auto-generated catch block
 			if(cancel !=null && cancel.is_open())
 				try {
-					if (Client.is_open_statement())
+					if (cancel.is_open_statement())
 						cancel.close();
 					cancel.close_connection();
 				} catch (IOException | ConnException | ScriptException e) {

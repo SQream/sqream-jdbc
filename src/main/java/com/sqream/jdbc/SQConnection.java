@@ -230,7 +230,6 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public void close() throws SQLException {
-		print ("inside SQConnection close");
 		try {
 			if(Statement_list!=null) {
 				for(SQStatment item : Statement_list) {

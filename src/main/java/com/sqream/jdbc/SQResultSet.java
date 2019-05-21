@@ -766,7 +766,6 @@ class SQResultSet implements ResultSet {
 		} catch (Exception e2) {
 			//e2.printStackTrace();
 			try {
-				print ("\n***trying to close inside SQResultSet next()***\n");
 				if (Client!= null && Client.is_open() && Client.is_open_statement()) 
 					Client.close();
 			} catch (IOException | ConnException | ScriptException e) {

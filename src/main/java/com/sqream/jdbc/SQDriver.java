@@ -107,8 +107,6 @@ public class SQDriver implements java.sql.Driver {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		//System.setProperty("user.timezone", "UTC");
-		//TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 	}
 
 	@Override
@@ -128,6 +126,7 @@ public class SQDriver implements java.sql.Driver {
 		String prfx = "jdbc:Sqream";
 
 		if (!url.trim().substring(0, prfx.length()).equals(prfx))
+			
 			throw new SQLException("Wrong prefix for connection string. Should be jdbc:Sqream but got: " + url.trim().substring(0, prfx.length())); // assaf: don't try to this url, it was not ment for
 							// sqream. (propegate it on..)
 

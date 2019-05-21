@@ -193,13 +193,37 @@ public class Perf {
         //*  
         // Check amount inserted
         // sql = "select case when xint2%2=0 then xdate else '2015-01-01' end from t_a";
-        sql = "select 1";
+        StringBuilder s_sql = new StringBuilder("create or replace table t_test(x0 int");
+        for(int i = 0; i < 59; i++)
+        {
+        	s_sql.append(",x" + (i+1) + " int");
+        }
+        s_sql.append(")");
         stmt = conn.createStatement();
-        rs = stmt.executeQuery(sql);
+        rs = stmt.executeQuery(s_sql.toString());
         while(rs.next()) 
             print(rs.getInt(1));
         rs.close();
         stmt.close();
+        
+        StringBuilder ss_sql = new StringBuilder("insert into t_test values(?");
+        for(int i = 0; i < 59; i++)
+        {
+        	ss_sql.append(",?");
+        }
+        ss_sql.append(")");
+        PreparedStatement p_stmt = conn.prepareStatement(ss_sql.toString());
+        for(int i=0; i < 10; i++)
+        {
+        	for(int j = 0; j < 60; j++)
+        	{
+        		p_stmt.setInt(j+1, 11);
+        	}
+        	p_stmt.addBatch();
+        }
+        p_stmt.executeBatch();
+        p_stmt.close();
+        
         //conn.close();
         //*/
         
@@ -212,7 +236,7 @@ public class Perf {
         // Load JDBC driver - not needed with newer version
         Class.forName("com.sqream.jdbc.SQDriver");
         //Class.forName("com.mysql.jdbc.Driver");  
-        String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true;ssl=false";
+        String url_src = "jdbc:Sqream://192.168.1.4:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
         //String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true;service=sqream";
 
         

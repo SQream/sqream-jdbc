@@ -104,6 +104,7 @@ public class SQConnection implements Connection {
 	public SQConnection(Properties connectionInfo) 
 			throws ScriptException, SQLException, NumberFormatException, IOException, NoSuchAlgorithmException, KeyManagementException, ConnException {
 		
+		log("inside constructor SQConnection");
 		connInfo = connectionInfo;
 		String cluster = connectionInfo.getProperty("cluster");
 
@@ -168,6 +169,7 @@ public class SQConnection implements Connection {
 
 	@Override
 	public Statement createStatement() throws SQLException {
+		log("inside constructor SQConnection");
 		// System.out.println("createStatement");
 		SQStatment SQS;
 		try {
@@ -182,6 +184,7 @@ public class SQConnection implements Connection {
 
 	@Override
 	public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+		log("inside constructor SQConnection");
 //		System.out.println("createStatement2");
 		String[] lables = { "resultSetType", "resultSetConcurrency" };
 		String[] values = { Integer.toString(resultSetType), Integer.toString(resultSetConcurrency) };
@@ -200,6 +203,7 @@ public class SQConnection implements Connection {
 
 	@Override
 	public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+		log("inside createStatement SQConnection");
 //		System.out.println("createStatement3");
 		String[] lables = { "resultSetType", "resultSetConcurrency", "resultSetHoldability" };
 		String[] values = { Integer.toString(resultSetType), Integer.toString(resultSetConcurrency), Integer.toString(resultSetHoldability) };
@@ -219,6 +223,7 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
+		log("inside prepareStatement SQConnection");
 		// System.out.println("prepareStatement");
 		SQPreparedStatment SQPS = null;
 		try {
@@ -230,6 +235,7 @@ public class SQConnection implements Connection {
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+		log("inside prepareStatement 2 SQConnection");
 		if (printouts) System.out.println("prepareStatement5");
 		//spark use this function 
 		//sql = sql.replace("\"", "");
@@ -254,6 +260,7 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public void close() throws SQLException {
+		log("inside close SQConnection");
 		try {
 			if(Statement_list!=null) {
 				for(SQStatment item : Statement_list) {
@@ -274,7 +281,8 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public DatabaseMetaData getMetaData() throws SQLException {
-//		System.out.println("getMetaData");
+		log("inside getMetaData SQConnection");
+		//System.out.println("getMetaData");
 		if (data == null) {
 
 			try {
@@ -291,6 +299,7 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public boolean isClosed() throws SQLException {
+		log("inside isClosed SQConnection");
 		// System.out.println("isClosed");
 		return IsClosed.get();
 	}
@@ -298,18 +307,21 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public void commit() throws SQLException {
-//		System.out.println("commit");
+		log("inside commit SQConnection");
+		// System.out.println("commit");
 	}
 	
 	@Override
 	public boolean getAutoCommit() throws SQLException {
-//		System.out.println("getAutoCommit");
+		log("inside getAutoCommit SQConnection");
+		// System.out.println("getAutoCommit");
 		return true;
 	}
 
 	@Override
 	public String getCatalog() throws SQLException {
-//		System.out.println("getCatalog");
+		log("inside getCatalog SQConnection");
+		// System.out.println("getCatalog");
 		String Catalog = sqlb.DB_name;
 
 		return Catalog;
@@ -317,7 +329,8 @@ public class SQConnection implements Connection {
 
 	@Override
 	public Properties getClientInfo() throws SQLException {
-//		System.out.println("getClientInfo");
+		log("inside getClientInfo SQConnection");
+		// System.out.println("getClientInfo");
 		// TODO check functionality
 		Properties props = new Properties();
 //		props.put("tcpConnectionTime", SqreamJsonHelper.TcpConnectionTime);
@@ -327,39 +340,46 @@ public class SQConnection implements Connection {
 
 	@Override
 	public int getHoldability() throws SQLException {
+		log("inside getHoldability SQConnection");
 //		System.out.println("getHoldability");
 		return 0;
 	}
 	
 	@Override
 	public int getTransactionIsolation() throws SQLException {
+		log("inside getTransactionIsolation SQConnection");
 //		System.out.println("getTransactionIsolation");
 		return 0;
 	}
 
 	@Override
 	public SQLWarning getWarnings() throws SQLException {
+		log("inside getWarnings SQConnection");
 		return null; // Returns: the first SQLWarning object or null if there are none
 	}
 	@Override
 	public boolean isReadOnly() throws SQLException {
+		log("inside isReadOnly SQConnection");
 		// System.out.println("isReadOnly");
 		return false;
 	}
 
 	@Override
 	public boolean isValid(int timeout) throws SQLException {
+		log("inside isValid SQConnection");
 		// System.out.println("isValid");
 		return globalClient.is_open();
 	}
 	
 	@Override
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
+		log("inside setAutoCommit SQConnection");
 		if (printouts) System.out.println("setAutoCommit");
 	}
 
 	@Override
 	public void setCatalog(String catalog) throws SQLException {
+		log("inside setCatalog SQConnection");
 		// TODO Shirlie
 		// / _connectionInfo.put("dbname", catalog);
 		if (printouts) System.out.println("setCatalog");
@@ -367,11 +387,23 @@ public class SQConnection implements Connection {
 
 	@Override
 	public void setClientInfo(Properties properties) throws SQLClientInfoException {
+		try {
+			log("inside setClientInfo SQConnection");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (printouts) System.out.println("setCatalog");
 	}
 
 	@Override
 	public void setClientInfo(String name, String value) throws SQLClientInfoException {
+		try {
+			log("inside setClientInfo SQConnection");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (printouts) System.out.println("setClientInfo2");
 	}
 
@@ -379,31 +411,35 @@ public class SQConnection implements Connection {
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		/* Puts this connection in read-only mode as a hint 
 		 * to the driver to enable database optimizations.  */
-		
+		log("inside setReadOnly SQConnection");
 		if (printouts) System.out.println("setReadOnly");
 		//throw new SQLFeatureNotSupportedException();
 	}
 	
 	@Override
 	public int getNetworkTimeout() throws SQLException {
+		log("inside getNetworkTimeout SQConnection");
 		if (printouts) System.out.println("getNetworkTimeout");
 		return 0;
 	}
 	
 	@Override
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+		log("inside setNetworkTimeout SQConnection");
 		if (printouts) System.out.println("setNetworkTimeout");
 		//throw new SQLFeatureNotSupportedException();
 	}
 	
 	@Override
 	public boolean isWrapperFor(Class<?> arg0) throws SQLException {
+		log("inside isWrapperFor SQConnection");
 //		System.out.println("isWrapperFor");
 		return false;
 	}
 
 	@Override
 	public <T> T unwrap(Class<T> arg0) throws SQLException {
+		log("inside unwrap SQConnection");
 //		System.out.println("unwrap");
 		throw new SQLFeatureNotSupportedException("unwrap in SQConnection");
 
@@ -411,6 +447,7 @@ public class SQConnection implements Connection {
 
 	@Override
 	public void clearWarnings() throws SQLException {
+		log("inside clearWarnings SQConnection");
 //		System.out.println("clearWarnings");
 	}
 	
@@ -419,42 +456,49 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public void setHoldability(int holdability) throws SQLException {
+		log("inside setHoldability SQConnection");
 		if (printouts) System.out.println("setHoldability");
 		throw new SQLFeatureNotSupportedException();
 	}
 	
 	@Override
 	public Savepoint setSavepoint() throws SQLException {
+		log("inside setSavepoint SQConnection");
 		if (printouts) System.out.println("setSavepoint");
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public Savepoint setSavepoint(String name) throws SQLException {
+		log("inside setSavepoint 2 SQConnection");
 		if (printouts) System.out.println("setSavepoint");
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public void setTransactionIsolation(int level) throws SQLException { 
+		log("inside setTransactionIsolation SQConnection");
 		if (printouts) System.out.println("setTransactionIsolation");
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public void setTypeMap(Map<String, Class<?>> map) throws SQLException {	
+		log("inside setTypeMap SQConnection");
 		if (printouts) System.out.println("setTypeMap");
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public void abort(Executor executor) throws SQLException {
+		log("inside abort SQConnection");
 		if (printouts) System.out.println("abort");
 		throw new SQLFeatureNotSupportedException();
 	}
 
 	@Override
 	public String getSchema() throws SQLException {
+		log("inside getSchema SQConnection");
 		if (printouts) System.out.println("getSchema");
 		throw new SQLFeatureNotSupportedException();
 	}

@@ -142,6 +142,37 @@ public class JDBC_Positive {
         return a_ok;
     }
     
+    public boolean bool_as_string() throws SQLException {
+    	
+    	boolean a_ok = false;
+    	
+        conn = DriverManager.getConnection(url,"sqream","sqream");
+        String sql = "create or replace table bool_string (x bool, y bool)";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        
+        sql = "insert into bool_string values (true, false)";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+    	
+        sql = "select * from bool_string";
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        rs.next();
+        if (rs.getString(1).equals("true") && rs.getString(1).equals("true"))
+        	a_ok = true;
+        
+        rs.close();
+        stmt.close();
+        
+        
+    	return a_ok;
+    }
+    
+    
+    
      public boolean getUDF() throws SQLException {
         /*  Check isSigned command()   */
         boolean a_ok = false;
@@ -455,31 +486,59 @@ public class JDBC_Positive {
             		print ("Different results on getByte on index vs column name");
             	if (!rs.getString("Xx").equals(String.valueOf(rs.getByte("Xx")))) 
             		print ("Different results on stringified getByte vs getString");
+            	if ((short) rs.getByte(1) != rs.getShort(1)) 
+            		print ("Different results on getByte vs getShort");
+            	if ((int) rs.getByte(1) != rs.getInt(1)) 
+            		print ("Different results on getByte vs getInt");
+            	if ((long) rs.getByte(1) != rs.getLong(1)) 
+            		print ("Different results on getByte vs getLong");
+            	if ((float) rs.getByte(1) != rs.getFloat(1)) 
+            		print ("Different results on getByte vs getFloat");
+            	if ((double) rs.getByte(1) != rs.getDouble(1)) 
+            		print ("Different results on getByte vs getDouble");
                 res_ubyte = rs.getByte(1);
             }else if (table_type == "smallint") {
             	if (rs.getShort(1) != rs.getShort("Xx")) 
             		print ("Different results on getShort on index vs column name");
             	if (!rs.getString("Xx").equals(String.valueOf(rs.getShort("Xx")))) 
             		print ("Different results on stringified getShort vs getString");
-                res_short = rs.getShort(1);
+            	if ((int) rs.getShort(1) != rs.getInt(1)) 
+            		print ("Different results on getShort vs getInt");
+            	if ((long) rs.getShort(1) != rs.getLong(1)) 
+            		print ("Different results on getShort vs getLong");
+            	if ((float) rs.getShort(1) != rs.getFloat(1)) 
+            		print ("Different results on getShort vs getFloat");
+            	if ((double) rs.getShort(1) != rs.getDouble(1)) 
+            		print ("Different results on getShort vs getDouble");
+            	res_short = rs.getShort(1);
             }else if (table_type == "int") {
             	if (rs.getInt(1) != rs.getInt("Xx")) 
             		print ("Different results on getInt on index vs column name");
             	if (!rs.getString("Xx").equals(String.valueOf(rs.getInt("Xx")))) 
             		print ("Different results on stringified getInt vs getString");
-                res_int = rs.getInt(1);
+            	if ((long) rs.getInt(1) != rs.getLong(1)) 
+            		print ("Different results on getInt vs getLong");
+            	if ((float) rs.getInt(1) != rs.getFloat(1)) 
+            		print ("Different results on getInt vs getFloat");
+            	if ((double) rs.getInt(1) != rs.getDouble(1)) 
+            		print ("Different results on getInt vs getDouble");
+            	res_int = rs.getInt(1);
             }else if (table_type == "bigint") {
             	if (rs.getLong(1) != rs.getLong("Xx")) 
             		print ("Different results on getLong on index vs column name");
             	if (!rs.getString("Xx").equals(String.valueOf(rs.getLong("Xx")))) 
             		print ("Different results on stringified getLong vs getString");
-                res_long = rs.getLong(1);
+            	if ((double) rs.getLong(1) != rs.getDouble(1)) 
+            		print ("Different results on getLong vs getDouble");
+            	res_long = rs.getLong(1);
             }else if (table_type == "real") {
             	if (rs.getFloat(1) != rs.getFloat("Xx")) 
             		print ("Different results on getFloat on index vs column name");
             	if (!rs.getString("Xx").equals(String.valueOf(rs.getFloat("Xx")))) 
             		print ("Different results on stringified getFloat vs getString");
-                res_real = rs.getFloat(1);
+            	if ((double) rs.getFloat(1) != rs.getDouble(1)) 
+            		print ("Different results on getFloat vs getDouble");
+            	res_real = rs.getFloat(1);
             }else if (table_type == "double") {
             	if (rs.getDouble(1) != rs.getDouble("Xx"))
             		print ("Different results on getDouble on index vs column name");
@@ -748,7 +807,8 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        //*
+        print ("boolean as string test - " + (pos_tests.bool_as_string() ? "OK" : "Fail"));
+        /*
         print ("Cast test - " + (pos_tests.casted_gets() ? "OK" : "Fail"));
         print ("timeZones test - " + (pos_tests.timeZones() ? "OK" : "Fail"));
         print ("getUDF test - " + (pos_tests.getUDF() ? "OK" : "Fail"));

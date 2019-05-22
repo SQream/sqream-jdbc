@@ -234,13 +234,16 @@ public class SQPreparedStatment implements PreparedStatement {
 
     @Override
     public void setDate(int colNum, Date date, Calendar cal) throws SQLException {
+        throw  new SQLFeatureNotSupportedException("setDate with calendar parameter");
 
+    	/*
     	try {
         	ZonedDateTime zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId()); 
 			Client.set_date(colNum, Date.valueOf(zonedDate.toLocalDate()));
 		} catch (UnsupportedEncodingException | ConnException e) {
 			e.printStackTrace();
-		} setCounter++; 
+		} setCounter++;
+		//*/ 
     }
     
     @Override
@@ -255,12 +258,15 @@ public class SQPreparedStatment implements PreparedStatement {
 
     @Override
     public void setTimestamp(int colNum, Timestamp datetime, Calendar cal) throws SQLException {
-        try {
+        throw  new SQLFeatureNotSupportedException("setTimestamp with calendar parameter");
+    	/*
+    	try {
         	ZonedDateTime zonedDate = datetime.toInstant().atZone(cal.getTimeZone().toZoneId()); 
 			Client.set_datetime(colNum, Timestamp.valueOf(zonedDate.toLocalDateTime()));
 		} catch (UnsupportedEncodingException | ConnException e) {
 			e.printStackTrace();
-		} setCounter++; 
+		} setCounter++;
+		//*/ 
     }
     
     @Override

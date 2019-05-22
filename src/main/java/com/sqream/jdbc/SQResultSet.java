@@ -429,6 +429,8 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public Date getDate(String columnLabel, Calendar cal) throws SQLException {
+        throw  new SQLFeatureNotSupportedException("getDate with calendar parameter");
+        /*
 		try {
 			Date res = Client.get_date(columnLabel.toLowerCase());
 			if (res != null) {
@@ -442,10 +444,13 @@ class SQResultSet implements ResultSet {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}
+		//*/
 	}
 	
 	@Override
 	public Date getDate(int columnIndex, Calendar cal) throws SQLException {
+        throw  new SQLFeatureNotSupportedException("getDate with calendar parameter");
+        /*
 		try {
 			Date res = Client.get_date(columnIndex);
 			if (res != null) {
@@ -458,6 +463,7 @@ class SQResultSet implements ResultSet {
 			e.printStackTrace();
 			throw new SQLException("");
 		}
+		//*/
 	}
 	
 	@Override
@@ -488,6 +494,8 @@ class SQResultSet implements ResultSet {
 	
 	@Override
 	public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
+        throw  new SQLFeatureNotSupportedException("getTimestamp with calendar parameter");
+        /*
 		try {
 			Timestamp utcDateTime = Client.get_datetime(columnIndex);
 			if (utcDateTime!= null) {
@@ -500,11 +508,14 @@ class SQResultSet implements ResultSet {
 			e.printStackTrace();
 			throw new SQLException("");
 		}
-
+		//*/
 	}
 	
 	@Override
 	public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
+        throw  new SQLFeatureNotSupportedException("getTimestamp with calendar parameter");
+
+		/*
 		try {
 			Timestamp utcDateTime = Client.get_datetime(columnLabel.toLowerCase());
 			if (utcDateTime!= null) {
@@ -517,6 +528,7 @@ class SQResultSet implements ResultSet {
 			e.printStackTrace();
 			throw new SQLException("");
 		}
+		//*/
 	}
 	
 	@Override

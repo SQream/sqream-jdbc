@@ -517,8 +517,8 @@ public class Connector {
     public Connector(String _ip, int _port, boolean _cluster, boolean _ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException, ScriptException {
         /* JSON parsing engine setup, initial socket connection */
         
-        ScriptEngineManager sem = new ScriptEngineManager();
-        engine = sem.getEngineByName("javascript");
+    	// https://stackoverflow.com/questions/25332640/getenginebynamenashorn-returns-null
+        engine = new ScriptEngineManager(null).getEngineByName("javascript");
         engine_bindings = engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE);
         port = _port;
         ip = _ip;

@@ -81,6 +81,7 @@ public class SQPreparedStatment implements PreparedStatement {
 				if (Client.is_open_statement()) {
 					Client.close();
 				}
+				Client.close_connection();
         	}
         } catch (IOException | ConnException | ScriptException e) {
         	e.printStackTrace();

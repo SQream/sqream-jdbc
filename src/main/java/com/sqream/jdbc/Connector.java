@@ -519,7 +519,6 @@ public class Connector {
         
         ScriptEngineManager sem = new ScriptEngineManager();
         engine = sem.getEngineByName("javascript");
-        json = (ScriptObjectMirror) engine.eval("JSON");
         engine_bindings = engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE);
         port = _port;
         ip = _ip;

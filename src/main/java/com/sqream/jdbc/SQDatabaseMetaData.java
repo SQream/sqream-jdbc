@@ -4,8 +4,15 @@
 package com.sqream.jdbc;
 
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -14,10 +21,13 @@ import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Arrays;
+
 import javax.script.ScriptException;
 
 import com.sqream.jdbc.Connector;
 import com.sqream.jdbc.Connector.ConnException;
+
 
 /**
  * @author root
@@ -25,7 +35,20 @@ import com.sqream.jdbc.Connector.ConnException;
  */
 
 public class SQDatabaseMetaData implements DatabaseMetaData {
-
+	
+	boolean logging = true;
+	Path SQDatabaseMetaData_log = Paths.get("./SQDatabaseMetaData.txt");
+	boolean log(String line) throws SQLException {
+		try {
+			Files.write(SQDatabaseMetaData_log, Arrays.asList(new String[] {line}), UTF_8, CREATE, APPEND);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new SQLException ("Error writing to SQDatabaseMetaData log");
+		}
+		
+		return true;
+	}
+	
 	Connector Client;
 	SQConnection Conn=null;
 	String user;

@@ -30,10 +30,34 @@ import javax.script.ScriptException;
 import com.sqream.jdbc.Connector;
 import com.sqream.jdbc.Connector.ConnException;
 
+//Logging
+import java.util.Arrays;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
 
 
 public class SQConnection implements Connection {
-
+	
+	boolean logging = true;
+	Path SQConnection_log = Paths.get("./SQConnection.txt");
+	boolean log(String line) throws SQLException {
+		if (!logging)
+			return true;
+		
+		try {
+			Files.write(SQConnection_log, Arrays.asList(new String[] {line}), UTF_8, CREATE, APPEND);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new SQLException ("Error writing to SQConnection log");
+		}
+		
+		return true;
+	}
+	
 	class Params {
 
 		Boolean Cluster;

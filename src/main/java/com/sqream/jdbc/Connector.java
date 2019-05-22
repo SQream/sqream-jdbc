@@ -52,12 +52,16 @@ import java.util.BitSet;
 // Unicode related
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 // Date / Time related
 import java.sql.Date;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -71,6 +75,11 @@ import java.util.stream.IntStream;
 
 //Exceptions
 import javax.script.ScriptException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import javax.net.ssl.SSLException;
@@ -384,6 +393,25 @@ public class Connector {
             super(message);
         }
     }
+    
+    // Logging
+    // -------
+    
+    boolean logging = true;
+	boolean log(String line, String log_path) throws SQLException { 
+		if (!logging)
+			return true;
+		
+		try {
+			Files.write(Paths.get(log_path), Arrays.asList(new String[] {line}), UTF_8, CREATE, APPEND);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new SQLException ("Error writing to SQDriver log");
+		}
+		
+		return true;
+	}
+    
     
     /*//Experimental Sock class, not in use 
     class Sock {
@@ -1099,7 +1127,10 @@ public class Connector {
     	
     	if (col_types[col_num].equals("ftInt"))
 	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (long)data_columns[col_num].getInt(row_counter * 4) : null;
-        
+    	else if (col_types[col_num].equals("ftShort"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (long)data_columns[col_num].getShort(row_counter * 2) : null;
+	    else if (col_types[col_num].equals("ftUByte"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (long)(data_columns[col_num].get(row_counter) & 0xFF) : null;
 	        
         return (_validate_get(col_num, "ftLong")) ? data_columns[col_num].getLong(row_counter * 8) : null;
     }
@@ -1107,16 +1138,33 @@ public class Connector {
     
     public Float get_float(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
-        return (_validate_get(col_num, "ftFloat")) ? data_columns[col_num].getFloat(row_counter * 4) : null;
+        
+    	if (col_types[col_num].equals("ftInt"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (float)data_columns[col_num].getInt(row_counter * 4) : null;
+    	else if (col_types[col_num].equals("ftShort"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (float)data_columns[col_num].getShort(row_counter * 2) : null;
+	    else if (col_types[col_num].equals("ftUByte"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (float)(data_columns[col_num].get(row_counter) & 0xFF) : null;
+	        
+    	return (_validate_get(col_num, "ftFloat")) ? data_columns[col_num].getFloat(row_counter * 4) : null;
     }
     
     
     public Double get_double(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
-    	//*
+    	
 	    if (col_types[col_num].equals("ftFloat"))
 	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (double)data_columns[col_num].getFloat(row_counter * 4) : null;
-		//*/
+        else if (col_types[col_num].equals("ftLong"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (double)data_columns[col_num].getLong(row_counter * 8) : null;
+        else if (col_types[col_num].equals("ftInt"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (double)data_columns[col_num].getInt(row_counter * 4) : null;
+    	else if (col_types[col_num].equals("ftShort"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (double)data_columns[col_num].getShort(row_counter * 2) : null;
+	    else if (col_types[col_num].equals("ftUByte"))
+	        return (null_columns[col_num] == null || null_columns[col_num].get(row_counter) == 0) ? (double)(data_columns[col_num].get(row_counter) & 0xFF) : null;
+	        
+        
         return (_validate_get(col_num, "ftDouble")) ? data_columns[col_num].getDouble(row_counter * 8) : null;
     }
     

@@ -487,7 +487,7 @@ public class Negative {
     public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ScriptException, ConnException{
 		Negative neg_tests = new Negative();
 		String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "date", "datetime"};
-		/*
+		//*
 		for (String col_type : typelist)
 			try {
 				neg_tests.wrong_type_set(col_type);

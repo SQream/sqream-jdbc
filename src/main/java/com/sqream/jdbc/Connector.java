@@ -519,7 +519,7 @@ public class Connector {
         /* JSON parsing engine setup, initial socket connection */
         
     	// https://stackoverflow.com/questions/25332640/getenginebynamenashorn-returns-null
-        engine = new ScriptEngineManager(null).getEngineByName("javascript");
+        engine = new ScriptEngineManager().getEngineByName("javascript");
         json = (ScriptObjectMirror) engine.eval("JSON");
         engine_bindings = engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE);
         port = _port;

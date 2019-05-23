@@ -289,7 +289,8 @@ public class Connector {
     
     static int date_to_int(Date d ,ZoneId zone) {
         
-        if (local_date == null) 
+        // Consider a different implementation here
+        if (d == null) 
             return 0;
         
         //ZonedDateTime zoned_date = d.toInstant().atZone(zone);

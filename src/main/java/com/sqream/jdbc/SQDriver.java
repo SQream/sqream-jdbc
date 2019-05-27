@@ -266,7 +266,7 @@ public class SQDriver implements java.sql.Driver {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getParentLogger in SQDriver");
 	}
 
 }

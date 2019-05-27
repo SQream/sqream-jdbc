@@ -96,15 +96,7 @@ public class SQStatment implements Statement {
 		
 	}
 
-	@Override
-	public void clearBatch() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public void clearWarnings() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
-	}
+	
 
 	@Override
 	public void close() throws SQLException {
@@ -329,84 +321,98 @@ public class SQStatment implements Statement {
 		return null;
 	}
 	
+	@Override
+	public boolean isClosed() throws SQLException {
+		return is_closed;
+	}
 	
 	// Unsupported  
 	// -----------
 	
 	@Override
+	public void clearBatch() throws SQLException {
+		throw new SQLFeatureNotSupportedException("clearBatch in SQStatement");
+	}
+
+	@Override
+	public void clearWarnings() throws SQLException {
+		throw new SQLFeatureNotSupportedException("clearWarnings in SQStatement");
+	}
+	
+	@Override
 	public void setQueryTimeout(int arg0) throws SQLException {
 		if (arg0 !=0)  // 0 means unlimited timeout
-			throw new SQLFeatureNotSupportedException();
+			throw new SQLFeatureNotSupportedException("setQueryTimeout in SQStatement");
 	}
 	
 	@Override
 	public int executeUpdate(String arg0, int arg1) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("executeUpdate in SQStatement");
 	}
 
 	@Override
 	public int executeUpdate(String arg0, int[] arg1) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("executeUpdate 2 in SQStatement");
 	}
 
 	@Override
 	public int executeUpdate(String arg0, String[] arg1) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("executeUpdate 3 in SQStatement");
 	}
 
 	@Override
 	public boolean execute(String arg0, int arg1) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("execute in SQStatement");
 	}
 
 	@Override
 	public boolean execute(String arg0, int[] arg1) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("execute 2 in SQStatement");
 	}
 
 	@Override
 	public boolean execute(String arg0, String[] arg1) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("execute 3 in SQStatement");
 	}
 
 	@Override
 	public int[] executeBatch() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("executeBatch in SQStatement");
 	}
 	
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("unwrap in SQStatement");
 	}
 
 	@Override
 	public void addBatch(String arg0) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("addBatch in SQStatement");
 	}
 	
 	@Override
 	public int getFetchDirection() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getFetchDirection in SQStatement");
 	}
 
 	@Override
 	public int getFetchSize() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getFetchSize in SQStatement");
 	}
 
 	@Override
 	public ResultSet getGeneratedKeys() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getGeneratedKeys in SQStatement");
 	}
 
 	@Override
 	public int getMaxFieldSize() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getMaxFieldSize in SQStatement");
 	}
 
 	@Override
 	public int getMaxRows() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getMaxRows in SQStatement");
 	}
 	
 	@Override
@@ -422,22 +428,22 @@ public class SQStatment implements Statement {
 	
 	@Override
 	public int getQueryTimeout() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getQueryTimeout in SQStatement");
 	}
 
 	@Override
 	public int getResultSetConcurrency() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getResultSetConcurrency in SQStatement");
 	}
 
 	@Override
 	public int getResultSetHoldability() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getResultSetHoldability in SQStatement");
 	}
 
 	@Override
 	public int getResultSetType() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getResultSetType in SQStatement");
 	}
 	/* Retrieves the current result as an update count; if the result is a ResultSet 
 	* object or there are no more results, -1 is returned. This method should be 
@@ -445,43 +451,38 @@ public class SQStatment implements Statement {
 	*/
 
 	@Override
-	public boolean isClosed() throws SQLException {
-		return is_closed;
-	}
-
-	@Override
 	public boolean isPoolable() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("isPoolable in SQStatement");
 	}
 
 	@Override
 	public void setCursorName(String arg0) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("setCursorName in SQStatement");
 	}
 
 	@Override
 	public void setFetchDirection(int arg0) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("setFetchDirection in SQStatement");
 	}
 
 	@Override
 	public void setMaxFieldSize(int arg0) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("setMaxFieldSize in SQStatement");
 	}
 	
 	@Override
 	public void setPoolable(boolean arg0) throws SQLException {
-            throw new SQLFeatureNotSupportedException();
+            throw new SQLFeatureNotSupportedException("setPoolable in SQStatement");
 	}
 
 	@Override
 	public void closeOnCompletion() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("closeOnCompletion in SQStatement");
 	}
 
 	@Override
 	public boolean isCloseOnCompletion() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("isCloseOnCompletion in SQStatement");
 	}
 
 }

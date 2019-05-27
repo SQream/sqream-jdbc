@@ -145,11 +145,6 @@ class SQResultSet implements ResultSet {
 	}
 
 	@Override
-	public Statement getStatement() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
 	public boolean getBoolean(String columnLabel) throws SQLException {
 		try {
 			Boolean res = Client.get_boolean(columnLabel.toLowerCase());
@@ -803,180 +798,211 @@ class SQResultSet implements ResultSet {
 	}
 	
 	@Override
+	public boolean previous() throws SQLException {
+		this.baseUsageError();
+		throw new SQLFeatureNotSupportedException("previous in SQResultSet");
+	}
+	
+	@Override
+	public int getConcurrency() throws SQLException {
+		return CONCUR_READ_ONLY;
+	}
+	
+	@Override
+	public void updateDate(int columnIndex, Date x) throws SQLException {
+		this.baseUsageError();
+
+	}
+
+	@Override
+	public boolean isClosed() throws SQLException {
+		return is_closed;
+	}
+
+	
+	// Unsupported
+	// -----------
+	
+	@Override
+	public Statement getStatement() throws SQLException {
+		throw new SQLFeatureNotSupportedException("getStatement in SQResultSet");
+	}
+	
+	@Override
 	public byte[] getBytes(String columnLabel) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getBytes in SQResultSet");
 	}
 
 	@Override
 	public byte[] getBytes(int columnIndex) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getBytes 2 in SQResultSet");
 	}
 	
 	@Override
 	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getBigDecimal in SQResultSet");
 	}
 
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("unwrap in SQResultSet");
 	}
 
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("isWrapperFor in SQResultSet");
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(int columnIndex, int scale)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getBigDecimal in SQResultSet");
 	}
 
 	@Override
 	public Time getTime(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getTime in SQResultSet");
 	}
 
 	@Override
 	public InputStream getAsciiStream(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getAsciiStream in SQResultSet");
 	}
 
 	@Override
 	public InputStream getUnicodeStream(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getUnicodeStream in SQResultSet");
 	}
 
 	@Override
 	public InputStream getBinaryStream(int columnIndex) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getBinaryStream in SQResultSet");
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(String columnLabel, int scale)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getBigDecimal in SQResultSet");
 	}
 
 	@Override
 	public Time getTime(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getTime in SQResultSet");
 	}
 
 	@Override
 	public InputStream getAsciiStream(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getAsciiStream 2 in SQResultSet");
 	}
 
 	@Override
 	public InputStream getUnicodeStream(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getUnicodeStream 2 in SQResultSet");
 	}
 
 	@Override
 	public InputStream getBinaryStream(String columnLabel) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("shoko in SQResultSet");
 	}
 
 	@Override
 	public SQLWarning getWarnings() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getWarnings in SQResultSet");
 	}
 
 	@Override
 	public void clearWarnings() throws SQLException {
 
 		this.baseUsageError(); 
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("clearWarnings in SQResultSet");
 	}
 
 	@Override
 	public String getCursorName() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getCursorName in SQResultSet");
 	}
 
 	@Override
 	public Reader getCharacterStream(int columnIndex) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getCharacterStream in SQResultSet");
 	}
 
 	@Override
 	public Reader getCharacterStream(String columnLabel) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getCharacterStream 2 in SQResultSet");
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getBigDecimal in SQResultSet");
 	}
 
 	@Override
 	public boolean isBeforeFirst() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("isBeforeFirst in SQResultSet");
 	}
 
 	@Override
 	public boolean isAfterLast() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("isAfterLast in SQResultSet");
 	}
 
 	@Override
 	public boolean isFirst() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("isFirst in SQResultSet");
 	}
 
 	@Override
 	public boolean isLast() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("isLast in SQResultSet");
 	}
 
 	@Override
 	public void beforeFirst() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("beforeFirst in SQResultSet");
 
 	}
 
 	@Override
 	public void afterLast() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("afterLast in SQResultSet");
 	}
 
 	@Override
 	public boolean first() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("first in SQResultSet");
 	}
 
 	@Override
 	public boolean last() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("last in SQResultSet");
 	}
 
 	@Override
 	public int getRow() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getRow in SQResultSet");
 	}
 
 	@Override
@@ -988,812 +1014,790 @@ class SQResultSet implements ResultSet {
 	@Override
 	public boolean relative(int rows) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public boolean previous() throws SQLException {
-		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("relative in SQResultSet");
 	}
 
 	@Override
 	public void setFetchDirection(int direction) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("setFetchDirection in SQResultSet");
 	}
 
 	@Override
 	public int getFetchDirection() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getFetchDirection in SQResultSet");
 	}
 
 	@Override
 	public void setFetchSize(int rows) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("setFetchSize in SQResultSet");
 	}
 
 	@Override
 	public int getFetchSize() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getFetchSize in SQResultSet");
 	}
 
 	@Override
 	public int getType() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public int getConcurrency() throws SQLException {
-		return CONCUR_READ_ONLY;
+		throw new SQLFeatureNotSupportedException("getType in SQResultSet");
 	}
 
 	@Override
 	public boolean rowUpdated() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("rowUpdated in SQResultSet");
 	}
 
 	@Override
 	public boolean rowInserted() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("rowInserted in SQResultSet");
 	}
 
 	@Override
 	public boolean rowDeleted() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("rowDeleted in SQResultSet");
 	}
 
 	@Override
 	public void updateNull(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNull in SQResultSet");
 	}
 
 	@Override
 	public void updateBoolean(int columnIndex, boolean x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBoolean in SQResultSet");
 	}
 
 	@Override
 	public void updateByte(int columnIndex, byte x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateByte in SQResultSet");
 	}
 
 	@Override
 	public void updateShort(int columnIndex, short x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateShort in SQResultSet");
 	}
 
 	@Override
 	public void updateInt(int columnIndex, int x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateInt in SQResultSet");
 	}
 
 	@Override
 	public void updateLong(int columnIndex, long x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateLong in SQResultSet");
 	}
 
 	@Override
 	public void updateFloat(int columnIndex, float x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateFloat in SQResultSet");
 	}
 
 	@Override
 	public void updateDouble(int columnIndex, double x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateDouble in SQResultSet");
 	}
 
 	@Override
 	public void updateBigDecimal(int columnIndex, BigDecimal x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBigDecimal in SQResultSet");
 	}
 
 	@Override
 	public void updateString(int columnIndex, String x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateString in SQResultSet");
 	}	
 
 	@Override
 	public void updateBytes(int columnIndex, byte[] x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public void updateDate(int columnIndex, Date x) throws SQLException {
-		this.baseUsageError();
-
+		throw new SQLFeatureNotSupportedException("updateBytes in SQResultSet");
 	}
 
 	@Override
 	public void updateTime(int columnIndex, Time x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateTime in SQResultSet");
 	}
 
 	@Override
 	public void updateTimestamp(int columnIndex, Timestamp x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateTimestamp in SQResultSet");
 	}
 
 	@Override
 	public void updateAsciiStream(int columnIndex, InputStream x, int length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("SQLException in SQResultSet");
 	}
 
 	@Override
 	public void updateBinaryStream(int columnIndex, InputStream x, int length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBinaryStream in SQResultSet");
 	}
 
 	@Override
 	public void updateCharacterStream(int columnIndex, Reader x, int length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateCharacterStream in SQResultSet");
 	}
 
 	@Override
 	public void updateObject(int columnIndex, Object x, int scaleOrLength)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateObject in SQResultSet");
 	}
 
 	@Override
 	public void updateObject(int columnIndex, Object x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateObject 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateNull(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNull in SQResultSet");
 	}
 
 	@Override
 	public void updateBoolean(String columnLabel, boolean x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBoolean in SQResultSet");
 	}
 
 	@Override
 	public void updateByte(String columnLabel, byte x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateByte 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateShort(String columnLabel, short x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateShort in SQResultSet");
 	}
 
 	@Override
 	public void updateInt(String columnLabel, int x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateInt in SQResultSet");
 	}
 
 	@Override
 	public void updateLong(String columnLabel, long x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateLong in SQResultSet");
 	}
 
 	@Override
 	public void updateFloat(String columnLabel, float x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateFloat in SQResultSet");
 	}
 
 	@Override
 	public void updateDouble(String columnLabel, double x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateDouble in SQResultSet");
 	}
 
 	@Override
 	public void updateBigDecimal(String columnLabel, BigDecimal x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBigDecimal in SQResultSet");
 	}
 
 	@Override
 	public void updateString(String columnLabel, String x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateString in SQResultSet");
 	}
 
 	@Override
 	public void updateBytes(String columnLabel, byte[] x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBytes in SQResultSet");
 	}
 
 	@Override
 	public void updateDate(String columnLabel, Date x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateDate in SQResultSet");
 	}
 
 	@Override
 	public void updateTime(String columnLabel, Time x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateTime in SQResultSet");
 	}
 
 	@Override
 	public void updateTimestamp(String columnLabel, Timestamp x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateTimestamp in SQResultSet");
 	}
 
 	@Override
 	public void updateAsciiStream(String columnLabel, InputStream x, int length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateAsciiStream 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateBinaryStream(String columnLabel, InputStream x, int length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBinaryStream 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateCharacterStream(String columnLabel, Reader reader,
 			int length) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateCharacterStream 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateObject(String columnLabel, Object x, int scaleOrLength)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateObject in SQResultSet");
 	}
 
 	@Override
 	public void updateObject(String columnLabel, Object x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateObject 2 in SQResultSet");
 	}
 
 	@Override
 	public void insertRow() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("insertRow in SQResultSet");
 	}
 
 	@Override
 	public void updateRow() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateRow in SQResultSet");
 	}
 
 	@Override
 	public void deleteRow() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("deleteRow in SQResultSet");
 	}
 
 	@Override
 	public void refreshRow() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("refreshRow in SQResultSet");
 	}
 
 	@Override
 	public void cancelRowUpdates() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("cancelRowUpdates in SQResultSet");
 	}
 
 	@Override
 	public void moveToInsertRow() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("moveToInsertRow in SQResultSet");
 	}
 
 	@Override
 	public void moveToCurrentRow() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("moveToCurrentRow in SQResultSet");
 	}
 
 	@Override
 	public Object getObject(int columnIndex, Map<String, Class<?>> map)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getObject in SQResultSet");
 	}
 
 	@Override
 	public Ref getRef(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getRef in SQResultSet");
 	}
 
 	@Override
 	public Blob getBlob(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getBlob in SQResultSet");
 	}
 
 	@Override
 	public Clob getClob(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getClob in SQResultSet");
 	}
 
 	@Override
 	public Array getArray(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getArray in SQResultSet");
 	}
 
 	@Override
 	public Object getObject(String columnLabel, Map<String, Class<?>> map)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getObject in SQResultSet");
 	}
 
 	@Override
 	public Ref getRef(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getObject in SQResultSet");
 	}
 
 	@Override
 	public Blob getBlob(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getBlob 2 in SQResultSet");
 	}
 
 	@Override
 	public Clob getClob(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getClob 2 in SQResultSet");
 	}
 
 	@Override
 	public Array getArray(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getArray in SQResultSet");
 	}
 
 	@Override
 	public Time getTime(int columnIndex, Calendar cal) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getTime in SQResultSet");
 	}
 
 	@Override
 	public Time getTime(String columnLabel, Calendar cal) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getTime 2 in SQResultSet");
 	}
 
 	@Override
 	public URL getURL(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getURL in SQResultSet");
 	}
 
 	@Override
 	public URL getURL(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getURL 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateRef(int columnIndex, Ref x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateRef in SQResultSet");
 	}
 
 	@Override
 	public void updateRef(String columnLabel, Ref x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateRef 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateBlob(int columnIndex, Blob x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBlob in SQResultSet");
 	}
 
 	@Override
 	public void updateBlob(String columnLabel, Blob x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBlob 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Clob x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateClob in SQResultSet");
 	}
 
 	@Override
 	public void updateClob(String columnLabel, Clob x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateClob 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateArray(int columnIndex, Array x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateArray 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateArray(String columnLabel, Array x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateArray 3 in SQResultSet");
 	}
 
 	@Override
 	public RowId getRowId(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getRowId in SQResultSet");
 	}
 
 	@Override
 	public RowId getRowId(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getRowId 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateRowId(int columnIndex, RowId x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateRowId in SQResultSet");
 	}
 
 	@Override
 	public void updateRowId(String columnLabel, RowId x) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateRowId 2 in SQResultSet");
 	}
 
 	@Override
 	public int getHoldability() throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
-	}
-
-	@Override
-	public boolean isClosed() throws SQLException {
-		return is_closed;
+		throw new SQLFeatureNotSupportedException("getHoldability in SQResultSet");
 	}
 
 	@Override
 	public void updateNString(int columnIndex, String nString)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNString in SQResultSet");
 	}
 
 	@Override
 	public void updateNString(String columnLabel, String nString)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNString 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNClob in SQResultSet");
 	}
 
 	@Override
 	public void updateNClob(String columnLabel, NClob nClob)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNClob 2 in SQResultSet");
 	}
 
 	@Override
 	public NClob getNClob(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getNClob in SQResultSet");
 	}
 
 	@Override
 	public NClob getNClob(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getNClob in SQResultSet");
 	}
 
 	@Override
 	public SQLXML getSQLXML(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getSQLXML in SQResultSet");
 	}
 
 	@Override
 	public SQLXML getSQLXML(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getSQLXML 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateSQLXML(int columnIndex, SQLXML xmlObject)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateSQLXML in SQResultSet");
 	}
 
 	@Override
 	public void updateSQLXML(String columnLabel, SQLXML xmlObject)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateSQLXML 2 in SQResultSet");
 	}
 
 	@Override
 	public String getNString(int columnIndex) throws SQLException {
 		this.baseUsageError();
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getNString in SQResultSet");
 	}
 
 	@Override
 	public String getNString(String columnLabel) throws SQLException {
 		this.baseUsageError();
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getNString 2 in SQResultSet");
 	}
 
 	@Override
 	public Reader getNCharacterStream(int columnIndex) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getNCharacterStream in SQResultSet");
 	}
 
 	@Override
 	public Reader getNCharacterStream(String columnLabel) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getNCharacterStream 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateNCharacterStream(int columnIndex, Reader x, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNCharacterStream in SQResultSet");
 	}
 
 	@Override
 	public void updateNCharacterStream(String columnLabel, Reader reader,
 			long length) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNCharacterStream 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateAsciiStream(int columnIndex, InputStream x, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateAsciiStream in SQResultSet");
 	}
 
 	@Override
 	public void updateBinaryStream(int columnIndex, InputStream x, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBinaryStream in SQResultSet");
 	}
 
 	@Override
 	public void updateCharacterStream(int columnIndex, Reader x, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateCharacterStream in SQResultSet");
 	}
 
 	@Override
 	public void updateAsciiStream(String columnLabel, InputStream x, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateAsciiStream 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateBinaryStream(String columnLabel, InputStream x,
 			long length) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBinaryStream 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateCharacterStream(String columnLabel, Reader reader,
 			long length) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateCharacterStream 2 in SQResultSet");
 	}
 
 	@Override
 	public void updateBlob(int columnIndex, InputStream inputStream, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBlob 4 in SQResultSet");
 	}
 
 	@Override
 	public void updateBlob(String columnLabel, InputStream inputStream,
 			long length) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBlob 5 in SQResultSet");
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Reader reader, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateClob 4 in SQResultSet");
 	}
 
 	@Override
 	public void updateClob(String columnLabel, Reader reader, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateClob 5 in SQResultSet");
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, Reader reader, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateClob 4 in SQResultSet");
 	}
 
 	@Override
 	public void updateNClob(String columnLabel, Reader reader, long length)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNClob 5 in SQResultSet");
 	}
 
 	@Override
 	public void updateNCharacterStream(int columnIndex, Reader x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNCharacterStream in SQResultSet");
 	}
 
 	@Override
 	public void updateNCharacterStream(String columnLabel, Reader reader)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNCharacterStream in SQResultSet");
 	}
 
 	@Override
 	public void updateAsciiStream(int columnIndex, InputStream x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateAsciiStream in SQResultSet");
 	}
 
 	@Override
 	public void updateBinaryStream(int columnIndex, InputStream x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBinaryStream in SQResultSet");
 	}
 
 	@Override
 	public void updateCharacterStream(int columnIndex, Reader x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateCharacterStream in SQResultSet");
 	}
 
 	@Override
 	public void updateAsciiStream(String columnLabel, InputStream x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateAsciiStream in SQResultSet");
 	}
 
 	@Override
 	public void updateBinaryStream(String columnLabel, InputStream x)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBinaryStream in SQResultSet");
 	}
 
 	@Override
 	public void updateCharacterStream(String columnLabel, Reader reader)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateCharacterStream in SQResultSet");
 	}
 
 	@Override
 	public void updateBlob(int columnIndex, InputStream inputStream)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBlob in SQResultSet");
 	}
 
 	@Override
 	public void updateBlob(String columnLabel, InputStream inputStream)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateBlob in SQResultSet");
 	}
 
 	@Override
 	public void updateClob(int columnIndex, Reader reader) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateClob in SQResultSet");
 	}
 
 	@Override
 	public void updateClob(String columnLabel, Reader reader)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateClob in SQResultSet");
 	}
 
 	@Override
 	public void updateNClob(int columnIndex, Reader reader) throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNClob in SQResultSet");
 	}
 
 	@Override
 	public void updateNClob(String columnLabel, Reader reader)
 			throws SQLException {
 		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("updateNClob in SQResultSet");
 	}
 
 	@Override
 	public <T> T getObject(int arg0, Class<T> arg1) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getObject in SQResultSet");
 	}
 
 	@Override
 	public <T> T getObject(String arg0, Class<T> arg1) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("getObject in SQResultSet");
 	}
 }

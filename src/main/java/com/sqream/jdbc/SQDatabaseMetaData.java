@@ -1180,37 +1180,37 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
 	}
 
 	@Override
 	public ResultSet getPseudoColumns(String arg0, String arg1, String arg2, String arg3) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
 	}
 	
 	@Override
 	public String getExtraNameCharacters() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
 	}
 	
 	@Override
 	public String getNumericFunctions() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
 	}
 	
 	@Override
 	public RowIdLifetime getRowIdLifetime() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
 	}
 	
 	@Override
 	public String getStringFunctions() throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
 	}
 	
 	@Override
 	public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
-		throw new SQLFeatureNotSupportedException();
+		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
 		// return EmptyResultSet();
 	}
 }

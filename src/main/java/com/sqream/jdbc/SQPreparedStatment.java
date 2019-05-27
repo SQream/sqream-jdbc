@@ -509,253 +509,253 @@ public class SQPreparedStatment implements PreparedStatement {
         
     }
     
+    @Override
+    public boolean isWrapperFor(Class<?> arg0) throws SQLException {
+        return false;
+    }
+    
     // Unsupported
     // -----------
     
     @Override
     public void setQueryTimeout(int arg0) throws SQLException {
         if (arg0 !=0)  // 0 means unlimited timeout
-            throw new SQLFeatureNotSupportedException();
+            throw new SQLFeatureNotSupportedException("setQueryTimeout in SQPreparedStatement");
     }
     
     @Override   
     public void addBatch(String arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("addBatch in SQPreparedStatement");
     }
     
     @Override
     public ResultSet executeQuery(String arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("executeQuery in SQPreparedStatement");
     }
     
     @Override
     public Connection getConnection() throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("getConnection in SQPreparedStatement");
     }
     
     @Override
     public ResultSet getGeneratedKeys() throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("getGeneratedKeys in SQPreparedStatement");
     }
     
     @Override
     public ParameterMetaData getParameterMetaData() throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("getParameterMetaData in SQPreparedStatement");
     }
     
     @Override
     public SQLWarning getWarnings() throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("getWarnings in SQPreparedStatement");
     }
 
     @Override
     public void setCursorName(String arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setCursorName in SQPreparedStatement");
     }
 
     @Override
     public void setEscapeProcessing(boolean arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setEscapeProcessing in SQPreparedStatement");
     }
 
     @Override
     public void setFetchDirection(int arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setFetchDirection in SQPreparedStatement");
     }
 
     @Override
     public void setMaxFieldSize(int arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setMaxFieldSize in SQPreparedStatement");
     }
 
     @Override
     public void setPoolable(boolean arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setPoolable in SQPreparedStatement");
     }
 
     @Override
     public <T> T unwrap(Class<T> arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
-    }
-    
-    @Override
-    public boolean isWrapperFor(Class<?> arg0) throws SQLException {
-        return false;
+        throw new SQLFeatureNotSupportedException("unwrap in SQPreparedStatement");
     }
     
     @Override
     public void clearParameters() throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("clearParameters in SQPreparedStatement");
     }
     
     @Override
     public int executeUpdate() throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("executeUpdate in SQPreparedStatement");
     }
     
     @Override
     public void setArray(int arg0, Array arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setArray in SQPreparedStatement");
     }
 
     @Override
     public void setAsciiStream(int arg0, InputStream arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setAsciiStream in SQPreparedStatement");
     }
 
     @Override
     public void setAsciiStream(int arg0, InputStream arg1, int arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setAsciiStream 2 in SQPreparedStatement");
     }
 
     @Override
     public void setAsciiStream(int arg0, InputStream arg1, long arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setAsciiStream 3 in SQPreparedStatement");
     }
 
     @Override
     public void setBigDecimal(int arg0, BigDecimal arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setBigDecimal in SQPreparedStatement");
     }
 
     @Override
     public void setBinaryStream(int arg0, InputStream arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setBinaryStream in SQPreparedStatement");
     }
 
     @Override
     public void setBinaryStream(int arg0, InputStream arg1, int arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setBinaryStream 2 in SQPreparedStatement");
     }
 
     @Override
     public void setBinaryStream(int arg0, InputStream arg1, long arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setBinaryStream 3 in SQPreparedStatement");
     }
 
     @Override
     public void setBlob(int arg0, Blob arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setBlob in SQPreparedStatement");
     }
 
     @Override
     public void setBlob(int arg0, InputStream arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setBlob 2 in SQPreparedStatement");
     }
 
     @Override
     public void setBlob(int arg0, InputStream arg1, long arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setBlob 3 in SQPreparedStatement");
     }
     
     @Override
     public void setBytes(int arg0, byte[] arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setBytes in SQPreparedStatement");
     }
 
     @Override
     public void setCharacterStream(int arg0, Reader arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setCharacterStream in SQPreparedStatement");
     }
 
     @Override
     public void setCharacterStream(int arg0, Reader arg1, int arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setCharacterStream 2 in SQPreparedStatement");
     }
 
     @Override
     public void setCharacterStream(int arg0, Reader arg1, long arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setCharacterStream 3 in SQPreparedStatement");
     }
 
     @Override
     public void setClob(int arg0, Clob arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setClob in SQPreparedStatement");
     }
 
     @Override
     public void setClob(int arg0, Reader arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setClob 2 in SQPreparedStatement");
     }
 
     @Override
     public void setClob(int arg0, Reader arg1, long arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setClob 3 in SQPreparedStatement");
     }
     
     @Override
     public void setNCharacterStream(int arg0, Reader arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setNCharacterStream in SQPreparedStatement");
     }
 
     @Override
     public void setNCharacterStream(int arg0, Reader arg1, long arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setNCharacterStream 2 in SQPreparedStatement");
     }
 
     @Override
     public void setNClob(int arg0, NClob arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setNClob in SQPreparedStatement");
     }
 
     @Override
     public void setNClob(int arg0, Reader arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setNClob in SQPreparedStatement");
     }
 
     @Override
     public void setNClob(int arg0, Reader arg1, long arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setNClob in SQPreparedStatement");
     }
     
     @Override
     public void setObject(int arg0, Object arg1, int arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setObject in SQPreparedStatement");
     }
 
     @Override
     public void setObject(int arg0, Object arg1, int arg2, int arg3) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setObject 2 in SQPreparedStatement");
     }
 
     @Override
     public void setRef(int arg0, Ref arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setRef in SQPreparedStatement");
     }
 
     @Override
     public void setRowId(int arg0, RowId arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setRowId in SQPreparedStatement");
     }
 
     @Override
     public void setSQLXML(int arg0, SQLXML arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setSQLXML in SQPreparedStatement");
     }
     
     @Override
     public void setTime(int arg0, Time arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setTime in SQPreparedStatement");
     }
 
     @Override
     public void setTime(int arg0, Time arg1, Calendar arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setTime 2 in SQPreparedStatement");
     }
 
     @Override
     public void setURL(int arg0, URL arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setURL in SQPreparedStatement");
     }
 
     @Override
     public void setUnicodeStream(int arg0, InputStream arg1, int arg2) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setUnicodeStream in SQPreparedStatement");
     }
     
     @Override
     public void setMaxRows(int arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("setMaxRows in SQPreparedStatement");
 
         // if (arg0 != 0) // if zero, use default
         // serverProcess_chunk_size = arg0;
@@ -767,7 +767,7 @@ public class SQPreparedStatment implements PreparedStatement {
      */
     @Override
     public void closeOnCompletion() throws SQLException {
-        throw new SQLFeatureNotSupportedException();
+        throw new SQLFeatureNotSupportedException("closeOnCompletion in SQPreparedStatement");
     }
 
     

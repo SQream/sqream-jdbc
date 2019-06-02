@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
    "junit" % "junit" % "4.12" % Test,  
    "com.novocode" % "junit-interface" % "0.11" % Test
 )
+//libraryDependencies += "jdk.nashorn" % "nashorn" % "1.0" from "file:///usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext/nashorn.jar"
 
 // Assembly (fat jar) parameters
 assemblyJarName := "SqreamJDBC.jar"

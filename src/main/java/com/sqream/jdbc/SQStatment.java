@@ -58,10 +58,9 @@ public class SQStatment implements Statement {
 		if (Client.IsCancelStatement.getAndSet(true))
 			return;
 		
-		/*
+
 		if (!Client.is_open_statement())
 			return;
-		//*/
 		
 		statement_id = Client.get_statement_id();
 		String sql = "select stop_statement(" + statement_id + ")";

@@ -128,7 +128,7 @@ class SQResultSet implements ResultSet {
 	public void close() throws SQLException {
 		
 		is_closed = true;
-		/*
+		//*
 		if (!Empty) {  // Empty result sets don't start with a Client
 			try {
 				if (Client!= null && Client.is_open()) {

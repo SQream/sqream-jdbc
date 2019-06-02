@@ -890,7 +890,7 @@ public class Connector {
         
     	if (open_statement)
     		throw new ConnException("Trying to run a statement when another was not closed");
-    	open_statement = true;
+    	open_statement = true;  // set to false in close()
 
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
@@ -1037,7 +1037,7 @@ public class Connector {
     	            // Statement is finished so no need to reset row_counter etc
     			
     			res = _validate_response(_send_message(form_json("closeStatement"), true), form_json("statementClosed"));
-    	        open_statement = false;
+    	        open_statement = false;  // set to true in execute()
     		}
     		else
     			return false;  //res =  "statement " + statement_id + " already closed";
@@ -1051,16 +1051,21 @@ public class Connector {
     
     public boolean close_connection() throws IOException, ScriptException, ConnException {
         
-    	// close();
-        _validate_response(_send_message(form_json("closeConnection"), true), form_json("connectionClosed"));
-        
-        if (use_ssl) {
-        	if (ss.isOpen())
-        		ss.close(); // finish ssl communcication and close SSLEngine
+        if (is_open()) {
+
+        	if (open_statement) // Close open statement if exists
+        		close();  
+	        
+        	_validate_response(_send_message(form_json("closeConnection"), true), form_json("connectionClosed"));
+	        
+	        if (use_ssl) {
+	        	if (ss.isOpen())
+	        		ss.close(); // finish ssl communcication and close SSLEngine
+	        }
+	        
+	        if (s.isOpen())
+	        	s.close();
         }
-        
-        if (s.isOpen())
-        	s.close();
         
         return true;
     }

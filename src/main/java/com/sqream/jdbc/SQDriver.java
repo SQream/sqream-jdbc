@@ -30,7 +30,7 @@ import static java.nio.file.StandardOpenOption.CREATE;
 public class SQDriver implements java.sql.Driver {
 	
 	boolean logging = Connector.is_logging();
-	Path SQDriver_log = Paths.get("./SQDriver.txt");
+	Path SQDriver_log = Paths.get("/tmp/SQDriver.txt");
 	boolean log(String line) throws SQLException {
 		if (!logging)
 			return true;

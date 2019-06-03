@@ -37,7 +37,7 @@ import com.sqream.jdbc.Connector.ConnException;
 public class SQDatabaseMetaData implements DatabaseMetaData {
 	
 	boolean logging = Connector.is_logging();
-	Path SQDatabaseMetaData_log = Paths.get("./SQDatabaseMetaData.txt");
+	Path SQDatabaseMetaData_log = Paths.get("/tmp/SQDatabaseMetaData.txt");
 	boolean log(String line) throws SQLException {
 		try {
 			Files.write(SQDatabaseMetaData_log, Arrays.asList(new String[] {line}), UTF_8, CREATE, APPEND);

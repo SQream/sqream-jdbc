@@ -42,7 +42,7 @@ import static java.nio.file.StandardOpenOption.CREATE;
 
 public class SQConnection implements Connection {
 	
-	boolean logging = false;
+	boolean logging = Connector.is_logging();
 	Path SQConnection_log = Paths.get("./SQConnection.txt");
 	boolean log(String line) throws SQLException {
 		if (!logging)

@@ -398,7 +398,13 @@ public class Connector {
     // Logging
     // -------
     
-    boolean logging = true;
+    static boolean logging = false;
+    
+    static boolean is_logging() {
+    	
+    	return logging;
+    }
+    
 	boolean log(String line, String log_path) throws SQLException { 
 		if (!logging)
 			return true;
@@ -890,7 +896,7 @@ public class Connector {
         
     	if (open_statement)
     		throw new ConnException("Trying to run a statement when another was not closed");
-    	open_statement = true;  // set to false in close()
+    	open_statement = true;
 
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");

@@ -142,6 +142,13 @@ public class JDBC_Positive {
         return a_ok;
     }
     
+    public boolean is_logging_off () {
+    	
+    	return !Connector.is_logging();
+    	
+    }
+    
+    
     public boolean bool_as_string() throws SQLException {
     	
     	boolean a_ok = false;
@@ -807,6 +814,8 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        
+        print ("logging is off test:" + (pos_tests.is_logging_off() ? "OK" : "Fail"));
         print ("boolean as string test - " + (pos_tests.bool_as_string() ? "OK" : "Fail"));
         /*
         print ("Cast test - " + (pos_tests.casted_gets() ? "OK" : "Fail"));

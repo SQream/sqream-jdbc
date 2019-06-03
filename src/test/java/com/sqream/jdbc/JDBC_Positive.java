@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public class JDBC_Positive {
     
@@ -148,6 +149,10 @@ public class JDBC_Positive {
     	
     }
     
+    public void get_connection () throws SQLException {
+    	conn = DriverManager.getConnection(url,"sqream","sqream");
+    	
+    }
     
     public boolean bool_as_string() throws SQLException {
     	
@@ -807,7 +812,12 @@ public class JDBC_Positive {
     
     public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{
         
+    	// Loading JDBC driver with a timezone test
+    	ZoneId before_jdbc = ZoneId.systemDefault();
         Class.forName("com.sqream.jdbc.SQDriver");
+        ZoneId after_jdbc = ZoneId.systemDefault();
+        print ("Changing timezone test: " + ((after_jdbc.equals(before_jdbc)) ? "OK" : "Fail"));
+        
         
         JDBC_Positive pos_tests = new JDBC_Positive();
         String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
@@ -824,7 +834,7 @@ public class JDBC_Positive {
         print ("isSigned test - " + (pos_tests.isSigned() ? "OK" : "Fail"));
         print ("Execute batch test - " + (pos_tests.execBatchRes() ? "OK" : "Fail"));
         //*/
-        //*
+        /*
         for (String col_type : typelist)
             if(!pos_tests.insert(col_type))  
                 throw new java.lang.RuntimeException("Not all type checks returned identical");

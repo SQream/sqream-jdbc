@@ -5,8 +5,8 @@ import java.time.LocalTime;
 import java.util.Random;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
+//import org.junit.Assert;
+//import org.junit.Test;
 import java.util.stream.IntStream;
 
 import java.sql.Connection;
@@ -31,6 +31,9 @@ import java.util.TimeZone;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+
+import com.sqream.jdbc.Connector;
+
 
 public class JDBC_Positive {
     
@@ -144,9 +147,7 @@ public class JDBC_Positive {
     }
     
     public boolean is_logging_off () {
-    	
     	return !Connector.is_logging();
-    	
     }
     
     public void get_connection () throws SQLException {
@@ -594,6 +595,7 @@ public class JDBC_Positive {
 
         boolean res = false;
         //assertEquals(test_int, res_int);
+        /*
         if (use_junit) {
             if (table_type == "bool") {
                 Assert.assertEquals(test_bool, res_bool);
@@ -637,7 +639,7 @@ public class JDBC_Positive {
     //          print(" Results identical");
                 res = true;}
             }
-        else {
+        else { //*/
             //assertEquals(testInt, resInt);
             
             if (table_type == "bool" && test_bool != res_bool)
@@ -670,7 +672,7 @@ public class JDBC_Positive {
                 print(" Results identical");
                 res = true;}
             
-        }
+        //}
         
         
         
@@ -758,7 +760,7 @@ public class JDBC_Positive {
         ps.close();
         */      
     
-    //*
+    /*
     @Test
     public void insertBool() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
         new JDBC_Positive().insert("bool");
@@ -817,7 +819,7 @@ public class JDBC_Positive {
         Class.forName("com.sqream.jdbc.SQDriver");
         ZoneId after_jdbc = ZoneId.systemDefault();
         print ("Changing timezone test: " + ((after_jdbc.equals(before_jdbc)) ? "OK" : "Fail"));
-        
+        // boolean all_pass = false;
         
         JDBC_Positive pos_tests = new JDBC_Positive();
         String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};

@@ -10,9 +10,8 @@ import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
-import java.util.TimeZone;
 import java.util.logging.Logger;
-
+import java.lang.reflect.Field;
 import javax.script.ScriptException;
 
 import com.sqream.jdbc.Connector.ConnException;
@@ -21,6 +20,7 @@ import com.sqream.jdbc.Connector.ConnException;
 import java.util.Arrays;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.APPEND;
@@ -61,6 +61,7 @@ public class SQDriver implements java.sql.Driver {
 		public String cluster;
 		public String service;
 		public String ssl;
+		
 		
 		uriEx(String url) throws SQLException {
 			try {
@@ -150,7 +151,17 @@ public class SQDriver implements java.sql.Driver {
 	public java.sql.Connection connect(String url, Properties info) throws SQLException {
 		
 		log("inside connect in SQDriver");
-
+		try {
+			System.setProperty("file.encoding","UTF-8");
+			Field charset;
+			charset = Charset.class.getDeclaredField("defaultCharset");
+			charset.setAccessible(true);
+			charset.set(null,null);
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
 		String prfx = "jdbc:Sqream";
 
 		if (!url.trim().substring(0, prfx.length()).equals(prfx))

@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.TimeZone;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -92,8 +94,8 @@ public class SampleTest {
         ps.close();
         //*/
         
-        conn_src.setAutoCommit(false);
-        //*
+        //conn_src.setAutoCommit(false);
+        /*
         // Stream from src to dst
         start = time();
         sql_src = "select * from perf_t limit 19000000";
@@ -130,7 +132,7 @@ public class SampleTest {
         stmt.close();
         //*/
         
-        //*
+        /*
         // Stream from src to src
         start = time();
         sql_src = "select * from perf_t limit 19000000";
@@ -226,10 +228,12 @@ public class SampleTest {
         
         // Load JDBC driver - not needed with newer version
         Class.forName("com.sqream.jdbc.SQDriver");
-        Class.forName("com.mysql.jdbc.Driver");  
-        
-        SampleTest test = new SampleTest();   
-        test.testJDBC();
+        //Class.forName("com.mysql.jdbc.Driver");  
+        print (new Timestamp(2354345345l));
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        print (new Timestamp(2354345345l));
+        //SampleTest test = new SampleTest();   
+        //test.testJDBC();
     }
 }
 

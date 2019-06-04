@@ -1,22 +1,23 @@
 import os
 from subprocess import Popen, PIPE
 
-# Compile repo
+
 jdbc_repo =  '/home/eliy/jdbc-perf/'
+jdbc_location = jdbc_repo + 'target/sqream-jdbc-2.9.5-jar-with-dependencies.jar'
+
+test_src = jdbc_repo + '/src/test/java'
+class_dir =  jdbc_repo + 'target/classes/com/sqream/jdbc/'
+run_from = jdbc_repo + 'target/test-classes/'
+
 
 def compile_repo(repo_dir = jdbc_repo):
+    ''' run maven on the repo to generate jar and class files '''
+
     os.chdir(repo_dir)
     compile_cmd = Popen(('mvn', 'package', '-DskipTests'), stdout = PIPE, stderr = PIPE)
 
     return compile_cmd.communicate()
 
-
-test_src = jdbc_repo + '/src/test/java'
-class_dir =  jdbc_repo + 'target/classes/com/sqream/jdbc/'
-tests_dir =  jdbc_repo + 'target/test-classes/com/sqream/jdbc/'
-jdbc_location = jdbc_repo + 'target/sqream-jdbc-2.9.5-jar-with-dependencies.jar'
-
-run_from = jdbc_repo + 'target/test-classes/'
 
 def run_java_test(test_name, jdbc_location = jdbc_location):
     ''' javac -cp .:/path/to/SQream_JDBC.jar SomeTest.java
@@ -38,6 +39,12 @@ def run_java_test(test_name, jdbc_location = jdbc_location):
 
     return out, err
 
+
 if __name__ == '__main__':
+
+    ''' Available tests:
+    '''
+
     # res, err = compile_repo()
     pos_results = run_java_test('JDBC_Positive')
+    print (pos_results[0])

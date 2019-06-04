@@ -26,7 +26,7 @@ test in assembly := {}
 //assemblyOutputPath := file("..")
 
 packageOptions in assembly := Seq(Package.ManifestAttributes(("Implementation-Version", version.value)))
-//javaOptions += "Dfile.encoding=\"UTF-8\""
+javaOptions += "Dfile.encoding=\"UTF-8\""
 testOptions += Tests.Argument(TestFrameworks.JUnit)
 
 /*

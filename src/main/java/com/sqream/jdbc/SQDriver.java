@@ -153,15 +153,13 @@ public class SQDriver implements java.sql.Driver {
 		log("inside connect in SQDriver");
 		try {
 			System.setProperty("file.encoding","UTF-8");
-			Field charset;
-			charset = Charset.class.getDeclaredField("defaultCharset");
+			Field charset = Charset.class.getDeclaredField("defaultCharset");
 			charset.setAccessible(true);
 			charset.set(null,null);
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
-		
 		String prfx = "jdbc:Sqream";
 
 		if (!url.trim().substring(0, prfx.length()).equals(prfx))

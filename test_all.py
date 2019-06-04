@@ -19,7 +19,7 @@ def compile_repo(repo_dir = jdbc_repo):
     return compile_cmd.communicate()
 
 
-def run_java_test(test_name, jdbc_location = jdbc_location):
+def run_java_test(test_name, verbose = False, jdbc_location = jdbc_location):
     ''' javac -cp .:/path/to/SQream_JDBC.jar SomeTest.java
         java -cp .:/path/to/SQream_JDBC.jar SomeTest 
     '''
@@ -32,19 +32,22 @@ def run_java_test(test_name, jdbc_location = jdbc_location):
     # Check results
     failed = [res for res in out.split(b'\n') if b'Fail' in res]
     if failed or err:
-        print (f"Errors in test {test_name}:\n{failed}\n{err}")
+        print (f"\n***\nErrors in test {test_name}:\n{failed}\n{err}")
     else:
-        print (f"Test {test_name} passed")        
+        print (f"***\nTest: {test_name} - passed")        
 
+    if verbose:
+        print ("Test Run details:\n",out.decode('utf8'))
 
-    return out, err
 
 
 if __name__ == '__main__':
 
-    ''' Available tests:
+    ''' Available tests: JDBC_Positive, Positive, Negative
     '''
 
     # res, err = compile_repo()
-    pos_results = run_java_test('JDBC_Positive')
-    print (pos_results[0])
+    # run_java_test('JDBC_Positive')
+    # run_java_test('Positive')
+    run_java_test('Negative', True)
+

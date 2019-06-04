@@ -10,6 +10,8 @@ description :=  "SQream JDBC driver"
 crossPaths :=       false  
 autoScalaLibrary := false        // adds the scala library as a dependency
 
+
+
 // library dependencies
 libraryDependencies ++= Seq(
    "com.github.marianobarrios" % "tls-channel" % "0.2.0",
@@ -24,7 +26,7 @@ test in assembly := {}
 //assemblyOutputPath := file("..")
 
 packageOptions in assembly := Seq(Package.ManifestAttributes(("Implementation-Version", version.value)))
-
+//javaOptions += "Dfile.encoding=\"UTF-8\""
 testOptions += Tests.Argument(TestFrameworks.JUnit)
 
 /*

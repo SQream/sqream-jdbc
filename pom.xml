@@ -7,6 +7,13 @@
     <name>SQream JDBC</name>
     <packaging>jar</packaging>
     <url>http://maven.apache.org</url>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--jvm.options>-Dfile.encoding="UTF-8"</jvm.options-->
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
     <dependencies>
         
         <!-- https://mvnrepository.com/artifact/com.github.marianobarrios/tls-channel -->
@@ -47,6 +54,7 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <!--encoding>${project.build.sourceEncoding}</encoding-->
                 </configuration>
             </plugin>
             <!--plugin>
@@ -79,6 +87,7 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                     <!--encoding>${project.build.sourceEncoding}</encoding-->
                 </configuration>
                 <executions>
                     <execution>

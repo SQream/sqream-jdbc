@@ -3,7 +3,7 @@ package com.sqream.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
@@ -548,7 +548,7 @@ class SQResultSet implements ResultSet {
 		else if (type.equals("ftVarchar")) {
 			try {
 				res = Client.get_varchar(columnLabel);
-			}catch (ConnException e) {
+			}catch (ConnException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
 		}
@@ -588,7 +588,7 @@ class SQResultSet implements ResultSet {
 		else if (type.equals("ftVarchar")) {
 			try {
 				res = Client.get_varchar(columnIndex);
-			}catch (ConnException e) {
+			}catch (ConnException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
 		}

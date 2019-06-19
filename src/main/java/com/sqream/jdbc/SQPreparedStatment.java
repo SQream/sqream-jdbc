@@ -276,7 +276,7 @@ public class SQPreparedStatment implements PreparedStatement {
         if (type.equals("Varchar"))
 			try {
 				Client.set_varchar(arg0, arg1);
-			} catch (ConnException e) {
+			} catch (ConnException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
 		else if (type.equals("NVarchar"))

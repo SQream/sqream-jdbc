@@ -145,7 +145,9 @@ public class Connector {
     long response_length;
     int connection_id = -1;
     int statement_id = -1;
+    String varchar_encoding = "ascii";  // default encoding/decoding for varchar columns
     static Charset UTF8 = StandardCharsets.UTF_8;
+    
     
     // Connection related
     SocketChannel s = SocketChannel.open();
@@ -883,9 +885,9 @@ public class Connector {
         service = _service;
         
         String connStr = MessageFormat.format(connectDatabase, database, user, password, service);
-        //response_json = _parse_sqream_json(_send_message(connStr, true));
-        
-        connection_id = (int) _parse_sqream_json(_send_message(connStr, true)).get("connectionId"); 
+        response_json = _parse_sqream_json(_send_message(connStr, true));
+        connection_id = (int) response_json.get("connectionId"); 
+        varchar_encoding = (String)response_json.getOrDefault("varcharEncoding", "ascii");
 
         return connection_id;
     }
@@ -1181,7 +1183,7 @@ public class Connector {
     }
     
     
-    public String get_varchar(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
+    public String get_varchar(int col_num) throws ConnException, UnsupportedEncodingException {   col_num--;  // set / get work with starting index 1
     	_validate_index(col_num);
         // Get bytes the size of the varchar column into string_bytes
         if (col_calls[col_num]++ > 0) {
@@ -1190,7 +1192,7 @@ public class Connector {
         }
         data_columns[col_num].get(string_bytes, 0, col_sizes[col_num]);
         
-        return (_validate_get(col_num, "ftVarchar")) ? new String(string_bytes, 0, col_sizes[col_num], UTF8).trim() : null;
+        return (_validate_get(col_num, "ftVarchar")) ? new String(string_bytes, 0, col_sizes[col_num], varchar_encoding).trim() : null;
     }
     
     
@@ -1268,7 +1270,7 @@ public class Connector {
         return get_double(col_names_map.get(col_name));
     }
     
-    public String get_varchar(String col_name) throws ConnException {  
+    public String get_varchar(String col_name) throws ConnException, UnsupportedEncodingException {  
         
         return get_varchar(col_names_map.get(col_name));
     }
@@ -1400,10 +1402,10 @@ public class Connector {
     }
     
     
-    public boolean set_varchar(int col_num, String value) throws ConnException {  col_num--;
+    public boolean set_varchar(int col_num, String value) throws ConnException, UnsupportedEncodingException {  col_num--;
     	_validate_index(col_num);
         // Set actual value - padding with spaces to the left if needed
-        string_bytes = _validate_set(col_num, value, "ftVarchar") ? "".getBytes(UTF8) : value.getBytes(UTF8);
+        string_bytes = _validate_set(col_num, value, "ftVarchar") ? "".getBytes(varchar_encoding) : value.getBytes(varchar_encoding);
         if (string_bytes.length > col_sizes[col_num]) 
             throw new ConnException("Trying to set string of size " + string_bytes.length + " on column of size " +  col_sizes[col_num] );
         // Generate missing spaces to fill up to size

@@ -888,7 +888,8 @@ public class Connector {
         response_json = _parse_sqream_json(_send_message(connStr, true));
         connection_id = (int) response_json.get("connectionId"); 
         varchar_encoding = (String)response_json.getOrDefault("varcharEncoding", "ascii");
-
+    	varchar_encoding = (varchar_encoding.contains("874"))? "cp874" : "ascii";
+        
         return connection_id;
     }
     

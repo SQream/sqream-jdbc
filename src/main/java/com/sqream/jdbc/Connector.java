@@ -140,7 +140,7 @@ public class Connector {
     // ---------------
         
     // Protocol related
-    byte protocol_version = 6;
+    byte protocol_version = 7;
     byte is_text;  // Catching the 2nd byte of a response
     long response_length;
     int connection_id = -1;
@@ -645,8 +645,7 @@ public class Connector {
         	
         header.flip();
         //print ("header: " + header);
-    	protocol_version = header.get(); // java.nio.BufferUnderflowException - internal runtime error
-    	if (protocol_version != 6)
+    	if (protocol_version != header.get())
         	throw new ConnException("bad protocol version returned - " + protocol_version + " perhaps an older version of SQream or reading out of oreder");
     	
     	is_text = header.get();

@@ -140,7 +140,7 @@ public class Connector {
     // ---------------
         
     // Protocol related
-    byte protocol_version = 7;
+    byte protocol_version = 6;
     byte is_text;  // Catching the 2nd byte of a response
     long response_length;
     int connection_id = -1;

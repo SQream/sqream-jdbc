@@ -15,6 +15,7 @@ autoScalaLibrary := false        // adds the scala library as a dependency
 // library dependencies
 libraryDependencies ++= Seq(
    "com.github.marianobarrios" % "tls-channel" % "0.2.0",
+   "com.eclipsesource.minimal-json" % "minimal-json" % "0.9.5", 
    "junit" % "junit" % "4.12" % Test,  
    "com.novocode" % "junit-interface" % "0.11" % Test
 )
@@ -35,3 +36,4 @@ assemblyMergeStrategy in assembly := {
     case x => MergeStrategy.first
 }
 */
+

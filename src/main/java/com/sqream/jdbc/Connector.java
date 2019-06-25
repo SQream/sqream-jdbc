@@ -30,6 +30,7 @@ import com.eclipsesource.json.ParseException;
 import com.eclipsesource.json.WriterConfig;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonArray;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -147,7 +148,7 @@ public class Connector {
     int statement_id = -1;
     String varchar_encoding = "ascii";  // default encoding/decoding for varchar columns
     static Charset UTF8 = StandardCharsets.UTF_8;
-    
+    boolean charitable = true;
     
     // Connection related
     SocketChannel s = SocketChannel.open();
@@ -895,9 +896,12 @@ public class Connector {
 
     public int execute(String statement) throws IOException, ScriptException, ConnException {
         /* getStatementId, prepareStatement, reconnect, execute, queryType  */
-        
+        charitable = true;
     	if (open_statement)
-    		throw new ConnException("Trying to run a statement when another was not closed");
+    		if (charitable)  // Automatically close previous unclosed statement
+    			close();
+    		else
+    			throw new ConnException("Trying to run a statement when another was not closed");
     	open_statement = true;
 
         // Get statement ID, send prepareStatement and get response parameters

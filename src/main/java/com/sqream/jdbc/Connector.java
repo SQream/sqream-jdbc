@@ -901,7 +901,7 @@ public class Connector {
     		if (charitable)  // Automatically close previous unclosed statement
     			close();
     		else
-    			throw new ConnException("Trying to run a statement when another was not closed");
+    			throw new ConnException("Trying to run a statement when another was not closed. Open statement id: " + statement_id + " on connection: " + connection_id);
     	open_statement = true;
 
         // Get statement ID, send prepareStatement and get response parameters

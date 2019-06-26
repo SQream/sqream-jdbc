@@ -170,7 +170,8 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 	
 	@Override
 	public boolean isCurrency(int column) throws SQLException {
-		throw new SQLFeatureNotSupportedException("isCurrency in SQResultSetMetaData");
+		// Indicates whether the designated column is a cash value.
+		return false;
 	}
 
 	@Override

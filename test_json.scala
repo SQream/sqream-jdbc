@@ -13,3 +13,7 @@ val is_tvc = json_lst.get(0).asObject().get("isTrueVarChar")
 
 
 println(is_tvc)
+
+
+Object json_object;
+// json_object = Json.parse(json).asObject();

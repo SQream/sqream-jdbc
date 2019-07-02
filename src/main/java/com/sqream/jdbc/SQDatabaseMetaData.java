@@ -185,10 +185,33 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public String getTimeDateFunctions() throws SQLException {
 		
-		String rc = "curdate, curtime, dayname, dayofmonth, dayofweek, dayofyear, hour, minute, month, monthname, now, quarter, timestampadd, timestampdiff, second, week, year";
-		return rc;
+		return "curdate, curtime, dayname, dayofmonth, dayofweek, dayofyear, hour, minute, month, monthname, now, quarter, timestampadd, timestampdiff, second, week, year";
 	}
+	
+	@Override
+	public String getStringFunctions() throws SQLException {
+		// Retrieves a comma-separated list of string functions available with this database. 
+		// These are the Open Group CLI string function names used in the JDBC function escape clause.
+	
+		return "";
+	}
+	
 
+	@Override
+	public String getSystemFunctions() throws SQLException {
+		// Retrieves a comma-separated list of system functions available with this database
+		return "";
+	}
+	
+	
+	@Override
+	public String getNumericFunctions() throws SQLException {
+		//Retrieves a comma-separated list of math functions available with this database.
+		
+		return "";
+	}
+	
+	
 	@Override
 	public ResultSet getTypeInfo() throws SQLException {
 
@@ -658,13 +681,6 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public String getSearchStringEscape() throws SQLException {
 		return "";
 	}
-
-	@Override
-	public String getSystemFunctions() throws SQLException {
-		
-		return "";
-	}
-
 	
 
 	private String CheckNull(String str) {
@@ -1185,32 +1201,22 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public ResultSet getPseudoColumns(String arg0, String arg1, String arg2, String arg3) throws SQLException {
-		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
+		throw new SQLFeatureNotSupportedException("getPseudoColumns in SQDatabaseMetadata");
 	}
 	
 	@Override
 	public String getExtraNameCharacters() throws SQLException {
-		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
-	}
-	
-	@Override
-	public String getNumericFunctions() throws SQLException {
-		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
+		throw new SQLFeatureNotSupportedException("getExtraNameCharacters in SQDatabaseMetadata");
 	}
 	
 	@Override
 	public RowIdLifetime getRowIdLifetime() throws SQLException {
-		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
-	}
-	
-	@Override
-	public String getStringFunctions() throws SQLException {
-		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
+		throw new SQLFeatureNotSupportedException("getRowIdLifetime in SQDatabaseMetadata");
 	}
 	
 	@Override
 	public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
-		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
+		throw new SQLFeatureNotSupportedException("getSuperTables in SQDatabaseMetadata");
 		// return EmptyResultSet();
 	}
 }

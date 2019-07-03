@@ -141,16 +141,15 @@ public class Connector {
     // ---------------
         
     // Protocol related
-    byte protocol_version = 6;
+    byte protocol_version = 7;
     byte is_text;  // Catching the 2nd byte of a response
     long response_length;
     int connection_id = -1;
     int statement_id = -1;
     String varchar_encoding = "ascii";  // default encoding/decoding for varchar columns
     static Charset UTF8 = StandardCharsets.UTF_8;
-    boolean charitable = true;
+    boolean charitable = false;
     int msg_len;
-    
     // Connection related
     SocketChannel s = SocketChannel.open();
     SSLContext ssl_context = SSLContext.getDefault();

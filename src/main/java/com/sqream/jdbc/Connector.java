@@ -673,16 +673,18 @@ public class Connector {
         
         // Sending null for data will get us here directly, allowing to only get socket response if needed
         if(get_response) {
-            //response_message = ByteBuffer.allocate(_get_parse_header());
         	msg_len = _get_parse_header();
+            response_message = ByteBuffer.allocate(Math.max(64000, msg_len));
         	response_message.clear();
         	//response_message.limit(msg_len);
         	bytes_read = (use_ssl) ? ss.read(response_message) : s.read(response_message);
-            response_message.flip();
+        	if (response_message.position() != msg_len)
+		    	print ("Json header inidcated size of " + msg_len + " but got " + response_message.position());
+        	response_message.flip();
              // print ("response message buffer position: " + response_message.position());
-	    if (bytes_read == -1) {
-                throw new IOException("Socket closed");
- 	    }
+		    if (bytes_read == -1) {
+	                throw new IOException("Socket closed");
+	 	    }
         }   
         
         return (get_response) ? decode(response_message) : "" ;

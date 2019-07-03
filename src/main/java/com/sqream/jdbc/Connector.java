@@ -678,8 +678,8 @@ public class Connector {
         	response_message.clear();
         	//response_message.limit(msg_len);
         	bytes_read = (use_ssl) ? ss.read(response_message) : s.read(response_message);
-        	// if (response_message.position() != msg_len)
-	    	print ("Json header inidcated size of " + msg_len + " but got " + response_message.position());
+        	if (response_message.position() != msg_len)
+		    	print ("Json header inidcated size of " + msg_len + " but got " + response_message.position());
         	response_message.flip();
              // print ("response message buffer position: " + response_message.position());
 		    if (bytes_read == -1) {

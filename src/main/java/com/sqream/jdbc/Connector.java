@@ -43,6 +43,7 @@ import jdk.nashorn.internal.runtime.JSONListAdapter;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.HashMap;
+import java.util.List;
 import java.text.MessageFormat;
 
 // Datatypes for building columns and other
@@ -70,6 +71,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 // Aux
 import java.util.Arrays;   //  To allow debug prints via Arrays.toString
 import java.util.stream.IntStream;
@@ -142,6 +144,7 @@ public class Connector {
         
     // Protocol related
     byte protocol_version = 7;
+    List<Byte> supported_protocols = new ArrayList<Byte>(Arrays.asList((byte)6, (byte)7));
     byte is_text;  // Catching the 2nd byte of a response
     long response_length;
     int connection_id = -1;
@@ -184,12 +187,13 @@ public class Connector {
     ByteBuffer message_buffer;
     ByteBuffer response_buffer = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);
     ByteBuffer header = ByteBuffer.allocateDirect(10).order(ByteOrder.LITTLE_ENDIAN);
-    ByteBuffer response_message = ByteBuffer.allocateDirect(1000 * 1024).order(ByteOrder.LITTLE_ENDIAN);;
+    ByteBuffer response_message = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);;
     int message_length, bytes_read;
     String response_string;
     boolean fetch_msg = false;
     int written;
     
+    		
     // Binary data related
     int FLUSH_SIZE = 10 * (int) Math.pow(10, 6);
     //byte [] buffer = new byte[FLUSH_SIZE];
@@ -646,7 +650,7 @@ public class Connector {
         	
         header.flip();
         //print ("header: " + header);
-    	if (protocol_version != header.get())
+    	if (!supported_protocols.contains(header.get())) 
         	throw new ConnException("bad protocol version returned - " + protocol_version + " perhaps an older version of SQream or reading out of oreder");
     	
     	is_text = header.get();
@@ -669,11 +673,13 @@ public class Connector {
         
         // Sending null for data will get us here directly, allowing to only get socket response if needed
         if(get_response) {
-        	msg_len = _get_parse_header();
             //response_message = ByteBuffer.allocate(_get_parse_header());
+        	msg_len = _get_parse_header();
         	response_message.clear();
+        	//response_message.limit(msg_len);
         	bytes_read = (use_ssl) ? ss.read(response_message) : s.read(response_message);
             response_message.flip();
+             // print ("response message buffer position: " + response_message.position());
 	    if (bytes_read == -1) {
                 throw new IOException("Socket closed");
  	    }

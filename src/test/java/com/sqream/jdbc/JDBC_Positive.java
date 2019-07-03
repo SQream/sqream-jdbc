@@ -174,7 +174,7 @@ public class JDBC_Positive {
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         rs.next();
-        if (rs.getString(1).equals("true") && rs.getString(1).equals("true"))
+        if (rs.getString(1).equals("true") && rs.getString(1).equals("false"))
         	a_ok = true;
         
         rs.close();

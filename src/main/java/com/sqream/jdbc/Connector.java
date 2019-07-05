@@ -674,11 +674,14 @@ public class Connector {
         // Sending null for data will get us here directly, allowing to only get socket response if needed
         if(get_response) {
         	msg_len = _get_parse_header();
-            response_message = ByteBuffer.allocate(Math.max(64000, msg_len));
-        	response_message.clear();
-        	//response_message.limit(msg_len);
-        	bytes_read = (use_ssl) ? ss.read(response_message) : s.read(response_message);
-        	if (response_message.position() != msg_len)
+        	if (msg_len > 64000) // If our 64K response_message buffer doesn't do
+        		response_message = ByteBuffer.allocate(msg_len);
+    		response_message.clear();
+    		response_message.limit(msg_len);
+    		bytes_read = 0;
+    		while (bytes_read < msg_len)
+    			bytes_read += (use_ssl) ? ss.read(response_message) : s.read(response_message);
+    		if (response_message.position() != msg_len)
 		    	print ("Json header inidcated size of " + msg_len + " but got " + response_message.position());
         	response_message.flip();
              // print ("response message buffer position: " + response_message.position());

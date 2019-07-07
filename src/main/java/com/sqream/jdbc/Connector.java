@@ -188,7 +188,7 @@ public class Connector {
     ByteBuffer response_buffer = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);
     ByteBuffer header = ByteBuffer.allocateDirect(10).order(ByteOrder.LITTLE_ENDIAN);
     ByteBuffer response_message = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);;
-    int message_length, bytes_read;
+    int message_length, bytes_read, total_bytes_read;
     String response_string;
     boolean fetch_msg = false;
     int written;
@@ -659,6 +659,20 @@ public class Connector {
         return (int)response_length;
     }
     
+    int _read_data(ByteBuffer response, int msg_len) throws IOException {
+    	
+		total_bytes_read = 0;
+		while (total_bytes_read < msg_len) {
+			bytes_read = (use_ssl) ? ss.read(response) : s.read(response);
+			if (bytes_read == -1) 
+                throw new IOException("Socket closed");
+			total_bytes_read += bytes_read;
+			// response_message.position(total_bytes_read); // needed?
+		}
+		
+		return total_bytes_read;
+    }
+    
     // (4) /* Manage actual sending and receiving of ByteBuffers over exising socket  */
     String _send_data (ByteBuffer data, boolean get_response) throws IOException, ConnException {
            /* Used by _send_message(), _flush()   */
@@ -678,16 +692,12 @@ public class Connector {
         		response_message = ByteBuffer.allocate(msg_len);
     		response_message.clear();
     		response_message.limit(msg_len);
-    		bytes_read = 0;
-    		while (bytes_read < msg_len)
-    			bytes_read += (use_ssl) ? ss.read(response_message) : s.read(response_message);
-    		if (response_message.position() != msg_len)
+    		_read_data(response_message, msg_len);
+			if (response_message.position() != msg_len)
 		    	print ("Json header inidcated size of " + msg_len + " but got " + response_message.position());
         	response_message.flip();
              // print ("response message buffer position: " + response_message.position());
-		    if (bytes_read == -1) {
-	                throw new IOException("Socket closed");
-	 	    }
+		    
         }   
         
         return (get_response) ? decode(response_message) : "" ;

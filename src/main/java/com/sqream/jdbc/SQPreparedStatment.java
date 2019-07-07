@@ -26,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.Ref;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.ParameterMetaData;
 import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -59,6 +60,8 @@ public class SQPreparedStatment implements PreparedStatement {
     static void print(Object printable) {
         System.out.println(printable);
     }
+    
+    
     
     public SQPreparedStatment(Connector client, String Sql, SQConnection conn, String catalog) throws SQLException, IOException, KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
         
@@ -514,6 +517,11 @@ public class SQPreparedStatment implements PreparedStatement {
         return false;
     }
     
+    @Override
+    public ParameterMetaData getParameterMetaData() throws SQLException {
+        throw new SQLFeatureNotSupportedException("getParameterMetaData in SQPreparedStatement");
+    }
+    
     // Unsupported
     // -----------
     
@@ -542,12 +550,7 @@ public class SQPreparedStatment implements PreparedStatement {
     public ResultSet getGeneratedKeys() throws SQLException {
         throw new SQLFeatureNotSupportedException("getGeneratedKeys in SQPreparedStatement");
     }
-    
-    @Override
-    public ParameterMetaData getParameterMetaData() throws SQLException {
-        throw new SQLFeatureNotSupportedException("getParameterMetaData in SQPreparedStatement");
-    }
-    
+     
     @Override
     public SQLWarning getWarnings() throws SQLException {
         throw new SQLFeatureNotSupportedException("getWarnings in SQPreparedStatement");

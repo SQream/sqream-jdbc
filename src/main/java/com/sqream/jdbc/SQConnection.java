@@ -67,6 +67,7 @@ public class SQConnection implements Connection {
 		int port;
 		String User;
 		String Password;
+		String schema;
 		String DB_name;
 		Boolean Use_ssl;
 		String service;
@@ -125,7 +126,13 @@ public class SQConnection implements Connection {
 			System.out.println ("no service passed, defaulting to sqream");
 			service = "sqream";
 		}
-			
+		
+		String schema = connectionInfo.getProperty("schema");
+		if(schema == null || schema.equals("-1")) {
+			System.out.println ("no schema passed, defaulting to public");
+			schema = "public";
+		}
+		
 		String usr = connectionInfo.getProperty("user");
 		username = usr;
 		if (usr.equals("-1"))
@@ -158,6 +165,7 @@ public class SQConnection implements Connection {
 		sqlb.Cluster=isCluster;
 		sqlb.ip=ipaddress;
 		sqlb.port=Integer.parseInt(s_port);		
+		sqlb.schema = schema;
 		sqlb.DB_name=db_name;
 		sqlb.Password=pswd;
 		sqlb.User=usr;
@@ -304,7 +312,6 @@ public class SQConnection implements Connection {
 		return IsClosed.get();
 	}
 	
-	
 	@Override
 	public void commit() throws SQLException {
 		log("inside commit SQConnection");
@@ -317,7 +324,12 @@ public class SQConnection implements Connection {
 		// System.out.println("getAutoCommit");SQLFeatureNotSupportedException
 		return true;
 	}
-
+	
+	@Override
+	public String getSchema() throws SQLException {
+		return sqlb.schema;
+	}
+	
 	@Override
 	public String getCatalog() throws SQLException {
 		log("inside getCatalog SQConnection");
@@ -451,6 +463,7 @@ public class SQConnection implements Connection {
 //		System.out.println("clearWarnings");
 	}
 	
+	
 	// Unsupported
 	// -----------
 	
@@ -494,13 +507,6 @@ public class SQConnection implements Connection {
 		log("inside abort SQConnection");
 		if (printouts) System.out.println("abort");
 		throw new SQLFeatureNotSupportedException("abort in SQConnection");
-	}
-
-	@Override
-	public String getSchema() throws SQLException {
-		log("inside getSchema SQConnection");
-		if (printouts) System.out.println("getSchema");
-		throw new SQLFeatureNotSupportedException("getSchema in SQConnection");
 	}
 
 	@Override

@@ -195,6 +195,7 @@ public class Connector {
     
     		
     // Binary data related
+    int HEADER_SIZE = 10;
     int FLUSH_SIZE = 10 * (int) Math.pow(10, 6);
     //byte [] buffer = new byte[FLUSH_SIZE];
     int row_size, rows_per_flush;
@@ -667,7 +668,7 @@ public class Connector {
     // (3)  /* Used by _send_data()  (merge if only one )  */
     int _get_parse_header() throws IOException, ConnException {
         header.clear();
-        _read_data(header, 10);
+        _read_data(header, HEADER_SIZE);
         	
         //print ("header: " + header);
     	if (!supported_protocols.contains(header.get())) 

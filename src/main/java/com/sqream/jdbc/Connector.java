@@ -143,7 +143,7 @@ public class Connector {
     // ---------------
         
     // Protocol related
-    byte protocol_version = 6;
+    byte protocol_version = 7;
     List<Byte> supported_protocols = new ArrayList<Byte>(Arrays.asList((byte)6, (byte)7));
     byte is_text;  // Catching the 2nd byte of a response
     long response_length;
@@ -410,8 +410,6 @@ public class Connector {
 			
 			if (msg_len == 0 && bytes_read == 0)
 				break;  // Drain mode, read all that was available
-			
-			// response_message.position(total_bytes_read); 
 		}
 		
 		response.flip();  // reset position to allow reading from buffer
@@ -693,10 +691,10 @@ public class Connector {
         // Sending null for data will get us here directly, allowing to only get socket response if needed
         if(get_response) {
         	msg_len = _get_parse_header();
-        	// if (msg_len > 64000) // If our 64K response_message buffer doesn't do
-    		response_message = ByteBuffer.allocate(msg_len);
-    		// response_message.clear();
-    		// response_message.limit(msg_len);
+        	if (msg_len > 64000) // If our 64K response_message buffer doesn't do
+        		response_message = ByteBuffer.allocate(msg_len);
+    		 response_message.clear();
+    		 response_message.limit(msg_len);
     		_read_data(response_message, msg_len);
         }   
         

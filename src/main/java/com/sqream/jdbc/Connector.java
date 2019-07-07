@@ -389,6 +389,36 @@ public class Connector {
 
     }
     
+    // Socket Interaction
+    // ------------------
+    
+    int _read_data(ByteBuffer response, int msg_len) throws IOException, ConnException {
+    	/* Read either a specific amount of data, or until socket is empty if msg_len is 0.
+    	 * response ByteBuffer of a fitting size should be supplied.
+    	 */
+    	if (msg_len > response.capacity())
+    		throw new ConnException ("Attempting to read more data than supplied bytebuffer allows");
+		
+    	total_bytes_read = 0;
+		
+    	while (total_bytes_read < msg_len || msg_len == 0) {
+			bytes_read = (use_ssl) ? ss.read(response) : s.read(response);
+			if (bytes_read == -1) 
+                throw new IOException("Socket closed");
+			total_bytes_read += bytes_read;
+			
+			if (msg_len == 0 && bytes_read == 0)
+				break;  // Drain mode, read all that was available
+			
+			// response_message.position(total_bytes_read); 
+		}
+		
+		response.flip();  // reset position to allow reading from buffer
+		
+		
+		return total_bytes_read;
+    }
+    
     
     // Aux Classes
     // -----------
@@ -528,7 +558,7 @@ public class Connector {
     // Constructor  
     // -----------
     
-    public Connector(String _ip, int _port, boolean _cluster, boolean _ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException, ScriptException {
+    public Connector(String _ip, int _port, boolean _cluster, boolean _ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException, ScriptException, ConnException {
         /* JSON parsing engine setup, initial socket connection */
         
     	// https://stackoverflow.com/questions/25332640/getenginebynamenashorn-returns-null
@@ -546,11 +576,8 @@ public class Connector {
         if (_cluster) {
             // Get data from server picker
             response_buffer.clear();
-            bytes_read = s.read(response_buffer);
-            response_buffer.flip();     
-	    if (bytes_read == -1) {
-		throw new IOException("Socket closed");
-            }            
+            _read_data(response_buffer, 0); // IP address size may vary
+                      
             // Read size of IP address (7-15 bytes) and get the IP
             byte [] ip_bytes = new byte[response_buffer.getInt()]; // Retreiving ip from clustered connection
             response_buffer.get(ip_bytes);
@@ -640,15 +667,8 @@ public class Connector {
     // (3)  /* Used by _send_data()  (merge if only one )  */
     int _get_parse_header() throws IOException, ConnException {
         header.clear();
-        bytes_read = (use_ssl) ? ss.read(header) : s.read(header);
-        // is connection open
-        if (bytes_read == -1) {
-  		throw new IOException("Socket closed");
- 	}
-        if (header.position() != 10)
-        	throw new ConnException("bad header size from SQream - " + header.position() + ", possibly reading out of order");
+        _read_data(header, 10);
         	
-        header.flip();
         //print ("header: " + header);
     	if (!supported_protocols.contains(header.get())) 
         	throw new ConnException("bad protocol version returned - " + protocol_version + " perhaps an older version of SQream or reading out of oreder");
@@ -659,25 +679,9 @@ public class Connector {
         return (int)response_length;
     }
     
-    int _read_data(ByteBuffer response, int msg_len) throws IOException {
-    	
-		total_bytes_read = 0;
-		while (total_bytes_read < msg_len) {
-			bytes_read = (use_ssl) ? ss.read(response) : s.read(response);
-			if (bytes_read == -1) 
-                throw new IOException("Socket closed");
-			total_bytes_read += bytes_read;
-			// response_message.position(total_bytes_read); // needed?
-		}
-		
-		return total_bytes_read;
-    }
-    
     // (4) /* Manage actual sending and receiving of ByteBuffers over exising socket  */
     String _send_data (ByteBuffer data, boolean get_response) throws IOException, ConnException {
            /* Used by _send_message(), _flush()   */
-        
-        response_buffer.clear();    
         
         if (data != null ) {
             data.flip();
@@ -688,16 +692,11 @@ public class Connector {
         // Sending null for data will get us here directly, allowing to only get socket response if needed
         if(get_response) {
         	msg_len = _get_parse_header();
-        	if (msg_len > 64000) // If our 64K response_message buffer doesn't do
-        		response_message = ByteBuffer.allocate(msg_len);
-    		response_message.clear();
-    		response_message.limit(msg_len);
+        	// if (msg_len > 64000) // If our 64K response_message buffer doesn't do
+    		response_message = ByteBuffer.allocate(msg_len);
+    		// response_message.clear();
+    		// response_message.limit(msg_len);
     		_read_data(response_message, msg_len);
-			if (response_message.position() != msg_len)
-		    	print ("Json header inidcated size of " + msg_len + " but got " + response_message.position());
-        	response_message.flip();
-             // print ("response message buffer position: " + response_message.position());
-		    
         }   
         
         return (get_response) ? decode(response_message) : "" ;
@@ -833,22 +832,12 @@ public class Connector {
         // Initial naive implememntation - Get all socket data in advance
         if (new_rows_fetched > 0) {  
             bytes_read = _get_parse_header();   // Get header out of the way
-            do {
-                bytes_read = (int)((use_ssl) ? ss.read(fetch_buffers) : s.read(fetch_buffers));
-        	if (bytes_read == -1) {
-                    throw new IOException("Socket closed");
- 		}
-                //print ("binary bytes read: " + bytes_read);
-            }
-            while (bytes_read >0);
+            for (ByteBuffer fetched : fetch_buffers) 
+                _read_data(fetched, fetched.capacity());
             
             //Arrays.stream(fetch_buffers).forEach(fetched -> fetched.flip());
-            for (ByteBuffer fetched : fetch_buffers) { 
-                fetched.flip();
-            }
         }
     
-        
         return new_rows_fetched;  // counter nullified by next()
     }
     

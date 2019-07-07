@@ -67,7 +67,7 @@ public class SQConnection implements Connection {
 		int port;
 		String User;
 		String Password;
-		String schema;
+		// String schema;
 		String DB_name;
 		Boolean Use_ssl;
 		String service;
@@ -127,11 +127,13 @@ public class SQConnection implements Connection {
 			service = "sqream";
 		}
 		
+		/*
 		String schema = connectionInfo.getProperty("schema");
 		if(schema == null || schema.equals("-1")) {
 			System.out.println ("no schema passed, defaulting to public");
 			schema = "public";
 		}
+		//*/
 		
 		String usr = connectionInfo.getProperty("user");
 		username = usr;
@@ -165,7 +167,7 @@ public class SQConnection implements Connection {
 		sqlb.Cluster=isCluster;
 		sqlb.ip=ipaddress;
 		sqlb.port=Integer.parseInt(s_port);		
-		sqlb.schema = schema;
+		// sqlb.schema = schema;
 		sqlb.DB_name=db_name;
 		sqlb.Password=pswd;
 		sqlb.User=usr;
@@ -327,7 +329,8 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public String getSchema() throws SQLException {
-		return sqlb.schema;
+		// return sqlb.schema;
+		throw new SQLFeatureNotSupportedException("getSchema in SQConnection");
 	}
 	
 	@Override

@@ -394,7 +394,7 @@ public class Connector {
     // ------------------
     
     int _read_data(ByteBuffer response, int msg_len) throws IOException, ConnException {
-    	/* Read either a specific amount of data, or until socket is empty if msg_len is 0.
+    	/* Read a specific amount of data.
     	 * response ByteBuffer of a fitting size should be supplied.
     	 */
     	if (msg_len > response.capacity())
@@ -402,14 +402,13 @@ public class Connector {
 		
     	total_bytes_read = 0;
 		
-    	while (total_bytes_read < msg_len || msg_len == 0) {
+    	while (total_bytes_read < msg_len) {
 			bytes_read = (use_ssl) ? ss.read(response) : s.read(response);
-			if (bytes_read == -1) 
+
+			if (bytes_read == -1) // socket is closed
                 throw new IOException("Socket closed");
+                
 			total_bytes_read += bytes_read;
-			
-			if (msg_len == 0 && bytes_read == 0)
-				break;  // Drain mode, read all that was available
 			
 			// response_message.position(total_bytes_read); 
 		}
@@ -577,8 +576,12 @@ public class Connector {
         if (_cluster) {
             // Get data from server picker
             response_buffer.clear();
-            _read_data(response_buffer, 0); // IP address size may vary
-                      
+            
+            bytes_read = s.read(response_buffer);
+            response_buffer.flip();
+            if (bytes_read == -1)
+                throw new IOException("Socket closed");
+                        
             // Read size of IP address (7-15 bytes) and get the IP
             byte [] ip_bytes = new byte[response_buffer.getInt()]; // Retreiving ip from clustered connection
             response_buffer.get(ip_bytes);

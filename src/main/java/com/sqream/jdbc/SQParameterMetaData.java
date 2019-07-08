@@ -24,10 +24,8 @@ public class SQParameterMetaData implements ParameterMetaData{
 	    return _oids.length;
 	  }
 
-	  /**
-	   * {@inheritDoc} For now report all parameters as inputs. CallableStatements may have one output,
-	   * but ignore that for now.
-	   */
+	  
+	  // CallableStatements may have one output, but ignore that for now.
 	  public int getParameterMode(int param) throws SQLException {
 	    checkParamIndex(param);
 	    return ParameterMetaData.parameterModeIn;
@@ -43,13 +41,11 @@ public class SQParameterMetaData implements ParameterMetaData{
 	    return "poo2"; //_connection.getTypeInfo().getPGType(_oids[param - 1]);
 	  }
 
-	  // we don't know this
 	  public int getPrecision(int param) throws SQLException {
 	    checkParamIndex(param);
 	    return 0;
 	  }
 
-	  // we don't know this
 	  public int getScale(int param) throws SQLException {
 	    checkParamIndex(param);
 	    return 0;
@@ -61,9 +57,6 @@ public class SQParameterMetaData implements ParameterMetaData{
 	    return ParameterMetaData.parameterNullableUnknown;
 	  }
 
-	  /**
-	   * {@inheritDoc} PostgreSQL doesn't have unsigned numbers
-	   */
 	  public boolean isSigned(int param) throws SQLException {
 	    checkParamIndex(param);
 	    return true; //_connection.getTypeInfo().isSigned(_oids[param - 1]);

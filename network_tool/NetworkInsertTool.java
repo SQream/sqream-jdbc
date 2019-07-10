@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-
+import java.sql.JDBCType;
 
 public class NetworkInsertTool {
 
@@ -79,11 +79,14 @@ public class NetworkInsertTool {
     }
 
     private static void preparedStatementSetColumnEntry(PreparedStatement ps, int entryIndex, String entry, int columnType) throws SQLException{
+        
+        // print ("entry: " + entry + " column type: " + JDBCType.valueOf(columnType).getName());
+
         if(entry.equalsIgnoreCase(NULL_ENTRY_STRING)){
             ps.setNull(entryIndex, columnType);
             return;
         }
-
+        
         switch(columnType){
             //https://download.oracle.com/otn-pub/jcp/jdbc-4_1-mrel-spec/jdbc4.1-fr-spec.pdf?AuthParam=1558015624_39ea3110b30a6a0f04af8450c4971182 Page 191
             case Types.CHAR:
@@ -95,11 +98,12 @@ public class NetworkInsertTool {
             case Types.NUMERIC: ps.setBigDecimal(entryIndex, new BigDecimal(entry)); break;
             case Types.BIT:
             case Types.BOOLEAN: ps.setBoolean(entryIndex, Boolean.parseBoolean(entry)); break;
-            case Types.TINYINT: ps.setByte(entryIndex, Byte.parseByte(entry)); break;
+            case Types.TINYINT: ps.setByte(entryIndex, (Integer.parseInt(entry) > 127) ? (byte) 127 : Byte.parseByte(entry)); break;
             case Types.SMALLINT: ps.setShort(entryIndex, Short.parseShort(entry)); break;
             case Types.INTEGER: ps.setInt(entryIndex, Integer.parseInt(entry)); break;
             case Types.BIGINT: ps.setLong(entryIndex, Long.parseLong(entry)); break;
             case Types.REAL: ps.setFloat(entryIndex, Float.parseFloat(entry)); break;
+            case Types.FLOAT: ps.setFloat(entryIndex, Float.parseFloat(entry)); break;
             case Types.DOUBLE: ps.setDouble(entryIndex, Double.parseDouble(entry)); break;
             case Types.DATE: ps.setDate(entryIndex, Date.valueOf(entry)); break;
             case Types.TIME: ps.setTime(entryIndex, Time.valueOf(entry)); break;

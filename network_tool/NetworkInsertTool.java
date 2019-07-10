@@ -34,28 +34,26 @@ public class NetworkInsertTool {
 
     private static void insertCsvToTable(JDBCArgs arguments) throws SQLException, IOException {
 
-        try(Connection connection = DriverManager.getConnection(arguments.getConnectionURL(), arguments.user, arguments.password);
-            Reader reader = Files.newBufferedReader(arguments.csvPath)){
+        Reader reader = Files.newBufferedReader(arguments.csvPath);
+        print(arguments.getConnectionURL() + " " + arguments.user + " " +  arguments.password);
+        Connection connection = DriverManager.getConnection(arguments.getConnectionURL(), arguments.user, arguments.password);
 
-            ArrayList<Integer> columnTypes = getColumnTypes(connection, arguments.schema, arguments.database, arguments.table);
-            int numberOfColumns = columnTypes.size();
-            
-            try(PreparedStatement ps = connection.prepareStatement(buildInsertStatementBase(arguments, numberOfColumns));
-                CSVReader csvReader = new CSVReaderBuilder(reader).withCSVParser(new CSVParserBuilder().withSeparator(arguments.delimiter).build()).build()){
+        ArrayList<Integer> columnTypes = getColumnTypes(connection, arguments.schema, arguments.database, arguments.table);
+        int numberOfColumns = columnTypes.size();
+        try(PreparedStatement ps = connection.prepareStatement(buildInsertStatementBase(arguments, numberOfColumns));
+            CSVReader csvReader = new CSVReaderBuilder(reader).withCSVParser(new CSVParserBuilder().withSeparator(arguments.delimiter).build()).build()){
 
-                String[] csvLine;
+            String[] csvLine;
 
-                while ((csvLine = csvReader.readNext()) != null) {
-                    for (int i=0; i < numberOfColumns; i++) {
-                        // columns indices start with 1, hence the entryIndex: i + 1
-                        preparedStatementSetColumnEntry(ps, i + 1, csvLine[i], columnTypes.get(i));
-                    }
-                    ps.addBatch();
+            while ((csvLine = csvReader.readNext()) != null) {
+                for (int i=0; i < numberOfColumns; i++) {
+                    // columns indices start with 1, hence the entryIndex: i + 1
+                    preparedStatementSetColumnEntry(ps, i + 1, csvLine[i], columnTypes.get(i));
                 }
-                ps.executeBatch();
+                ps.addBatch();
             }
+            ps.executeBatch();
         }
-
     }
 
     private static ArrayList<Integer> getColumnTypes(Connection connection, String schema, String database, String table) throws SQLException{

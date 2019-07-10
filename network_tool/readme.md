@@ -1,0 +1,1 @@
+javac -cp .:../target/sqream-jdbc-2.9.7-jar-with-dependencies.jar:./* NetworkInsertTool.java && java -cp .:../target/sqream-jdbc-2.9.7-jar-with-dependencies.jar:./* NetworkInsertTool

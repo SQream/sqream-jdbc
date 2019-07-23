@@ -3,9 +3,8 @@ package com.sqream.jdbc;
 import java.sql.ParameterMetaData;
 import java.sql.Types;
 import java.sql.SQLException;
-
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -16,14 +15,7 @@ import com.sqream.jdbc.Connector.ConnException;
 public class SQParameterMetaData implements ParameterMetaData{
 	
 	  Connector conn;
-	  ColumnMetadata[] meta;
 	  int param_count = 0;
-	  
-	  String param_name = "";
-	  String param_type = "";
-	  boolean is_param_nullable = false;
-	  int param_scale = 0;
-	  int param_percision = 0;
 	  
 	  Map<String, Integer> sqream_to_sql = Stream.of(new Object[][] { 
 		    { "ftBool", Types.BOOLEAN }, 
@@ -73,15 +65,13 @@ public class SQParameterMetaData implements ParameterMetaData{
 	  public String getParameterClassName(int param_index) throws SQLException {
 	    
 		_validate_index(param_index);
-	    
 	    try {
-	    	param_name =  conn.get_col_name(param_index);
+	    	return conn.get_col_name(param_index);
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to get parameter name in SQParameterMetaData:\n" + e);
 		}
 	    
-	    return param_name;
 	  }
 	  
 	  
@@ -89,14 +79,14 @@ public class SQParameterMetaData implements ParameterMetaData{
 	  public int getParameterType(int param_index) throws SQLException {
 	   
 		_validate_index(param_index);
-		
+
 		try {
-			param_type = conn.get_col_type(param_index);
+			return sqream_to_sql.get(conn.get_col_type(param_index));
 		} catch (ConnException e) {
 			e.printStackTrace();
+			throw new SQLException ("Connector exception when trying to check parameter type in SQParameterMetaData:\n" + e);
 		}
 	    
-	    return sqream_to_sql.get(param_type);
 	  }
 	  
 	  
@@ -130,19 +120,11 @@ public class SQParameterMetaData implements ParameterMetaData{
 	  public int getScale(int param_index) throws SQLException {
 	    
 		_validate_index(param_index);
-		  
-	    try {
-			param_type = conn.get_col_type(param_index);
-		} catch (ConnException e) {
-			e.printStackTrace();
-		}
+		
+		// Not applicable for SQream types - we only support float and double, no such quality
+	    // If adding types to sqream, this may need to be revised
+	    int param_scale = 0; 
 	    
-	    if (param_type.equals("ftFloat"))
-	    	param_scale = 4;
-    	else if (param_type.equals("ftDouble"))
-    		param_scale = 8;
-    	else 
-    		param_scale = 0;
 	    
 	    return param_scale;
 	  }
@@ -154,13 +136,12 @@ public class SQParameterMetaData implements ParameterMetaData{
 		  _validate_index(param_index);
 	    
 	    try {
-	    	is_param_nullable =  conn.is_col_nullable(param_index);
+	    	return conn.is_col_nullable(param_index) ? ParameterMetaData.parameterNullable : ParameterMetaData.parameterNullableUnknown;
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to get parameter nullability in SQParameterMetaData:\n" + e);
 		}
 	    
-	    return is_param_nullable ? ParameterMetaData.parameterNullable : ParameterMetaData.parameterNullableUnknown;
 	  }
 	  
 	  
@@ -170,13 +151,12 @@ public class SQParameterMetaData implements ParameterMetaData{
 		  _validate_index(param_index);
 		  
 		  try {
-			  param_type =  conn.get_col_type(param_index);
+			  return conn.get_col_type(param_index);
 			} catch (ConnException e) {
 				e.printStackTrace();
 				throw new SQLException ("Connector exception when trying to get parameter type name in SQParameterMetaData:\n" + e);
 			}
 		    
-		    return param_type;
 	  }
 	  
 	  
@@ -199,18 +179,23 @@ public class SQParameterMetaData implements ParameterMetaData{
 	  @Override
 	  public boolean isWrapperFor(Class<?> iface) throws SQLException {
 	    
-		  return iface.isAssignableFrom(getClass());
+		  throw new SQLFeatureNotSupportedException("isWrapperFor in SQParameterMetaData");
+		  //return iface.isAssignableFrom(getClass());
 	  }
 	  
 	  
 	  // Methods inherited from interface java.sql.Wrapper
 	  @Override
 	  public <T> T unwrap(Class<T> iface) throws SQLException {
-	    
+		  
+		  throw new SQLFeatureNotSupportedException("unwrap in SQParameterMetaData");
+		  
+		  /*
 		  if (iface.isAssignableFrom(getClass())) {
 	      return iface.cast(this);
 	    }
-	    throw new SQLException("Cannot unwrap to " + iface.getName());
+	    throw new SQLException("Cannot unwrap to " + iface.getName());  
+	    //*/
 	  }
 	  
 }

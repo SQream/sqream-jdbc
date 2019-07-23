@@ -519,7 +519,7 @@ public class SQPreparedStatment implements PreparedStatement {
     
     @Override
     public ParameterMetaData getParameterMetaData() throws SQLException {
-        throw new SQLFeatureNotSupportedException("getParameterMetaData in SQPreparedStatement");
+        return new SQParameterMetaData(Client);
     }
     
     // Unsupported

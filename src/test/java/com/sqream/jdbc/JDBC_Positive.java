@@ -164,7 +164,7 @@ public class JDBC_Positive {
         
         // Count test - DML
         conn = DriverManager.getConnection(url,"sqream","sqream");
-        String sql = "create or replace table test_parameter(x varchar (10), y int not null , z bool)";
+        String sql = "create or replace table test_parameter(bools bool not null, tinies tinyint, smalls smallint, ints int, bigs bigint, floats real, doubles double, dates date, dts datetime, varcs varchar (10), nvarcs nvarchar (10))";
         ps = conn.prepareStatement(sql);
         ParameterMetaData params = ps.getParameterMetaData();
         int count = params.getParameterCount() ;
@@ -175,7 +175,7 @@ public class JDBC_Positive {
     	ps.close();
        
     	// Count test - regular insert
-        sql = "insert into test_parameter values ('bla', 6, true)";
+        sql = "insert into test_parameter values (true, 1, 11, 111, 1111, 1.1, 1.11, '2016-11-03', '2016-11-03 16:56:45.000', 'bla', 'nbla')";
         ps = conn.prepareStatement(sql);
         params = ps.getParameterMetaData();
         count = params.getParameterCount() ;
@@ -186,53 +186,99 @@ public class JDBC_Positive {
         ps.close();
         
         // Network insert - an actual paramtered query
-        sql = "insert into test_parameter values (?, ?, ?)";
+        sql = "insert into test_parameter values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         ps = conn.prepareStatement(sql);
         params = ps.getParameterMetaData();
         
         count = params.getParameterCount() ;
-        if (count != 3) {
+        if (count != 11) {
         	print ("Should have 3 parameter count on a network insert, but got: " + count);
         	a_ok = false;
         }
         
-    	if (!params.getParameterClassName(1).equals("denied") || !params.getParameterClassName(2).equals("denied") || !params.getParameterClassName(3).equals("denied")) {
-    		print ("Network insert doesn't return column names, but got: " + params.getParameterClassName(1) + " and others");
+    	if (!params.getParameterClassName(1).equals("denied") || !params.getParameterClassName(2).equals("denied") || 
+			!params.getParameterClassName(3).equals("denied") || !params.getParameterClassName(4).equals("denied") || 
+			!params.getParameterClassName(5).equals("denied") || !params.getParameterClassName(6).equals("denied") || 
+			!params.getParameterClassName(7).equals("denied") || !params.getParameterClassName(8).equals("denied") || 
+			!params.getParameterClassName(9).equals("denied") || !params.getParameterClassName(10).equals("denied") || 
+			!params.getParameterClassName(11).equals("denied"))
+    	{
+    		print ("Bad column names returned:\n" + params.getParameterClassName(1) + '\n' + params.getParameterClassName(2) + '\n' + params.getParameterClassName(3) + '\n' + params.getParameterClassName(4) + '\n' + params.getParameterClassName(5) + '\n' + params.getParameterClassName(6) + '\n' + params.getParameterClassName(7) + '\n' + params.getParameterClassName(8) + '\n' + params.getParameterClassName(9) + '\n' + params.getParameterClassName(10) + '\n' + params.getParameterClassName(11)  );
         	a_ok = false;
     	}
     	
-    	if (params.getScale(1) != 0 || params.getScale(2) != 0 || params.getScale(3) != 0){
+    	if (params.getParameterMode(1) != ParameterMetaData.parameterModeIn || params.getParameterMode(2) != ParameterMetaData.parameterModeIn  || 
+			params.getParameterMode(3) != ParameterMetaData.parameterModeIn || params.getParameterMode(4) != ParameterMetaData.parameterModeIn  || 
+			params.getParameterMode(5) != ParameterMetaData.parameterModeIn || params.getParameterMode(6) != ParameterMetaData.parameterModeIn  || 
+			params.getParameterMode(7) != ParameterMetaData.parameterModeIn || params.getParameterMode(8) != ParameterMetaData.parameterModeIn  || 
+			params.getParameterMode(9) != ParameterMetaData.parameterModeIn || params.getParameterMode(10) != ParameterMetaData.parameterModeIn  || 
+			params.getParameterMode(11) != ParameterMetaData.parameterModeIn) 
+    	{
+    		print ("Bad parameter mode returned: " + params.getParameterMode(1));
+        	a_ok = false;
+    	}
+    	
+    	if (params.getScale(1) != 0 || params.getScale(2) != 0 || params.getScale(3) != 0 || 
+			params.getScale(4) != 0 || params.getScale(5) != 0 || params.getScale(6) != 0 || 
+			params.getScale(7) != 0 || params.getScale(8) != 0 || params.getScale(9) != 0 || 
+			params.getScale(10) != 0 || params.getScale(11) != 0)
+		{
     		// 4 on float, 8 on double, 0 elsewhere
     		print ("Bad scale returned: " + params.getScale(2));
         	a_ok = false;
     	}
     	
-    	if (params.isNullable(1) != ParameterMetaData.parameterNullable || params.isNullable(2) != ParameterMetaData.parameterNullableUnknown || params.isNullable(3) != ParameterMetaData.parameterNullable){
+    	if (params.isNullable(1) != ParameterMetaData.parameterNullableUnknown || params.isNullable(2) != ParameterMetaData.parameterNullable ||
+			params.isNullable(3) != ParameterMetaData.parameterNullable || params.isNullable(4) != ParameterMetaData.parameterNullable ||
+			params.isNullable(5) != ParameterMetaData.parameterNullable || params.isNullable(6) != ParameterMetaData.parameterNullable ||
+			params.isNullable(7) != ParameterMetaData.parameterNullable || params.isNullable(8) != ParameterMetaData.parameterNullable ||
+			params.isNullable(9) != ParameterMetaData.parameterNullable || params.isNullable(10) != ParameterMetaData.parameterNullable ||
+			params.isNullable(11) != ParameterMetaData.parameterNullable)
+		{
     		// int column is not nullable
     		print ("Bad isNullable returned: " + params.isNullable(1));
         	a_ok = false;
     	}
     	
-    	if (params.getParameterType(1) != Types.VARCHAR || params.getParameterType(2) != Types.INTEGER || params.getParameterType(3) != Types.BOOLEAN){
-    		// int column is not nullable
+    	if (params.getParameterType(1) != Types.BOOLEAN || params.getParameterType(2) != Types.TINYINT || 
+			params.getParameterType(3) != Types.SMALLINT || params.getParameterType(4) != Types.INTEGER || 
+			params.getParameterType(5) != Types.BIGINT || params.getParameterType(6) != Types.REAL || 
+			params.getParameterType(7) != Types.DOUBLE || params.getParameterType(8) != Types.DATE || 
+			params.getParameterType(9) != Types.TIMESTAMP || params.getParameterType(10) != Types.VARCHAR || 
+			params.getParameterType(11) != Types.NVARCHAR)
+		{
     		print ("Bad parameter type returned: " + params.isNullable(1));
         	a_ok = false;
     	}
     	
     	//params.getParameterType(1)
-    	if (params.getPrecision(1) != 10 || params.getPrecision(2) != 4 || params.getPrecision(3) != 1){
-    		print ("Bad precision returned from parameter test");
+    	if (params.getPrecision(1) != 1 || params.getPrecision(2) != 1 || params.getPrecision(3) != 2 || 
+			params.getPrecision(4) != 4 || params.getPrecision(5) != 8 || params.getPrecision(6) != 4 || 
+			params.getPrecision(7) != 8 || params.getPrecision(8) != 4 || params.getPrecision(9) != 8 || 
+			params.getPrecision(10) != 10 || params.getPrecision(11) != 40)
+		{
+    		print ("Bad precision returned from parameter test:\n" + params.getPrecision(1) + '\n' + params.getPrecision(2) + '\n' + params.getPrecision(3) + '\n' + params.getPrecision(4) + '\n' + params.getPrecision(5) + '\n' + params.getPrecision(6) + '\n' + params.getPrecision(7) + '\n' + params.getPrecision(8) + '\n' + params.getPrecision(9) + '\n' + params.getPrecision(10) + '\n' + params.getPrecision(11)  );
         	a_ok = false;
     	}
     	
-    	if (!params.getParameterTypeName(1).equals("ftVarchar") || !params.getParameterTypeName(2).equals("ftInt") || !params.getParameterTypeName(3).equals("ftBool")) {
-    		print ("Bad taypenames returned: " + params.getParameterTypeName(3) + " and others");
+    	if (!params.getParameterTypeName(1).equals("ftBool") || !params.getParameterTypeName(2).equals("ftUByte") || 
+			!params.getParameterTypeName(3).equals("ftShort") || !params.getParameterTypeName(4).equals("ftInt") || 
+			!params.getParameterTypeName(5).equals("ftLong") || !params.getParameterTypeName(6).equals("ftFloat") || 
+			!params.getParameterTypeName(7).equals("ftDouble") || !params.getParameterTypeName(8).equals("ftDate") || 
+			!params.getParameterTypeName(9).equals("ftDateTime") || !params.getParameterTypeName(10).equals("ftVarchar") || 
+			!params.getParameterTypeName(11).equals("ftBlob"))
+    	{
+    		print ("Bad taypenames returned:\n" + params.getParameterTypeName(1) + '\n' + params.getParameterTypeName(2) + '\n' + params.getParameterTypeName(3) + '\n' + params.getParameterTypeName(4) + '\n' + params.getParameterTypeName(5) + '\n' + params.getParameterTypeName(6) + '\n' + params.getParameterTypeName(7) + '\n' + params.getParameterTypeName(8) + '\n' + params.getParameterTypeName(9) + '\n' + params.getParameterTypeName(10) + '\n' + params.getParameterTypeName(11)  );
         	a_ok = false;
     	}
     	
     	//params.getParameterType(1)
-    	if (params.isSigned(1) != false || params.isSigned(2) != true || params.isSigned(3) != false){
-    		print ("Bad values returned on isSigned() parameter metadata test");
+    	if (params.isSigned(1) != false || params.isSigned(2) != false || params.isSigned(3) != true ||
+			params.isSigned(4) != true || params.isSigned(5) != true || params.isSigned(6) != true ||		
+			params.isSigned(7) != true || params.isSigned(8) != false || params.isSigned(9) != false ||
+			params.isSigned(10) != false || params.isSigned(11) != false)
+    	{
+    		print ("Bad values returned on isSigned():" + params.isSigned(1));
         	a_ok = false;
     	}
     	

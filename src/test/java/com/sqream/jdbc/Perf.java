@@ -105,9 +105,10 @@ public class Perf {
         print ("after network insert");
         //*/
         
-        /*
+        //*
         // create table
-        sql = "create or replace table perf (bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, strangs nvarchar(10), dates date, dts datetime)";
+        sql = "create or replace table perf (bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, strings varchar(10), strangs nvarchar(10))"; //, dates date, dts datetime)";
+
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
@@ -115,7 +116,7 @@ public class Perf {
         // Network insert 10 million rows
         int amount = (int)Math.pow(10, 7);
         long start = time();
-        sql = "insert into perf values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        sql = "insert into perf values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         ps = conn.prepareStatement(sql);
         
         for (int i=0; i < amount; i++) {
@@ -127,8 +128,9 @@ public class Perf {
             ps.setFloat(6, (float)56.0);
             ps.setDouble(7, 57.0);
             ps.setString(8, "bla");
-            ps.setDate(9, date_from_tuple(2019, 11, 26));
-            ps.setTimestamp(10, datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45));
+            ps.setString(9, "bla2");
+            // ps.setDate(10, date_from_tuple(2019, 11, 26));
+            // ps.setTimestamp(11, datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45));
             ps.addBatch();
         }
         ps.executeBatch();  // Should be done automatically
@@ -190,7 +192,7 @@ public class Perf {
         ps.close();
 		//*/
         
-        //*  
+        /*  
         // Check amount inserted
         // sql = "select case when xint2%2=0 then xdate else '2015-01-01' end from t_a";
         StringBuilder s_sql = new StringBuilder("create or replace table t_test(x0 int");

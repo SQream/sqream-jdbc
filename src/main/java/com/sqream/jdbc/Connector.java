@@ -369,7 +369,7 @@ public class Connector {
     
     static Date int_to_date(int date_as_int, ZoneId zone) {
         
-        return Date.valueOf(_int_to_local_date(date_as_int));                   
+    	return  (Date) Date.from(_int_to_local_date(date_as_int).atStartOfDay(zone).toInstant());
     }
     
 

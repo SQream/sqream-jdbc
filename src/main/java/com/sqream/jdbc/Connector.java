@@ -368,8 +368,10 @@ public class Connector {
     
     
     static Date int_to_date(int date_as_int, ZoneId zone) {
-        
-    	return  (Date) Date.from(_int_to_local_date(date_as_int).atStartOfDay(zone).toInstant());
+        LocalDateTime local_dt = _int_to_local_date(date_as_int).atStartOfDay();
+    	
+        // new Date(Date.from(_int_to_local_date(date_as_int).atStartOfDay(zone).toInstant()).getTime());
+    	return new Date(Timestamp.from(local_dt.atZone(zone).toInstant()).getTime());
     }
     
 

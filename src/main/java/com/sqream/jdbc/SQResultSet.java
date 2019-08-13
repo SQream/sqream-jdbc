@@ -396,6 +396,18 @@ class SQResultSet implements ResultSet {
 		
 		return (res == null) ? 0 : res;
 	}
+	
+	@Override
+	public Date getDate(int columnIndex) throws SQLException {
+		try {
+			Date res = Client.get_date(columnIndex);
+			isNull = (res == null) ? true : false;
+			return (res == null) ? null : res;
+		} catch (ConnException e) {
+			e.printStackTrace();
+			throw new SQLException("");
+		}
+	}
 
 	@Override
 	public Date getDate(String columnLabel) throws SQLException {
@@ -411,9 +423,9 @@ class SQResultSet implements ResultSet {
 	}
 
 	@Override
-	public Date getDate(int columnIndex) throws SQLException {
+	public Date getDate(int columnIndex, Calendar cal) throws SQLException {
 		try {
-			Date res = Client.get_date(columnIndex);
+			Date res = Client.get_date(columnIndex, cal.getTimeZone().toZoneId());
 			isNull = (res == null) ? true : false;
 			return (res == null) ? null : res;
 		} catch (ConnException e) {
@@ -421,17 +433,11 @@ class SQResultSet implements ResultSet {
 			throw new SQLException("");
 		}
 	}
-
+	
 	@Override
 	public Date getDate(String columnLabel, Calendar cal) throws SQLException {
-        throw  new SQLFeatureNotSupportedException("getDate with calendar parameter");
-        /*
 		try {
-			Date res = Client.get_date(columnLabel.toLowerCase());
-			if (res != null) {
-				ZonedDateTime zonedDate = Instant.ofEpochMilli(res.getTime()).atZone(cal.getTimeZone().toZoneId());  
-				res = Date.valueOf(zonedDate.toLocalDate());
-			}
+			Date res = Client.get_date(columnLabel.toLowerCase(), cal.getTimeZone().toZoneId());
 			isNull = (res == null) ? true : false;
 			return (res == null) ? null : res;
 		} catch (Exception e) {
@@ -439,26 +445,6 @@ class SQResultSet implements ResultSet {
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}
-		//*/
-	}
-	
-	@Override
-	public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-        throw  new SQLFeatureNotSupportedException("getDate with calendar parameter");
-        /*
-		try {
-			Date res = Client.get_date(columnIndex);
-			if (res != null) {
-				ZonedDateTime zonedDate = Instant.ofEpochMilli(res.getTime()).atZone(cal.getTimeZone().toZoneId());  
-				res = Date.valueOf(zonedDate.toLocalDate());
-			}
-			isNull = (res == null) ? true : false;
-			return (res == null) ? null : res;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new SQLException("");
-		}
-		//*/
 	}
 	
 	@Override
@@ -489,41 +475,32 @@ class SQResultSet implements ResultSet {
 	
 	@Override
 	public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
-        throw  new SQLFeatureNotSupportedException("getTimestamp with calendar parameter");
-        /*
+		// Original logic:
+		// Instant instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
+		// utcDateTime = Timestamp.from(instant);
+		
+		Timestamp res = null;
 		try {
-			Timestamp utcDateTime = Client.get_datetime(columnIndex);
-			if (utcDateTime!= null) {
-				Instant instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
-				utcDateTime = Timestamp.from(instant);
-			}
-			isNull = (utcDateTime == null) ? true : false;
-			return (utcDateTime == null) ? null : utcDateTime;
+			res = Client.get_datetime(columnIndex, cal.getTimeZone().toZoneId());
+			isNull = (res == null) ? true : false;
 		} catch (ConnException e) {
 			e.printStackTrace();
-			throw new SQLException("");
 		}
-		//*/
+		return (res == null) ? null : res;
+        
 	}
 	
 	@Override
 	public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
-        throw  new SQLFeatureNotSupportedException("getTimestamp with calendar parameter");
-
-		/*
 		try {
-			Timestamp utcDateTime = Client.get_datetime(columnLabel.toLowerCase());
-			if (utcDateTime!= null) {
-				Instant instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
-				utcDateTime = Timestamp.from(instant);
-			}
-			isNull = (utcDateTime == null) ? true : false;
-			return (utcDateTime == null) ? null : utcDateTime;
-		} catch (ConnException e) {
+			Timestamp res =  Client.get_datetime(columnLabel.toLowerCase(), cal.getTimeZone().toZoneId());
+			isNull = (res == null) ? true : false;
+			return (res == null) ? null : res;
+		} catch (Exception e) {
 			e.printStackTrace();
-			throw new SQLException("");
+			throw new SQLException("columnLabel '" + columnLabel.trim()
+					+ "' not found");
 		}
-		//*/
 	}
 	
 	@Override

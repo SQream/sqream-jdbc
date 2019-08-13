@@ -385,8 +385,8 @@ public class Connector {
         ms = time_as_int % 1000;
         LocalDateTime local_dt = LocalDateTime.of(_int_to_local_date(date_as_int), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6)));
         
-        return Timestamp.valueOf(local_dt);
-        //return Timestamp.from(local_dt.atZone(zone).toInstant());
+        // return Timestamp.valueOf(local_dt);
+        return Timestamp.from(local_dt.atZone(zone).toInstant());
 
     }
     
@@ -1305,9 +1305,19 @@ public class Connector {
         return get_date(col_names_map.get(col_name));
     }
     
+    public Date get_date(String col_name, ZoneId zone) throws ConnException {   
+        
+        return get_date(col_names_map.get(col_name), zone);
+    }
+    
     public Timestamp get_datetime(String col_name) throws ConnException {   
         
         return get_datetime(col_names_map.get(col_name));
+    }
+    
+    public Timestamp get_datetime(String col_name, ZoneId zone) throws ConnException {   
+        
+        return get_datetime(col_names_map.get(col_name), zone);
     }
     
     // Sets

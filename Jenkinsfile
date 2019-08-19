@@ -5,7 +5,7 @@ pipeline {
     stages {
         stage('git clone jdbc') { 
             steps { 
-                sh 'git clone http://gitlab.sq.l/connectors/jdbc-driver.git --recursive' 
+                sh 'git clone -b $branch http://gitlab.sq.l/connectors/jdbc-driver.git --recursive' 
                 }
         }
         stage('Build'){

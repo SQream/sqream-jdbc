@@ -20,9 +20,13 @@ pipeline {
         //}
           stage('upload to artifactory'){
             steps {
-                sh 'file_to_upload=`ls -al | grep -v dependencies | grep -i jar | awk '{ print $9 }'`'
-                sh 'cd jdbc-driver/target/; curl -u ${ARTIFACT_USER}:${ARTIFACT_PASSWORD} -T $file_to_upload $ARTIFACTORY_URL/connectors/jdbc/release/'
-                sh 'rm -rf jdbc-driver/'
+                sh '''
+                `file_to_upload=`ls -al | grep -v dependencies | grep -i jar | awk '{ print $9 }'`
+                cd jdbc-driver/target/
+                curl -u ${ARTIFACT_USER}:${ARTIFACT_PASSWORD} -T $file_to_upload $ARTIFACTORY_URL/connectors/jdbc/release/
+                cd ../..
+                rm -rf jdbc-driver/
+                '''
             }
         }
         }

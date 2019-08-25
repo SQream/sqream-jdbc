@@ -989,7 +989,7 @@ public class JDBC_Positive {
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
         print ("parameter metadata test: " + (pos_tests.parameter_metadata() ? "OK" : "Fail"));
-        /*
+        //*
         print ("logging is off test:" + (pos_tests.is_logging_off() ? "OK" : "Fail"));
         print ("boolean as string test - " + (pos_tests.bool_as_string() ? "OK" : "Fail"));
         print ("Cast test - " + (pos_tests.casted_gets() ? "OK" : "Fail"));

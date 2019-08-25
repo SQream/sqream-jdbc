@@ -804,9 +804,10 @@ public class Connector {
         response_json = _parse_sqream_json(_send_message(form_json("fetch"), true));
         new_rows_fetched = (int) response_json.get("rows");
         fetch_sizes =  (JSONListAdapter) response_json.get("colSzs");  // Chronological sizes of all rows recieved, only needed for nvarchars
-        if (new_rows_fetched == 0)
-            return new_rows_fetched;
-        
+        if (new_rows_fetched == 0) {
+        	close();  // Auto closing statement if done fetching
+        	return new_rows_fetched;
+        }
         // Initiate storage columns using the "colSzs" returned by SQream
         // All buffers in a single array to use SocketChannel's read(ByteBuffer[] dsts)
         fetch_buffers = new ByteBuffer[fetch_sizes.size()]; 

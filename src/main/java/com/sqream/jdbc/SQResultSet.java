@@ -534,9 +534,6 @@ class SQResultSet implements ResultSet {
 			res = (res_obj == null) ? null : res_obj.toString();
 		}
 		
-		
-		if (RemoveSpaces && res != null) 
-			res = res.trim();
 		/*
 		if (type.equals("ftBool")) 
 			res = res.equals("0") ? "false" : "true";
@@ -575,9 +572,6 @@ class SQResultSet implements ResultSet {
 			res_obj = getObject(columnIndex);
 			res = (res_obj == null) ? null : res_obj.toString();
 		}
-
-		if (RemoveSpaces && res != null) 
-			res = res.trim();
 		
 		/*
 		if (type.equals("ftBool")) 

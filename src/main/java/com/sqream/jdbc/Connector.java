@@ -1215,7 +1215,7 @@ public class Connector {
         }
         data_columns[col_num].get(string_bytes, 0, col_sizes[col_num]);
         
-        return (_validate_get(col_num, "ftVarchar")) ? new String(string_bytes, 0, col_sizes[col_num], varchar_encoding).trim() : null;
+        return (_validate_get(col_num, "ftVarchar")) ? ("X" + (new String(string_bytes, 0, col_sizes[col_num], varchar_encoding))).trim().substring(1) : null;
     }
     
     

@@ -117,6 +117,34 @@ public class JDBC_Positive {
 		return Timestamp.valueOf(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
 	}
 	
+	public boolean display_size() throws SQLException {
+        boolean a_ok = false;
+        int[] res;
+        
+        // Create table for test
+        conn = DriverManager.getConnection(url,"sqream","sqream");
+        String sql = "create or replace table test_display (x nvarchar(11))";
+        stmt = conn.createStatement();
+        stmt.execute(sql);
+        stmt.close();
+        
+        conn = DriverManager.getConnection(url,"sqream","sqream");
+        sql = "select * from test_display";
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        rsmeta = rs.getMetaData();
+        rs.close();
+        stmt.close();
+        
+        // Check result
+        if (rsmeta.getColumnDisplaySize(1) == 11)
+            a_ok = true;    
+        else
+        	print("nvarchar(11) display size should be 11 but got " +  rsmeta.getColumnDisplaySize(1));
+        
+        return a_ok;
+    }
+	
 	
     public boolean execBatchRes() throws SQLException {
         boolean a_ok = false;
@@ -988,8 +1016,9 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        print ("Display size test - " + (pos_tests.display_size() ? "OK" : "Fail"));
+        /*
         print ("parameter metadata test: " + (pos_tests.parameter_metadata() ? "OK" : "Fail"));
-        //*
         print ("logging is off test:" + (pos_tests.is_logging_off() ? "OK" : "Fail"));
         print ("boolean as string test - " + (pos_tests.bool_as_string() ? "OK" : "Fail"));
         print ("Cast test - " + (pos_tests.casted_gets() ? "OK" : "Fail"));

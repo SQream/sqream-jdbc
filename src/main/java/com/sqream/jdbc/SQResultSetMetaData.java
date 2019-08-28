@@ -61,7 +61,7 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 
 	@Override
 	public int getColumnDisplaySize(int column) throws SQLException {
-		System.err.println("YYYYYYYYYYY = " + meta[column-1].type.tid.toString());
+		// System.err.println("YYYYYYYYYYY = " + meta[column-1].type.tid.toString());
 		return !meta[column-1].type.tid.toString().equals("NVarchar") ? meta[column-1].type.size : meta[column-1].type.size; // /4 ;
 	}
 

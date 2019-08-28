@@ -993,7 +993,7 @@ public class JDBC_Positive {
         print ("logging is off test:" + (pos_tests.is_logging_off() ? "OK" : "Fail"));
         print ("boolean as string test - " + (pos_tests.bool_as_string() ? "OK" : "Fail"));
         print ("Cast test - " + (pos_tests.casted_gets() ? "OK" : "Fail"));
-        // print ("timeZones test - " + (pos_tests.timeZones() ? "OK" : "Fail"));
+        print ("timeZones test - " + (pos_tests.timeZones() ? "OK" : "Fail"));
         print ("getUDF test - " + (pos_tests.getUDF() ? "OK" : "Fail"));
         print ("isSigned test - " + (pos_tests.isSigned() ? "OK" : "Fail"));
         print ("Execute batch test - " + (pos_tests.execBatchRes() ? "OK" : "Fail"));

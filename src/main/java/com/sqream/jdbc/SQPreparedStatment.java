@@ -226,7 +226,6 @@ public class SQPreparedStatment implements PreparedStatement {
     
     @Override
     public void setDate(int colNum, Date date) throws SQLException {
-        // TODO Auto-generated method stub
         try {
 			Client.set_date(colNum, date);
 		} catch (UnsupportedEncodingException | ConnException e) {
@@ -237,16 +236,12 @@ public class SQPreparedStatment implements PreparedStatement {
 
     @Override
     public void setDate(int colNum, Date date, Calendar cal) throws SQLException {
-        throw  new SQLFeatureNotSupportedException("setDate with calendar parameter");
-
-    	/*
+    	
     	try {
-        	ZonedDateTime zonedDate = Instant.ofEpochMilli(date.getTime()).atZone(cal.getTimeZone().toZoneId()); 
-			Client.set_date(colNum, Date.valueOf(zonedDate.toLocalDate()));
+			Client.set_date(colNum, date, cal.getTimeZone().toZoneId());
 		} catch (UnsupportedEncodingException | ConnException e) {
 			e.printStackTrace();
-		} setCounter++;
-		//*/ 
+		} setCounter++; 
     }
     
     @Override
@@ -261,15 +256,17 @@ public class SQPreparedStatment implements PreparedStatement {
 
     @Override
     public void setTimestamp(int colNum, Timestamp datetime, Calendar cal) throws SQLException {
-        throw  new SQLFeatureNotSupportedException("setTimestamp with calendar parameter");
-    	/*
+        
     	try {
-        	ZonedDateTime zonedDate = datetime.toInstant().atZone(cal.getTimeZone().toZoneId()); 
-			Client.set_datetime(colNum, Timestamp.valueOf(zonedDate.toLocalDateTime()));
+			Client.set_datetime(colNum, datetime, cal.getTimeZone().toZoneId());
 		} catch (UnsupportedEncodingException | ConnException e) {
 			e.printStackTrace();
-		} setCounter++;
-		//*/ 
+		} setCounter++; 
+		
+		// Original logic
+    	// ZonedDateTime zonedDate = datetime.toInstant().atZone(cal.getTimeZone().toZoneId()); 
+		// Client.set_datetime(colNum, Timestamp.valueOf(zonedDate.toLocalDateTime()));
+		// Client.set_date(colNum, Date.valueOf(zonedDate.toLocalDate()));
     }
     
     @Override

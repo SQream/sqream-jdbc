@@ -3,6 +3,15 @@ pipeline {
             label "x86_64_compilation"
             } 
     stages {
+            stage("Set build number and build user"){
+            steps {
+                wrap([$class: 'BuildUser']){
+                script {
+                    currentBuild.displayName = "#${BUILD_ID}.${BUILD_USER}"
+                }
+                }
+            }
+        }
         stage('git clone jdbc') { 
             steps { 
                 sh 'git clone -b $branch http://gitlab.sq.l/connectors/jdbc-driver.git --recursive' 

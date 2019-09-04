@@ -61,8 +61,8 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 
 	@Override
 	public int getColumnDisplaySize(int column) throws SQLException {
-		// System.err.println("YYYYYYYYYYY = " + meta[column-1].type.tid.toString());
-		return !meta[column-1].type.tid.toString().equals("NVarchar") ? meta[column-1].type.size : meta[column-1].type.size; // /4 ;
+		
+		return meta[column-1].type.tid.toString().equals("NVarchar") ? meta[column-1].type.size / 4: meta[column-1].type.size;
 	}
 
 	@Override
@@ -90,17 +90,8 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 
 	@Override
 	public int getPrecision(int column) throws SQLException {
-		/*
-		public int getPrecision(int column) throws SQLException {
-
-			Integer size = isSelect()? Integer.valueOf(QueryTypeOut[column - 1].type[1]):Integer.valueOf(QueryTypeIn[column - 1].type[1]);
-			String type= isSelect()? QueryTypeOut[column - 1].type[0]:QueryTypeIn[column - 1].type[0];
-			return type.equals("ftBlob") ? size / 4: size;
-
-		}  */
 		
 		return meta[column-1].type.tid.toString().equals("NVarchar") ? meta[column-1].type.size / 4: meta[column-1].type.size;
-
 	}
 
 	@Override

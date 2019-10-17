@@ -3,7 +3,7 @@ cache:
 before_script:
 tests_and_benchmark:
   script:
-    -- "mvn package -DskipTests"
+    - "mvn package -DskipTests"
   only:
     refs:
       - merge_requests

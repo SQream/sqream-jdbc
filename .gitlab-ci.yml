@@ -1,0 +1,10 @@
+cache:
+  paths:
+before_script:
+tests_and_benchmark:
+  script:
+  only:
+    refs:
+      - merge_requests
+      - master
+      - web

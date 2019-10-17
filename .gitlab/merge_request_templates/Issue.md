@@ -4,13 +4,14 @@ Resolves SQ-<XXXX> (please replace with the correct Jira item ID)
 
 - [ ] Java (name, date)
 - [ ] R&D test plan (name, date)
-- [ ] QA (name, date)
 
 # Summary
 
 (Summarize what does this request changes)
 
 # R&D test plan
+
+(Specify the tests that the R&D have conducted for this content)
 
 # Technical Design
 

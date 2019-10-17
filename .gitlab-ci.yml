@@ -1,7 +1,7 @@
 cache:
   paths:
 before_script:
-tests_and_benchmark:
+tests_and_benchmark: 
   script:
   only:
     refs:

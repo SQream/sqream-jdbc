@@ -4,7 +4,7 @@ import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.Random;
 import java.util.UUID;
-
+import java.util.concurrent.TimeUnit;
 //import org.junit.Assert;
 //import org.junit.Test;
 import java.util.stream.IntStream;
@@ -112,10 +112,83 @@ public class JDBC_Positive {
 		return Date.valueOf(LocalDate.of(year, month, day));
 	}
 	
+	
 	static Timestamp datetime_from_tuple(int year, int month, int day, int hour, int minutes, int seconds, int ms) {
 			
 		return Timestamp.valueOf(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
 	}
+	
+	
+	public boolean limited_fetch() throws SQLException {
+		boolean a_ok = false;  // The test is visual, pass if ends
+		int count = 0;
+		
+		conn = DriverManager.getConnection(url,"sqream","sqream");
+		
+		String sql = "create or replace table test_fetch (ints int)";
+	    stmt = conn.createStatement();
+	    stmt.execute(sql);
+	    stmt.close();
+	    
+	    sql = "insert into test_fetch values (1), (2), (3), (4), (5)";
+	    stmt = conn.createStatement();
+	    stmt.execute(sql);
+	    stmt.close();
+	    
+	    sql = "select * from test_fetch";
+	    //stmt = conn.prepareStatement(sql);
+	    stmt = conn.createStatement();
+	    stmt.setMaxRows(3);
+	    rs = stmt.executeQuery(sql);
+	    while(rs.next()) { 
+	        rs.getInt(1);
+	        count++;
+	    }
+	    
+	    if (count == 3)
+            a_ok = true;    
+        else
+        	print("limited fetch of 3 items, amount returned: " + count);
+        
+	    
+	    return a_ok;
+	}
+	
+	
+	
+	public boolean pre_fetch() throws SQLException {
+		boolean a_ok = true;  // The test is visual, pass if ends
+		
+		conn = DriverManager.getConnection(url,"sqream","sqream");
+		
+		String sql = "create or replace table test_autoclose (ints int)";
+	    stmt = conn.createStatement();
+	    stmt.execute(sql);
+	    stmt.close();
+	    
+	    sql = "insert into test_autoclose values (1), (2), (3), (4), (5)";
+	    stmt = conn.createStatement();
+	    stmt.execute(sql);
+	    stmt.close();
+	    
+	    sql = "select * from test_autoclose where 1 = 0";
+	    //stmt = conn.prepareStatement(sql);
+	    stmt = conn.createStatement();
+	    rs = stmt.executeQuery(sql);
+	    
+	    sql = "select * from test_autoclose";
+	    stmt = conn.createStatement();
+	    rs = stmt.executeQuery(sql);
+	    while(rs.next()) 
+	        print ("get result :" + rs.getInt(1));
+	    // rs.close();
+	    // stmt.close();
+	    
+	    //TimeUnit.SECONDS.sleep(1);
+	    
+	    return a_ok;
+	}
+	    
 	
 	public boolean display_size() throws SQLException {
         boolean a_ok = false;
@@ -1002,7 +1075,7 @@ public class JDBC_Positive {
      }  
      */
     
-    public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException{
+    public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException, InterruptedException{
         
     	// Loading JDBC driver with a timezone test
     	ZoneId before_jdbc = ZoneId.systemDefault();
@@ -1016,7 +1089,9 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        //*
+        print ("Limited fetch test - " + (pos_tests.limited_fetch() ? "OK" : "Fail"));
+        print ("Pre fetch test - " + (pos_tests.pre_fetch() ? "OK" : "Fail"));
+        /*
         print ("Display size test - " + (pos_tests.display_size() ? "OK" : "Fail"));
         print ("parameter metadata test: " + (pos_tests.parameter_metadata() ? "OK" : "Fail"));
         print ("logging is off test:" + (pos_tests.is_logging_off() ? "OK" : "Fail"));

@@ -1050,7 +1050,6 @@ public class Connector {
         
         // First fetch on the house, auto close statement if no data returned
         if (statement_type.equals("SELECT")) {
-        	print ("fetch limit in execute:" + fetch_limit);
         	total_rows_fetched = _fetch(fetch_limit); // 0 - prefetch all data 
              //if (total_rows_fetched < (chunk_size == 0 ? 1 : chunk_size)) {
         }

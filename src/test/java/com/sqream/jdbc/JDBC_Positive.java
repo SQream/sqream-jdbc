@@ -120,7 +120,7 @@ public class JDBC_Positive {
 	}
 	
 	
-	public boolean broken_connection() throws SQLException {
+	public boolean big_fetch() throws SQLException {
 		boolean a_ok = false;  // The test is visual, pass if ends
 		int count = 0;
 		
@@ -1174,7 +1174,7 @@ public class JDBC_Positive {
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
         print ("Unused fetch test - " + (pos_tests.unused_fetch() ? "OK" : "Fail"));
-        /*
+        //*
         print ("Limited fetch test - " + (pos_tests.limited_fetch() ? "OK" : "Fail"));
         print ("Pre fetch test - " + (pos_tests.pre_fetch() ? "OK" : "Fail"));
         print ("Display size test - " + (pos_tests.display_size() ? "OK" : "Fail"));

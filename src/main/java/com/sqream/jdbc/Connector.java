@@ -794,12 +794,7 @@ public class Connector {
             // Instantiate select counters, Initial storage same as insert
             row_counter = -1;
             total_row_counter = 0;
-            total_rows_fetched = -1;
-            data_columns = new ByteBuffer[row_length];
-            //null_columns = new byte[row_length][];
-            null_columns = new ByteBuffer[row_length];
-            null_balls = new ByteBuffer[row_length];
-            nvarc_len_columns = new ByteBuffer[row_length];     
+            total_rows_fetched = -1;     
             
             // Get the maximal string size (or size fo another type if strings are very small)
             string_bytes = new byte[Arrays.stream(col_sizes).max().getAsInt()];
@@ -821,6 +816,10 @@ public class Connector {
         // All buffers in a single array to use SocketChannel's read(ByteBuffer[] dsts)
         int col_buf_size;
         fetch_buffers = new ByteBuffer[fetch_sizes.size()];
+        data_columns = new ByteBuffer[row_length];
+        null_columns = new ByteBuffer[row_length];
+        nvarc_len_columns = new ByteBuffer[row_length];
+        
     	for (int idx=0; idx < fetch_sizes.size(); idx++) 
     		fetch_buffers[idx] = ByteBuffer.allocateDirect((int)fetch_sizes.get(idx)).order(ByteOrder.LITTLE_ENDIAN);        
         
@@ -1052,6 +1051,7 @@ public class Connector {
         if (statement_type.equals("SELECT")) {
         	total_rows_fetched = _fetch(fetch_limit); // 0 - prefetch all data 
              //if (total_rows_fetched < (chunk_size == 0 ? 1 : chunk_size)) {
+        	print ("total rows fetched:" + total_rows_fetched);
         }
         
         return statement_id;
@@ -1108,6 +1108,14 @@ public class Connector {
         		data_columns = data_buffers.get(0);
         		null_columns = null_buffers.get(0);
         		nvarc_len_columns = nvarc_len_buffers.get(0);
+        		
+        		/*
+        		print ("rows in current batch:" + rows_in_current_batch);
+        		print ("data columns:" + data_columns[0]);
+        		print ("null columns:" + null_columns[0]);
+        		print ("nvarc len columns:" + nvarc_len_columns[0]);
+        		print ("data size: " + data_buffers.size());
+        		// */
         		
         		// Remove active buffer from list
         		data_buffers.remove(0);

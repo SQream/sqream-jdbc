@@ -47,10 +47,11 @@ public class SampleTest {
         String sql;
 		
         
-		sql = "select case when xint2%2=0 then xtinyint end from t_a";
+		sql = "select case when xint2%2=0 then xtinyint end from t_a limit 110";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
         while(rs.next()) 
+        	//rs.getByte(1);
             print("res: " + rs.getByte(1));
         stmt.close();
     }     

@@ -227,7 +227,7 @@ public class Connector {
     ByteBuffer null_resetter;
     ByteBuffer[] nvarc_len_columns;
     ByteBuffer [] null_balls;
-    int fetch_limit;
+    int fetch_limit = 0;
     
     // Get / Set related
     int row_counter, total_row_counter;

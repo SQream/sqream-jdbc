@@ -120,39 +120,38 @@ public class JDBC_Positive {
 	}
 	
 	
-	public boolean big_fetch() throws SQLException {
+	public boolean hundred_mil_fetch() throws SQLException {
+		
 		boolean a_ok = false;  // The test is visual, pass if ends
-		int count = 0;
 		
 		conn = DriverManager.getConnection(url,"sqream","sqream");
-		conn2 = DriverManager.getConnection(url,"sqream","sqream");
 		
 		String sql = "create or replace table test_fetch (ints int)";
 	    stmt = conn.createStatement();
 	    stmt.execute(sql);
 	    stmt.close();
 	    
-	    sql = "insert into test_fetch values (1), (2), (3), (4), (5)";
-	    stmt = conn.createStatement();
-	    stmt.execute(sql);
-	    stmt.close();
+	    sql = "insert into test_fetch values (?)";
+        ps = conn.prepareStatement(sql);
+        int random_int = 8;
+        int times = 100000000;  // Assuming chunk size is around 1 million, giving X10 more
+        for (int i = 0; i < times; i++) {
+            ps.setInt(1, random_int);
+            ps.addBatch();
+        }
+        ps.executeBatch();
+        ps.close();  
 	    
 	    sql = "select * from test_fetch";
 	    //stmt = conn.prepareStatement(sql);
 	    stmt = conn.createStatement();
-	    stmt.setMaxRows(3);
 	    rs = stmt.executeQuery(sql);
 	    
-	    sql = "select 1";
-	    //stmt = conn.prepareStatement(sql);
-	    stmt = conn.createStatement();
-	    rs = stmt.executeQuery(sql);
-	    rs.next();
-	        
-	    if (rs.getInt(1) == 1)
-            a_ok = true;    
-        else
-        	print("unused fetch test failed");
+	    while(rs.next()) { 
+	        rs.getInt(1);
+	    }
+	    
+        a_ok = true;    
         
 	    
 	    return a_ok;
@@ -1173,6 +1172,7 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        print ("Hundred Million fetch test -  - " + (pos_tests.hundred_mil_fetch() ? "OK" : "Fail"));
         print ("Unused fetch test - " + (pos_tests.unused_fetch() ? "OK" : "Fail"));
         //*
         print ("Limited fetch test - " + (pos_tests.limited_fetch() ? "OK" : "Fail"));

@@ -160,7 +160,7 @@ public class JDBC_Positive {
 	
 	public boolean unused_fetch() throws SQLException {
 		boolean a_ok = false;  // The test is visual, pass if ends
-		int count = 0;
+		int max_rows = 3;
 		
 		conn = DriverManager.getConnection(url,"sqream","sqream");
 		
@@ -183,7 +183,7 @@ public class JDBC_Positive {
 	    sql = "select * from test_fetch";
 	    //stmt = conn.prepareStatement(sql);
 	    stmt = conn.createStatement();
-	    stmt.setMaxRows(3);
+	    stmt.setMaxRows(max_rows);
 	    rs = stmt.executeQuery(sql);
 	    
 	    sql = "select 1";
@@ -204,7 +204,7 @@ public class JDBC_Positive {
 	
 	public boolean limited_fetch() throws SQLException {
 		boolean a_ok = false;  // The test is visual, pass if ends
-		int count = 0;
+		int count = 0, max_rows = 3;
 		
 		conn = DriverManager.getConnection(url,"sqream","sqream");
 		
@@ -221,14 +221,14 @@ public class JDBC_Positive {
 	    sql = "select * from test_fetch";
 	    //stmt = conn.prepareStatement(sql);
 	    stmt = conn.createStatement();
-	    stmt.setMaxRows(3);
+	    stmt.setMaxRows(max_rows);
 	    rs = stmt.executeQuery(sql);
 	    while(rs.next()) { 
 	        rs.getInt(1);
 	        count++;
 	    }
 	    
-	    if (count == 3)
+	    if (count == max_rows)
             a_ok = true;    
         else
         	print("limited fetch of 3 items, amount returned: " + count);
@@ -237,41 +237,6 @@ public class JDBC_Positive {
 	    return a_ok;
 	}
 	
-	
-	
-	public boolean pre_fetch() throws SQLException {
-		boolean a_ok = true;  // The test is visual, pass if ends
-		
-		conn = DriverManager.getConnection(url,"sqream","sqream");
-		
-		String sql = "create or replace table test_autoclose (ints int)";
-	    stmt = conn.createStatement();
-	    stmt.execute(sql);
-	    stmt.close();
-	    
-	    sql = "insert into test_autoclose values (1), (2), (3), (4), (5)";
-	    stmt = conn.createStatement();
-	    stmt.execute(sql);
-	    stmt.close();
-	    
-	    sql = "select * from test_autoclose where 1 = 0";
-	    //stmt = conn.prepareStatement(sql);
-	    stmt = conn.createStatement();
-	    rs = stmt.executeQuery(sql);
-	    
-	    sql = "select * from test_autoclose";
-	    stmt = conn.createStatement();
-	    rs = stmt.executeQuery(sql);
-	    while(rs.next()) 
-	        print ("get result :" + rs.getInt(1));
-	    // rs.close();
-	    // stmt.close();
-	    
-	    //TimeUnit.SECONDS.sleep(1);
-	    
-	    return a_ok;
-	}
-	    
 	
 	public boolean display_size() throws SQLException {
         boolean a_ok = false;
@@ -1176,7 +1141,6 @@ public class JDBC_Positive {
         print ("Unused fetch test - " + (pos_tests.unused_fetch() ? "OK" : "Fail"));
         //*
         print ("Limited fetch test - " + (pos_tests.limited_fetch() ? "OK" : "Fail"));
-        print ("Pre fetch test - " + (pos_tests.pre_fetch() ? "OK" : "Fail"));
         print ("Display size test - " + (pos_tests.display_size() ? "OK" : "Fail"));
         print ("parameter metadata test: " + (pos_tests.parameter_metadata() ? "OK" : "Fail"));
         print ("logging is off test:" + (pos_tests.is_logging_off() ? "OK" : "Fail"));

@@ -201,7 +201,7 @@ public class Connector {
     int row_size, rows_per_flush;
     int max_string_len = 0;   // For preallocating a bytearray for getVarchar/Nvarchar
     int fetch_size = 0;      // How much to retrieve on a select statement
-    boolean first_fetch = false;
+    
     // Column metadata
     String statement_type;
     int row_length;
@@ -868,7 +868,8 @@ public class Connector {
     		throw new ConnException("row_amount should be positive, got " + row_amount);
     	}
     	if (row_amount == -1) {
-    	
+    		// Place for adding logic for previos fetching behavior - per
+    		// requirement fetch
     	}
     	else {  // positive row amount
     		while (row_amount == 0 || total_fetched < row_amount) {
@@ -886,12 +887,6 @@ public class Connector {
     }
     
     
-    int _get_batch() {
-    	
-    	
-    	
-    	return 0;
-    }
     
     int _flush(int row_counter) throws IOException, ConnException {
         /* Send columnar data buffers to SQream. Called by next() and close() */
@@ -978,7 +973,6 @@ public class Connector {
     		else
     			throw new ConnException("Trying to run a statement when another was not closed. Open statement id: " + statement_id + " on connection: " + connection_id);
     	open_statement = true;
-    	first_fetch = true;     // The first fetch will preallocate buffers for
         // Get statement ID, send prepareStatement and get response parameters
         statement_id = (int) _parse_sqream_json(_send_message(form_json("getStatementId"), true)).get("statementId");
         
@@ -1051,7 +1045,6 @@ public class Connector {
         if (statement_type.equals("SELECT")) {
         	total_rows_fetched = _fetch(fetch_limit); // 0 - prefetch all data 
              //if (total_rows_fetched < (chunk_size == 0 ? 1 : chunk_size)) {
-        	print ("total rows fetched:" + total_rows_fetched);
         }
         
         return statement_id;

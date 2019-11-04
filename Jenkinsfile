@@ -19,7 +19,11 @@ pipeline {
         }
         stage('Build'){
             steps {
-                sh "cd jdbc-driver; sed -i "6s|<version>.*</version>|<version>$version_num</version>|" pom.xml; mvn -f pom.xml package -DskipTests"        
+                sh '''
+                cd jdbc-driver
+                sed -i "6s|<version>.*</version>|<version>$version_num</version>|" pom.xml
+                mvn -f pom.xml package -DskipTests
+                '''
             }
         }
         //stage('Unit Testing'){
@@ -35,7 +39,7 @@ pipeline {
                 file_to_upload=$(ls -al jdbc-driver/target | grep -v dependencies | grep -i jar | awk '{ print $9 }')
                 echo $file_to_upload
                 cd jdbc-driver/target/
-                curl -u ${ARTIFACT_USER}:${ARTIFACT_PASSWORD} -T $file_to_upload $ARTIFACTORY_URL/connectors/jdbc/release/
+                curl -u ${ARTIFACT_USER}:${ARTIFACT_PASSWORD} -T $file_to_upload $ARTIFACTORY_URL/connectors/jdbc/$env/
                 cd ../..
                 rm -rf jdbc-driver/
                 '''

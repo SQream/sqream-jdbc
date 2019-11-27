@@ -10,10 +10,6 @@ def compile_repo(repo_dir = jdbc_repo):
     ''' run maven on the repo to generate jar and class files '''
 
     os.chdir(repo_dir)
-    print (f"inside: {os.getcwd()}")
-    # Popen(('git', 'checkout', 'develop'), stdout = PIPE, stderr = PIPE).communicate()
-    res, err = Popen(('git', 'branch'), stdout = PIPE, stderr = PIPE).communicate()
-    print (f'on branch: {res}')
     compile_cmd = Popen(('mvn', 'clean', 'package', '-DskipTests'), stdout = PIPE, stderr = PIPE)
     return compile_cmd.communicate()
 
@@ -30,7 +26,7 @@ def launch_sqreamd(sqream_path = '/home/sqream/master'):
 
 
 
-def run_java_test(test_name, verbose = False, jdbc_location = jdbc_location):
+def run_java_test(test_name, verbose = True, jdbc_location = jdbc_location):
     ''' javac -cp .:/path/to/SQream_JDBC.jar SomeTest.java
         java -cp .:/path/to/SQream_JDBC.jar SomeTest 
     '''
@@ -61,6 +57,6 @@ if __name__ == '__main__':
     '''
 
     # launc_res, launch_err = launch_sqreamd() 
-    if not all((run_java_test('JDBC_Positive'), run_java_test('Positive'), run_java_test('Negative', True))):
+    if not all((run_java_test('JDBC_Positive'), run_java_test('Positive'), run_java_test('Negative'))):
         raise Exception("Java tests failed")
 

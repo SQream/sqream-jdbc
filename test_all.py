@@ -11,7 +11,7 @@ def compile_repo(repo_dir = jdbc_repo):
 
     os.chdir(repo_dir)
     print (f"inside: {os.getcwd()}")
-    Popen(('git', 'checkout', 'develop'), stdout = PIPE, stderr = PIPE).communicate()
+    # Popen(('git', 'checkout', 'develop'), stdout = PIPE, stderr = PIPE).communicate()
     res, err = Popen(('git', 'branch'), stdout = PIPE, stderr = PIPE).communicate()
     print (f'on branch: {res}')
     compile_cmd = Popen(('mvn', 'clean', 'package', '-DskipTests'), stdout = PIPE, stderr = PIPE)

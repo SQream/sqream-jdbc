@@ -1,9 +1,18 @@
 cache:
   paths:
 before_script:
+  # - "mvn clean"
+  # - "mvn package -DskipTests"
+  #- "echo `/usr/bin/whoami`"
+  # - "cd /home/sqream/sqream-with-submodules/sqream"
+  # - "git checkout develop"
+  # - "make clean"
+  # - "make -j7 all |& tee /home/gitlabrunner/build_logs/${CI_COMMIT_REF_NAME}.log |& MakeFilters ; ( exit ${PIPESTATUS[0]} )"
 tests_and_benchmark:
   script:
-    - "mvn package -DskipTests"
+    # - "rm -rf /home/sqream/sqream_testing_temp" # So we can test different storage versions
+    # - "python3 tests/developer_regression.py --sqream.save-style=jdbc --suite.timeout=2400"
+    - "python3 test_all.py"
   only:
     refs:
       - merge_requests

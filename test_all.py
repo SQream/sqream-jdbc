@@ -37,7 +37,7 @@ def run_java_test(test_name, verbose = False, jdbc_location = jdbc_location):
 
     # Run a compiled test
     # Popen(('javac', '-cp' ,f'.:{jdbc_location}:{test_src}', 'com.sqream.jdbc.' + test_name + '.java'), stdout = PIPE, stderr = PIPE).communicate()
-    print ('java', '-cp' ,f'.:{jdbc_location}:{run_from}', 'com.sqream.jdbc.' + test_name)
+    print ('****running:', 'java', '-cp' ,f'.:{jdbc_location}:{run_from}', 'com.sqream.jdbc.' + test_name)
     run_test = Popen(('java', '-cp' ,f'.:{jdbc_location}:{run_from}', 'com.sqream.jdbc.' + test_name), stdout = PIPE, stderr = PIPE)
     out, err = run_test.communicate()  
     tests_ok = False

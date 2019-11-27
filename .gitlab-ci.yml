@@ -13,6 +13,7 @@ tests_and_benchmark:
     # - "rm -rf /home/sqream/sqream_testing_temp" # So we can test different storage versions
     # - "python3 tests/developer_regression.py --sqream.save-style=jdbc --suite.timeout=2400"
     - "python3 test_all.py"
+    #
   only:
     refs:
       - merge_requests

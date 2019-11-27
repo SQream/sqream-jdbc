@@ -903,6 +903,10 @@ public class Connector {
         if (!statement_type.equals("INSERT"))  // Not an insert statement
             return 0;
         
+        if (row_counter == 0)   // No need to flush an empty buffer
+        	return 0;
+        
+        
         // Send put message
         _send_message(MessageFormat.format(put, row_counter), false);   
         

@@ -904,8 +904,9 @@ public class Connector {
             return 0;
         
         if (row_counter == 0)   // No need to flush an empty buffer
+        	{print ("*****check 1 2");
         	return 0;
-        
+        	}
         
         // Send put message
         _send_message(MessageFormat.format(put, row_counter), false);   

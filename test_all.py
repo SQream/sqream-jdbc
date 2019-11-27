@@ -14,7 +14,7 @@ def compile_repo(repo_dir = jdbc_repo):
     Popen(('git', 'checkout', 'develop'), stdout = PIPE, stderr = PIPE).communicate()
     res, err = Popen(('git', 'branch'), stdout = PIPE, stderr = PIPE).communicate()
     print (f'on branch: {res}')
-    compile_cmd = Popen(('mvn', 'package', '-DskipTests'), stdout = PIPE, stderr = PIPE)
+    compile_cmd = Popen(('mvn', 'clean', 'package', '-DskipTests'), stdout = PIPE, stderr = PIPE)
     return compile_cmd.communicate()
 
 

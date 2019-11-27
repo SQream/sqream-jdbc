@@ -10,6 +10,7 @@ def compile_repo(repo_dir = jdbc_repo):
     ''' run maven on the repo to generate jar and class files '''
 
     os.chdir(repo_dir)
+    print (f"inside: {os.getcwd()}")
     Popen(('git', 'checkout', 'develop'), stdout = PIPE, stderr = PIPE).communicate()
     compile_cmd = Popen(('mvn', 'package', '-DskipTests'), stdout = PIPE, stderr = PIPE)
     return compile_cmd.communicate()

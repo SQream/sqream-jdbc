@@ -1,7 +1,7 @@
 import os
 from subprocess import Popen, PIPE
 
-jdbc_repo =  '/home/sqream/jdbc-driver/'
+jdbc_repo =  '/home/gitlab-runner/jdbc-driver/'
 test_src = jdbc_repo + '/src/test/java'
 class_dir =  jdbc_repo + 'target/classes/com/sqream/jdbc/'
 run_from  = jdbc_repo + 'target/test-classes/'

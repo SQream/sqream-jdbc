@@ -26,7 +26,6 @@ import java.sql.PreparedStatement;
 import java.sql.Ref;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.ParameterMetaData;
 import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -35,44 +34,37 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.time.Instant;
-import java.time.ZonedDateTime;
 
 
-import com.sqream.jdbc.Connector;
-import com.sqream.jdbc.Connector.ConnException;
+import com.sqream.jdbc.connector.Connector;
+import com.sqream.jdbc.connector.ConnectorImpl;
+import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
 
 
 public class SQPreparedStatment implements PreparedStatement {
 
-    private Connector Client = null;
-    SQResultSet SQRS = null;
+    private ConnectorImpl Client = null;
+    private SQResultSet SQRS = null;
     private SQResultSetMetaData metaData = null;
-    String sql;
-    private SQConnection Connection =null;  
-    int statement_id;
-    String db_name;
-    int setCounter = 0;
-    int rowsInBatch = 0;
-    List<Integer> setsPerBatch = new ArrayList<>(); 
-    boolean is_closed = true;
-    
-    static void print(Object printable) {
-        System.out.println(printable);
-    }
-    
-    
-    
+    private String sql;
+    private SQConnection connection =null;
+    private int statement_id;
+    private String db_name;
+    private int setCounter = 0;
+    private int rowsInBatch = 0;
+    private List<Integer> setsPerBatch = new ArrayList<>();
+    private boolean is_closed = true;
+
     public SQPreparedStatment(Connector client, String Sql, SQConnection conn, String catalog) throws SQLException, IOException, KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
         
-        Connection = conn;
+        connection = conn;
         db_name = catalog;
         is_closed = false;
-        Client = new Connector(Connection.sqlb.ip, Connection.sqlb.port, conn.sqlb.Cluster, Connection.sqlb.Use_ssl);
-        Client.connect(Connection.sqlb.DB_name, Connection.sqlb.User, Connection.sqlb.Password, "sqream");  // default service
+        Client = new ConnectorImpl(connection.getParams().getIp(), connection.getParams().getPort(), conn.getParams().getCluster(), connection.getParams().getUseSsl());
+        Client.connect(connection.getParams().getDbName(), connection.getParams().getUser(), connection.getParams().getPassword(), "sqream");  // default service
         sql = Sql;
         statement_id = Client.execute(sql);
-        metaData = new SQResultSetMetaData(Client, Connection.sqlb.DB_name);
+        metaData = new SQResultSetMetaData(Client, connection.getParams().getDbName());
     }
 
     
@@ -80,11 +72,11 @@ public class SQPreparedStatment implements PreparedStatement {
     public void close() throws SQLException {
     	//print ("inside SQPreparedStatement close");
         try {
-        	if (Client!= null && Client.is_open()) {
-				if (Client.is_open_statement()) {
+        	if (Client!= null && Client.isOpen()) {
+				if (Client.isOpenStatement()) {
 					Client.close();
 				}
-				Client.close_connection();
+				Client.closeConnection();
         	}
         } catch (IOException | ConnException | ScriptException e) {
         	e.printStackTrace();
@@ -130,25 +122,15 @@ public class SQPreparedStatment implements PreparedStatement {
     }
 
     @Override
-    public boolean execute() throws SQLException {
-        try {
-            SQRS = new SQResultSet(Client, db_name);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
+    public boolean execute() {
+        SQRS = new SQResultSet(Client, db_name);
 
         return SQRS != null;
     }
     
     @Override
-    public ResultSet executeQuery() throws SQLException {
-
-        try {
-            SQRS = new SQResultSet(Client, db_name);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    public ResultSet executeQuery() {
+        SQRS = new SQResultSet(Client, db_name);
         return SQRS;
     }
 
@@ -156,7 +138,7 @@ public class SQPreparedStatment implements PreparedStatement {
     // ----
     
     @Override
-    public void setBoolean(int arg0, boolean arg1) throws SQLException {
+    public void setBoolean(int arg0, boolean arg1) {
         
         try {
 			Client.set_boolean(arg0, arg1);

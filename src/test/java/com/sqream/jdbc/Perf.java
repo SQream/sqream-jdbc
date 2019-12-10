@@ -30,13 +30,6 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-// json related checks
-import jdk.nashorn.internal.parser.JSONParser;
-import jdk.nashorn.internal.runtime.Context;
-import jdk.nashorn.internal.runtime.JSONFunctions;
-
-
 public class Perf {
     
     // Replace with your respective URL

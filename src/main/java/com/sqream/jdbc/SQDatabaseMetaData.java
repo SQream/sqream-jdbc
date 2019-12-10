@@ -25,8 +25,9 @@ import java.util.Arrays;
 
 import javax.script.ScriptException;
 
-import com.sqream.jdbc.Connector;
-import com.sqream.jdbc.Connector.ConnException;
+import com.sqream.jdbc.connector.Connector;
+import com.sqream.jdbc.connector.ConnectorImpl;
+import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
 
 
 /**
@@ -35,8 +36,7 @@ import com.sqream.jdbc.Connector.ConnException;
  */
 
 public class SQDatabaseMetaData implements DatabaseMetaData {
-	
-	boolean logging = Connector.is_logging();
+
 	Path SQDatabaseMetaData_log = Paths.get("/tmp/SQDatabaseMetaData.txt");
 	boolean log(String line) throws SQLException {
 		try {
@@ -49,37 +49,37 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		return true;
 	}
 	
-	Connector Client;
-	SQConnection Conn=null;
-	String user;
-	String DatabaseProductName = "SqreamDB";
-	String DatabaseProductVersion = "";
-	int DatabaseMajorVersion = 0;
-	int DatabaseMinorVersion = 0;
-	int DriverMajorVersion = 4;
-	int DriverMinorVersion = 0;
-	String DriverVersion = "4.0";
-	String db_name;
+	private Connector client;
+	private SQConnection conn;
+	private String user;
+	private String databaseProductName = "SqreamDB";
+	private String databaseProductVersion = "";
+	private int databaseMajorVersion = 0;
+	private int databaseMinorVersion = 0;
+	private int driverMajorVersion = 4;
+	private int driverMinorVersion = 0;
+	private String driverVersion = "4.0";
+	private String dbName;
 	
 	static void print(Object printable) {
         System.out.println(printable);
     }
 	
-	public SQDatabaseMetaData(Connector client,SQConnection conn, String user_, String catalog) throws SQLException, NumberFormatException, UnknownHostException, IOException
+	public SQDatabaseMetaData(Connector client, SQConnection conn, String user_, String catalog) throws SQLException, NumberFormatException, UnknownHostException, IOException
 			 {
-		Client = client;
-		Conn=conn;
+		this.client = client;
+		this.conn =conn;
 		user = user_;
-		db_name = catalog;
+		dbName = catalog;
 	}
 	
 	SQResultSet metadataStatement(String sql) throws ConnException, IOException, SQLException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
-		
-		Connector client = new Connector(Conn.sqlb.ip, Conn.sqlb.port, Conn.sqlb.Cluster, Conn.sqlb.Use_ssl);
-		client.connect(Conn.sqlb.DB_name, Conn.sqlb.User, Conn.sqlb.Password, Conn.sqlb.service);
+
+		Connector client = new ConnectorImpl(conn.getParams().getIp(), conn.getParams().getPort(), conn.getParams().getCluster(), conn.getParams().getUseSsl());
+		client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(), conn.getParams().getService());
 		client.execute(sql);
 		
-		return new SQResultSet(client, db_name, true);
+		return new SQResultSet(client, dbName, true);
 	}
 
 	@Override
@@ -237,12 +237,12 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public String getURL() throws SQLException {
 
-		return String.format("jdbc:Sqream://%s:%s/%s;user=%s;password=%s"
-				,Conn.sqlb.Cluster ? Conn.sqlb.LB_ip : Conn.sqlb.ip
-				,Conn.sqlb.Cluster ? Conn.sqlb.LB_port : Conn.sqlb.port
-				,Conn.sqlb.DB_name
-				,Conn.sqlb.User
-				,Conn.sqlb.Password);
+		return String.format("jdbc:Sqream://%s:%s/%s;user=%s;password=%s",
+				conn.getParams().getCluster() ? conn.getParams().getLbip() : conn.getParams().getIp(),
+				conn.getParams().getCluster() ? conn.getParams().getLbport() : conn.getParams().getPort(),
+				conn.getParams().getDbName(),
+				conn.getParams().getUser(),
+				conn.getParams().getPassword());
 	}
 
 	@Override
@@ -320,16 +320,8 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	}
 
 	@Override
-	public Connection getConnection() throws SQLException {
-
-		try {
-			Connection client = new SQConnection(Client);
-			return  client;
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
+	public Connection getConnection() {
+		return new SQConnection(client);
 	}
 	
 	@Override
@@ -484,12 +476,12 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	
 	@Override
 	public int getDatabaseMajorVersion() throws SQLException {
-		return DatabaseMajorVersion;
+		return databaseMajorVersion;
 	}
 
 	@Override
 	public int getDatabaseMinorVersion() throws SQLException {
-		return DatabaseMinorVersion;
+		return databaseMinorVersion;
 	}
 	
 	@Override
@@ -514,7 +506,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public String getDatabaseProductVersion() throws SQLException {
-		return DatabaseProductVersion;
+		return databaseProductVersion;
 	}
 
 	@Override
@@ -524,12 +516,12 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public int getDriverMajorVersion() {
-		return DriverMajorVersion;
+		return driverMajorVersion;
 	}
 
 	@Override
 	public int getDriverMinorVersion() {
-		return DriverMinorVersion;
+		return driverMinorVersion;
 	}
 
 	@Override
@@ -539,7 +531,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public String getDriverVersion() throws SQLException {
-		return DriverVersion;
+		return driverVersion;
 	}
 
 	@Override

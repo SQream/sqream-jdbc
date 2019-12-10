@@ -9,12 +9,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.sqream.jdbc.Connector.ConnException;
+import com.sqream.jdbc.connector.ConnectorImpl;
+import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
+import com.sqream.jdbc.connector.enums.StatementType;
+
+import static com.sqream.jdbc.connector.enums.StatementType.INSERT;
 
 
 public class SQParameterMetaData implements ParameterMetaData{
 	
-	  Connector conn;
+	  ConnectorImpl conn;
 	  int param_count = 0;
 	  
 	  Map<String, Integer> sqream_to_sql = Stream.of(new Object[][] { 
@@ -33,15 +37,14 @@ public class SQParameterMetaData implements ParameterMetaData{
 	  
 	  
 	  
-	  public SQParameterMetaData(Connector _conn) throws SQLException {
+	  public SQParameterMetaData(ConnectorImpl _conn) throws SQLException {
 		  
 	     if (_conn == null)
 	    	 throw new SQLException("null connector object passed to SQParameterMetaData");
 	     
 	     conn = _conn;
 	     // A query is marked "INSERT" in Connector.java when we get a non-empty queryTypeIn - network insert
-    	 param_count = (conn.get_query_type().equals("INSERT")) ? conn.get_row_length() : 0;
-    	 
+    	 param_count = (conn.getQueryType().equals(INSERT.getValue())) ? conn.getRowLength() : 0;
 	  }
 	  
 	  
@@ -66,7 +69,7 @@ public class SQParameterMetaData implements ParameterMetaData{
 	    
 		_validate_index(param_index);
 	    try {
-	    	return conn.get_col_name(param_index);
+	    	return conn.getColName(param_index);
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to get parameter name in SQParameterMetaData:\n" + e);

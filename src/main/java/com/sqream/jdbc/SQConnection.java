@@ -3,109 +3,55 @@ package com.sqream.jdbc;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.NClob;
-import java.sql.PreparedStatement;
-import java.sql.SQLClientInfoException;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Savepoint;
-import java.sql.Statement;
-import java.sql.Struct;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Vector;
+import java.sql.*;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.script.ScriptException;
 
-import com.sqream.jdbc.Connector;
-import com.sqream.jdbc.Connector.ConnException;
+import com.sqream.jdbc.connector.Connector;
+import com.sqream.jdbc.connector.ConnectorFactory;
+import com.sqream.jdbc.connector.ConnectorImpl;
+import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
 
 //Logging
-import java.util.Arrays;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.Files;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
 
 
 public class SQConnection implements Connection {
-	
-	boolean logging = Connector.is_logging();
-	Path SQConnection_log = Paths.get("/tmp/SQConnection.txt");
-	boolean log(String line) throws SQLException {
-		if (!logging)
-			return true;
-		
-		try {
-			Files.write(SQConnection_log, Arrays.asList(new String[] {line}), UTF_8, CREATE, APPEND);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new SQLException ("Error writing to SQConnection log");
-		}
-		
-		return true;
-	}
-	
-	class Params {
+	private static final int[] RESULTSET_TYPES =
+			new int[]{ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE};
+	private static final int[] RESULTSET_CONCURRENCY =
+			new int[]{ResultSet.CONCUR_READ_ONLY, ResultSet.CONCUR_UPDATABLE};
+	private static final int[] RESULTSET_HOLDABILITY =
+			new int[]{ResultSet.HOLD_CURSORS_OVER_COMMIT, ResultSet.CLOSE_CURSORS_AT_COMMIT};
 
-		Boolean Cluster;
-		String LB_ip;
-		int LB_port;
-		String ip;
-		int port;
-		String User;
-		String Password;
-		String schema;
-		String DB_name;
-		Boolean Use_ssl;
-		String service;
-	}
-	
-	 static void print(Object printable) {
-	        System.out.println(printable);
-    }
-	
-	private  Vector<SQStatment> Statement_list = new Vector<SQStatment>();
-
-	Connector globalClient = null;
-	boolean printouts = false;
-	SQDatabaseMetaData data = null;
-	Params sqlb= new Params();
-    AtomicBoolean IsClosed = new AtomicBoolean(true);
-    String username;
-    Properties connInfo;
-    String db_name;
-    String DEFAULT_SERVICE = "sqream";
+	private ConnectorFactory connectorFactory;
+	private Path SQConnection_log = Paths.get("/tmp/SQConnection.txt");
+	private Vector<SQStatment> Statement_list = new Vector<SQStatment>();
+	private Connector globalClient;
+	private boolean printouts = false;
+	private SQDatabaseMetaData data = null;
+	private ConnectionParams params = new ConnectionParams();
+	private AtomicBoolean isClosed = new AtomicBoolean(true);
+	private String username;
+	private Properties connInfo;
+	private String dbName;
+	private String DEFAULT_SERVICE = "sqream";
     
-	public SQConnection(Connector client) throws IOException {
+	SQConnection(Connector client) {
 		globalClient = client;
 	}
-
-	void RemoveItem(Statement obj)
-	{
-		// System.out.println("RemoveItem");
-		if(Statement_list.isEmpty())
-			return;
-		
-		Statement_list.remove(obj);
-	}
 	
-	public SQConnection(Properties connectionInfo) 
+	SQConnection(Properties connectionInfo, ConnectorFactory connectorFactory)
 			throws ScriptException, SQLException, NumberFormatException, IOException, NoSuchAlgorithmException, KeyManagementException, ConnException {
-		
 		log("inside constructor SQConnection");
+
+		this.connectorFactory = connectorFactory;
+
 		connInfo = connectionInfo;
 		String cluster = connectionInfo.getProperty("cluster");
 
@@ -117,8 +63,8 @@ public class SQConnection implements Connection {
 		if (s_port.equals("-1"))
 			throw new SQLException("missing port error");
 			
-		db_name = connectionInfo.getProperty("dbname");
-		if (db_name.equals("-1"))
+		dbName = connectionInfo.getProperty("dbname");
+		if (dbName.equals("-1"))
 			throw new SQLException("missing database name error");
 
 		String service = connectionInfo.getProperty("service");
@@ -144,63 +90,75 @@ public class SQConnection implements Connection {
 
 		// Related to bug #541 - skip the picker if we are in cancel state
 		String skipPicker = connectionInfo.getProperty("SkipPicker");
-		if (skipPicker == null)
+		if (skipPicker == null) {
 			skipPicker = "false";
+		}
 
 		boolean isCluster=cluster.equalsIgnoreCase("true");
 		
-		boolean use_ssl = false;
+		boolean useSsl = false;
 		String SSL_Connection = connectionInfo.getProperty("ssl");
 		if (SSL_Connection == null || SSL_Connection.isEmpty()) {
-			use_ssl = true;
+			useSsl = true;
 		}
 		else if (SSL_Connection.equalsIgnoreCase("true")){
-			use_ssl = true;
+			useSsl = true;
 		}
+
+		globalClient = this.connectorFactory.initConnector(
+				ipaddress, Integer.parseInt(s_port), cluster.equalsIgnoreCase("true"), useSsl);
+		globalClient.connect(dbName, usr, pswd, service);
 		
-		//boolean use_ssl= SSL_Connection != null && !SSL_Connection.isEmpty()? true:false;
-		globalClient = new Connector(ipaddress, Integer.parseInt(s_port), cluster.equalsIgnoreCase("true"), use_ssl);
-		globalClient.connect(db_name, usr, pswd, service);
-		
-		sqlb.Cluster=isCluster;
-		sqlb.ip=ipaddress;
-		sqlb.port=Integer.parseInt(s_port);		
-		sqlb.schema = schema;
-		sqlb.DB_name=db_name;
-		sqlb.Password=pswd;
-		sqlb.User=usr;
-		sqlb.Use_ssl=use_ssl;
-		sqlb.service = service;
-		IsClosed.set(false);
+		params.setCluster(isCluster);
+		params.setIp(ipaddress);
+		params.setPort(Integer.parseInt(s_port));
+		params.setSchema(schema);
+		params.setDbName(dbName);
+		params.setPassword(pswd);
+		params.setUser(usr);
+		params.setUseSsl(useSsl);
+		params.setService(service);
+		isClosed.set(false);
 	}
 
+	void removeItem(Statement obj) {
+		if(Statement_list.isEmpty()) {
+			return;
+		}
+		Statement_list.remove(obj);
+	}
 
 	@Override
 	public Statement createStatement() throws SQLException {
 		log("inside constructor SQConnection");
-		// System.out.println("createStatement");
-		SQStatment SQS;
-		try {
-			SQS = new SQStatment(globalClient,this, db_name);
-			Statement_list.addElement(SQS);
-		}catch (Exception e) {
-			throw new SQLException(e);
+
+		if (isClosed.get()) {
+			throw new SQLException(MessageFormat.format("Statement is closed: isClosed=[{0}]", isClosed));
 		}
 
+		SQStatment SQS;
+		try {
+			SQS = new SQStatment(this, dbName, this.connectorFactory);
+			Statement_list.addElement(SQS);
+		} catch (Exception e) {
+			throw new SQLException(e);
+		}
 		return SQS;
 	}
 
 	@Override
 	public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
 		log("inside constructor SQConnection");
-//		System.out.println("createStatement2");
-		String[] lables = { "resultSetType", "resultSetConcurrency" };
-		String[] values = { Integer.toString(resultSetType), Integer.toString(resultSetConcurrency) };
 
+		if (isClosed.get() || !validParams(resultSetType, resultSetConcurrency)) {
+			throw new SQLException(MessageFormat.format("Wrong params in createStatement: " +
+							"resultSetType=[{0}], resultSetConcurrency=[{1}]",
+					resultSetType, resultSetConcurrency));
+		}
 
 		SQStatment SQS = null;
 		try {
-			SQS = new SQStatment(globalClient,this, db_name);
+			SQS = new SQStatment(this, dbName, this.connectorFactory);
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -209,17 +167,34 @@ public class SQConnection implements Connection {
 		return SQS;
 	}
 
+	private static boolean validParams(int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
+		// Spec: if a database access error occurs, this method is called on a closed connection or
+		// the given parameters are not ResultSet constants indicating type, concurrency and holdability
+		return Arrays.stream(RESULTSET_TYPES).anyMatch(i -> i == resultSetType) &&
+				Arrays.stream(RESULTSET_CONCURRENCY).anyMatch(i -> i == resultSetConcurrency) &&
+				Arrays.stream(RESULTSET_HOLDABILITY).anyMatch(i -> i == resultSetHoldability);
+	}
+
+	private static boolean validParams(int resultSetType, int resultSetConcurrency) {
+		// Spec: if a database access error occurs, this method is called on a closed connection or
+		// the given parameters are not ResultSet constants indicating type, concurrency and holdability
+		return Arrays.stream(RESULTSET_TYPES).anyMatch(i -> i == resultSetType) &&
+				Arrays.stream(RESULTSET_CONCURRENCY).anyMatch(i -> i == resultSetConcurrency);
+	}
+
 	@Override
 	public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
 		log("inside createStatement SQConnection");
-//		System.out.println("createStatement3");
-		String[] lables = { "resultSetType", "resultSetConcurrency", "resultSetHoldability" };
-		String[] values = { Integer.toString(resultSetType), Integer.toString(resultSetConcurrency), Integer.toString(resultSetHoldability) };
 
+		if (isClosed.get() || !validParams(resultSetType, resultSetConcurrency, resultSetHoldability)) {
+			throw new SQLException(MessageFormat.format("Wrong params in createStatement: " +
+							"resultSetType=[{0}], resultSetConcurrency=[{1}], resultSetHoldability=[{2}]",
+					resultSetType, resultSetConcurrency, resultSetHoldability));
+		}
 
-		SQStatment SQS = null;
+		SQStatment SQS;
 		try {
-			SQS = new SQStatment(globalClient,this, db_name);
+			SQS = new SQStatment(this, dbName, this.connectorFactory);
 			Statement_list.addElement(SQS);
 			
 		} catch (Exception e) {
@@ -232,10 +207,14 @@ public class SQConnection implements Connection {
 	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
 		log("inside prepareStatement SQConnection");
-		// System.out.println("prepareStatement");
+
+		if (isClosed.get()) {
+			throw new SQLException(MessageFormat.format("Statement is closed: isClosed=[{0}]", isClosed));
+		}
+
 		SQPreparedStatment SQPS = null;
 		try {
-			SQPS = new SQPreparedStatment(globalClient, sql, this, db_name);
+			SQPS = new SQPreparedStatment(globalClient, sql, this, dbName);
 		} catch (KeyManagementException | NoSuchAlgorithmException | IOException | SQLException | ScriptException | ConnException e) {
 			throw new SQLException(e);
 		} return SQPS;
@@ -244,26 +223,22 @@ public class SQConnection implements Connection {
 	@Override
 	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
 		log("inside prepareStatement 2 SQConnection");
+
+		if (isClosed.get()) {
+			throw new SQLException(MessageFormat.format("Statement is closed: isClosed=[{0}]", isClosed));
+		}
+
 		if (printouts) System.out.println("prepareStatement5");
 		//spark use this function 
 		//sql = sql.replace("\"", "");
 		SQPreparedStatment SQPS = null;
 		try {
-			SQPS = new SQPreparedStatment(globalClient, sql, this, db_name);
+			SQPS = new SQPreparedStatment(globalClient, sql, this, dbName);
 		} catch (KeyManagementException | NoSuchAlgorithmException | IOException | ScriptException | ConnException e) {
 			e.printStackTrace();
 			throw new SQLException(e);
 		} 
 		return SQPS;
-		/*
-		try {
-			SqreamLog.writeInfo("",null);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println("exit prepareStatement null 4");
-		return null;*/
 	}
 	
 	@Override
@@ -276,91 +251,73 @@ public class SQConnection implements Connection {
 				}
 				Statement_list.clear();
 			}
-			if(globalClient !=null && globalClient.is_open())
-				globalClient.close_connection();      // Closing Connector
-			IsClosed.set(true);
+			if(globalClient !=null && globalClient.isOpen())
+				globalClient.closeConnection();      // Closing Connector
+			isClosed.set(true);
 
 		} catch (IOException | ScriptException | ConnException e) {
 			// TODO Auto-generated catch block
 			throw new SQLException(e);
-		} 
-
+		}
 	}
 	
 	@Override
 	public DatabaseMetaData getMetaData() throws SQLException {
 		log("inside getMetaData SQConnection");
-		//System.out.println("getMetaData");
 		if (data == null) {
-
 			try {
-				data = new SQDatabaseMetaData(globalClient,this, username, db_name);
-				// data = new SQDatabaseMetaData(globalClient);
+				data = new SQDatabaseMetaData(globalClient,this, username, dbName);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new SQLException(e);
 			}
 		}
-
 		return data;
 	}
 	
 	@Override
 	public boolean isClosed() throws SQLException {
 		log("inside isClosed SQConnection");
-		// System.out.println("isClosed");
-		return IsClosed.get();
+		return isClosed.get();
 	}
 	
 	@Override
 	public void commit() throws SQLException {
 		log("inside commit SQConnection");
-		// System.out.println("commit");
 	}
 	
 	@Override
 	public boolean getAutoCommit() throws SQLException {
 		log("inside getAutoCommit SQConnection");
-		// System.out.println("getAutoCommit");SQLFeatureNotSupportedException
 		return true;
 	}
 	
 	@Override
-	public String getSchema() throws SQLException {
-		return sqlb.schema;
+	public String getSchema() {
+		return params.getSchema();
 	}
 	
 	@Override
 	public String getCatalog() throws SQLException {
 		log("inside getCatalog SQConnection");
-		// System.out.println("getCatalog");
-		String Catalog = sqlb.DB_name;
-
-		return Catalog;
+		return params.getDbName();
 	}
 
 	@Override
 	public Properties getClientInfo() throws SQLException {
 		log("inside getClientInfo SQConnection");
-		// System.out.println("getClientInfo");
-		// TODO check functionality
-		Properties props = new Properties();
-//		props.put("tcpConnectionTime", SqreamJsonHelper.TcpConnectionTime);
-//		props.put("sqreamConnectionTime", SqreamJsonHelper.SqreamConnectionTime);
-		return props;
+		return new Properties();
 	}
 
 	@Override
 	public int getHoldability() throws SQLException {
 		log("inside getHoldability SQConnection");
-//		System.out.println("getHoldability");
 		return 0;
 	}
 	
 	@Override
 	public int getTransactionIsolation() throws SQLException {
 		log("inside getTransactionIsolation SQConnection");
-//		System.out.println("getTransactionIsolation");
 		return 0;
 	}
 
@@ -372,21 +329,21 @@ public class SQConnection implements Connection {
 	@Override
 	public boolean isReadOnly() throws SQLException {
 		log("inside isReadOnly SQConnection");
-		// System.out.println("isReadOnly");
 		return false;
 	}
 
 	@Override
 	public boolean isValid(int timeout) throws SQLException {
 		log("inside isValid SQConnection");
-		// System.out.println("isValid");
-		return globalClient.is_open();
+		return globalClient.isOpen();
 	}
 	
 	@Override
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
 		log("inside setAutoCommit SQConnection");
-		if (printouts) System.out.println("setAutoCommit");
+		if (printouts) {
+			System.out.println("setAutoCommit");
+		}
 	}
 
 	@Override
@@ -438,23 +395,21 @@ public class SQConnection implements Connection {
 	@Override
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
 		log("inside setNetworkTimeout SQConnection");
-		if (printouts) System.out.println("setNetworkTimeout");
-		//throw new SQLFeatureNotSupportedException();
+		if (printouts) {
+			System.out.println("setNetworkTimeout");
+		}
 	}
 	
 	@Override
 	public boolean isWrapperFor(Class<?> arg0) throws SQLException {
 		log("inside isWrapperFor SQConnection");
-//		System.out.println("isWrapperFor");
 		return false;
 	}
 
 	@Override
 	public <T> T unwrap(Class<T> arg0) throws SQLException {
 		log("inside unwrap SQConnection");
-//		System.out.println("unwrap");
 		throw new SQLFeatureNotSupportedException("unwrap in SQConnection");
-
 	}
 
 	@Override
@@ -462,8 +417,20 @@ public class SQConnection implements Connection {
 		log("inside clearWarnings SQConnection");
 //		System.out.println("clearWarnings");
 	}
-	
-	
+
+	private boolean log(String line) throws SQLException {
+		//FIXME: Alex K 08.12.19: replace log function with logger
+		return true;
+	}
+
+	public ConnectionParams getParams() {
+		return params;
+	}
+
+	void setParams(ConnectionParams params) {
+		this.params = params;
+	}
+
 	// Unsupported
 	// -----------
 	

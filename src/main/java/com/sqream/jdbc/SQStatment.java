@@ -1,7 +1,6 @@
 package com.sqream.jdbc;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -13,75 +12,65 @@ import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.script.ScriptException;
 
-import com.sqream.jdbc.Connector;
-import com.sqream.jdbc.Connector.ConnException;
+import com.sqream.jdbc.connector.Connector;
+import com.sqream.jdbc.connector.ConnectorFactory;
+import com.sqream.jdbc.connector.ConnectorImpl;
+import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
 
 
 public class SQStatment implements Statement {
 
-	int NO_LIMIT = 0;
-	int SIZE_RESULT = NO_LIMIT; // 0 means no limit.
-	private Connector Client = null;
-	SQResultSet SQRS = null;
-	String SQLCommand = ""; // this string is only for debugging purpose.
-	boolean SpecialStatement = false;
-	SQConnection Connection=null;
-	int statement_id = -1;
-    AtomicBoolean IsCancelStatement = new AtomicBoolean(false);
-    enum statementType {DML, INSERT, SELECT};
-    String db_name;
-    boolean is_closed = true;
-    	
-	public SQStatment(Connector client,SQConnection conn, String catalog) throws NumberFormatException,
-			UnknownHostException, IOException, 
-			SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
-		
-		Connection=conn;
-		db_name = catalog;
-		Client = new Connector(conn.sqlb.ip, conn.sqlb.port, conn.sqlb.Cluster, conn.sqlb.Use_ssl);
-		Client.connect(conn.sqlb.DB_name, conn.sqlb.User, conn.sqlb.Password, conn.sqlb.service);
-		is_closed = false;
-	}
-	
-	static void print(Object printable) {
-	        System.out.println(printable);
-    }
-	
-	 @Override
-	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		return false;
+	private int NO_LIMIT = 0;
+	private int SIZE_RESULT = NO_LIMIT; // 0 means no limit.
+	private Connector client;
+	private SQResultSet resultSet = null;
+	private SQConnection connection;
+	private int statementId = -1;
+	private AtomicBoolean IsCancelStatement = new AtomicBoolean(false);
+	private String dbName;
+	private boolean isClosed;
+
+	SQStatment(SQConnection conn, String catalog, ConnectorFactory connectorFactory)
+			throws NumberFormatException, IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException {
+		this.connection = conn;
+		this.dbName = catalog;
+		this.client = connectorFactory.initConnector(conn.getParams().getIp(), conn.getParams().getPort(),
+				conn.getParams().getCluster(), conn.getParams().getUseSsl());
+		this.client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(),
+				conn.getParams().getService());
+		this.isClosed = false;
 	}
 	
 	@Override
 	public void cancel() throws SQLException  {
-		
-		if (Client.IsCancelStatement.getAndSet(true))
-			return;
-		
 
-		if (!Client.is_open_statement())
+		if (client.checkCancelStatement().getAndSet(true)) {
 			return;
+		}
+		if (!client.isOpenStatement()) {
+			return;
+		}
 		
-		statement_id = Client.get_statement_id();
-		String sql = "select stop_statement(" + statement_id + ")";
+		statementId = client.getStatementId();
+		String sql = "select stop_statement(" + statementId + ")";
 		
-		Connector cancel=null;
+		ConnectorImpl cancel = null;
 		try {
-			cancel = new Connector(Connection.sqlb.ip, Connection.sqlb.port, Connection.sqlb.Cluster, Connection.sqlb.Use_ssl);
-			cancel.connect(Connection.sqlb.DB_name, Connection.sqlb.User, Connection.sqlb.Password, Connection.sqlb.service);
+			cancel = new ConnectorImpl(connection.getParams().getIp(), connection.getParams().getPort(), connection.getParams().getCluster(), connection.getParams().getUseSsl());
+			cancel.connect(connection.getParams().getDbName(), connection.getParams().getUser(), connection.getParams().getPassword(), connection.getParams().getService());
 			cancel.execute(sql);	
-			Client.open_statement = false;
-		}catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
+			client.setOpenStatement(false);
+		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		} 
 		finally  {
 			// TODO Auto-generated catch block
-			if(cancel !=null && cancel.is_open())
+			if(cancel !=null && cancel.isOpen())
 				try {
-					if (cancel.is_open_statement())
+					if (cancel.isOpenStatement())
 						cancel.close();
-					cancel.close_connection();
+					cancel.closeConnection();
 				} catch (IOException | ConnException | ScriptException e) {
 					// TODO Auto-generated catch block
 					String message = e.getMessage();
@@ -92,74 +81,59 @@ public class SQStatment implements Statement {
 				}
 			IsCancelStatement.set(false);
 		}
-		
 	}
-
-	
 
 	@Override
 	public void close() throws SQLException {
 		try {
-			if(Client !=null && Client.is_open()) {
-				if (Client.is_open_statement())
-					Client.close();
-				Client.close_connection(); // since each statement creates a new client connection.
+			if(client !=null && client.isOpen()) {
+				if (client.isOpenStatement())
+					client.close();
+				client.closeConnection(); // since each statement creates a new client connection.
 			}
-            if(Connection !=null)
-			   Connection.RemoveItem(this); 
+            if(connection !=null)
+			   connection.removeItem(this);
 		} catch (IOException | ConnException | ScriptException e) {
 			e.printStackTrace();
 			throw new SQLException("Statement already closed. Error: " + e);
 		} 
-	    is_closed = true;
-
-//		catch (NullPointerException e) {}
-		// TODO Auto-generated catch block
+	    isClosed = true;
 	}	
 	
 	@Override
 	public Connection getConnection() throws SQLException {
-		
-		try {
-			//TODO razi
-			SQConnection conn=new SQConnection(Client);
-			conn.sqlb=Connection.sqlb;
-			return conn;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+		//TODO razi
+		SQConnection conn = new SQConnection(client);
+		conn.setParams(connection.getParams());
+		return conn;
 	}
 	
 	@Override
 	public boolean execute(String sql) throws SQLException {
-		// TODO Auto-generated method stub
-		SQLCommand = sql; // so i can debug it later.
 		// Related to bug BG-469 - return true only if this sql should return
 		// result
 		boolean result = false;
 
-		if (Client == null) {
+		if (client == null) {
 			
 		} 
 		else
 
 			try {
-				statement_id = Client.execute(sql);
+				statementId = client.execute(sql);
 				
 				// Omer and Razi - support cancel
 				if (IsCancelStatement.get()) {
 					//Close the connection of cancel statement
-					Client.close_connection();
+					client.closeConnection();
 					throw new SQLException("Statement cancelled by user");
 				}
 
-				if ((Client.get_query_type() != "INSERT") && Client.get_row_length() > 0)
+				if ((client.getQueryType() != "INSERT") && client.getRowLength() > 0)
 					result = true;
 
-				SQRS = new SQResultSet(Client, db_name);
-				SQRS.MaxRows = SIZE_RESULT;
+				resultSet = new SQResultSet(client, dbName);
+				resultSet.setMaxRows(SIZE_RESULT);
 			} catch (Exception e) {
 				e.printStackTrace();
 				if (e.getMessage().contains("stopped by user")
@@ -174,37 +148,11 @@ public class SQStatment implements Statement {
 		return result;
 	}
 
-	/*
-	private void execute_set(String sql) throws ConnException, SQLException, KeyManagementException, NoSuchAlgorithmException, ScriptException {
-		try {
-			Client.execute(sql);
-			// SqrmRespPrepareSql ps=
-			// Client.prepareSql(sql,SIZE_RESULT,SpecialStatement);
-			 
-			// statement_id=ps.statement_id;
-			// Omer and Razi - support cancel
-			if (IsCancelStatement.get()) {
-				//Close the connection of cancel statement
-				if(Client !=null && Client.is_open())
-				Client.close_connection();
-				throw new SQLException("Statement cancelled by user");
-			}
-			if(Client !=null && Client.is_open() && Client.is_open_statement())
-				Client.close();
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			throw new SQLException(e);
-		} 
-	}
-	//*/
-	
+	@Override
 	public ResultSet executeQuery(String sql) throws SQLException {
 		try {
+			statementId = client.execute(sql);
 
-            			
-			statement_id = Client.execute(sql);
-			
 			// BG-1742 hack for workbench data tag , close statement after size
 			// of rows
 			//if (SIZE_RESULT > 0)
@@ -213,50 +161,44 @@ public class SQStatment implements Statement {
 			
 			if (IsCancelStatement.get()) {
 				//Close the connection of cancel statement
-				Client.close_connection();
+				client.closeConnection();
 				throw new SQLException("Statement cancelled by user");
 			}
 
-			SQRS = new SQResultSet(Client, db_name);
-			SQRS.MaxRows = SIZE_RESULT;
+			resultSet = new SQResultSet(client, dbName);
+			resultSet.setMaxRows(SIZE_RESULT);
 			// Related to bug BG-910 - Set as empty since there is no need to
 			// return result
-			if ((Client.get_query_type() != "INSERT") && Client.get_row_length() == 0)
-				SQRS.Empty = true;
+			if ((!"INSERT".equals(client.getQueryType())) && client.getRowLength() == 0)
+				resultSet.setEmpty(true);
 			
-			return SQRS;
+			return resultSet;
 
-		} catch (IOException | ConnException | ScriptException e) {
+		} catch (IOException | ConnException | ScriptException | KeyManagementException | NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			throw new SQLException(e);
 		}
-
 	}
 
-	
 	@Override
 	public int executeUpdate(String sql) throws SQLException {
-
 		try {
-			statement_id =Client.execute(sql);
-		} catch (IOException | ConnException | ScriptException e) {			
+			statementId = client.execute(sql);
+		} catch (IOException | ConnException | ScriptException | KeyManagementException | NoSuchAlgorithmException e) {
 			throw new SQLException(e);
 		} 
 		return 0;
 	}
 	
-	
 	@Override
 	public void setFetchSize(int arg0) throws SQLException {
 		SIZE_RESULT = arg0;
 	}
-	
-	
+
 	@Override
 	public void setMaxRows(int max_rows) throws SQLException {
-		
 		try {
-			Client.set_fetch_limit(max_rows);
+			client.setFetchLimit(max_rows);
 		} catch (ConnException e) {
 			throw new SQLException("Error in setMaxRows:" + e);
 		}
@@ -264,10 +206,9 @@ public class SQStatment implements Statement {
 	
 	@Override
 	public int getMaxRows() throws SQLException {
-		return Client.get_fetch_limit();
+		return client.getFetchLimit();
 	}
-	
-	
+
 	/*
 	 Moves to this Statement object's next result, returns true if it is a ResultSet 
 	 object, and implicitly closes any current ResultSet object(s) obtained with the 
@@ -283,24 +224,28 @@ public class SQStatment implements Statement {
 	 */
 	@Override
 	public boolean getMoreResults() throws SQLException {
-
+		if (this.isClosed) { // Spec: if a database access error occurs or this method is called on a closed Statement
+			throw new SQLException("Called getMoreResults() on closed statement");
+		}
 		return false;
 	}
 
 	@Override
-	public boolean getMoreResults(int arg0) throws SQLException {
-	return false;
+	public boolean getMoreResults(int current) throws SQLException {
+		//if a database access error occurs, this method is called on a closed Statement or the argument supplied is
+		// not one of the following:
+		// Statement.CLOSE_CURRENT_RESULT, Statement.KEEP_CURRENT_RESULT or Statement.CLOSE_ALL_RESULTS
+		return false;
 	}
 	
 	@Override
 	public ResultSet getResultSet() throws SQLException {
 
-		return SQRS;
+		return resultSet;
 	}
 	
 	@Override
 	public int getUpdateCount() throws SQLException {
-		
 		return -1;
 		// throw new SQLFeatureNotSupportedException();  // -1
 	}
@@ -320,18 +265,23 @@ public class SQStatment implements Statement {
 	Returns:
 	    the first SQLWarning object or null if there are no warnings
 	 */
-	
 	@Override
 	public SQLWarning getWarnings() throws SQLException {
 		return null;
 	}
-	
+
 	@Override
 	public boolean isClosed() throws SQLException {
-		return is_closed;
+		return isClosed;
 	}
-	
-	// Unsupported  
+
+	@Override
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		return false;
+	}
+
+	//<editor-fold desc="Unsupported">
+	// Unsupported
 	// -----------
 	
 	@Override
@@ -484,5 +434,5 @@ public class SQStatment implements Statement {
 	public boolean isCloseOnCompletion() throws SQLException {
 		throw new SQLFeatureNotSupportedException("isCloseOnCompletion in SQStatement");
 	}
-
+	//</editor-fold>
 }

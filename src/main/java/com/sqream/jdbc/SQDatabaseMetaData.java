@@ -27,7 +27,7 @@ import javax.script.ScriptException;
 
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorImpl;
-import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
+import com.sqream.jdbc.connector.ConnException;
 
 
 /**
@@ -74,7 +74,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	}
 	
 	SQResultSet metadataStatement(String sql) throws ConnException, IOException, SQLException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
-
+		
 		Connector client = new ConnectorImpl(conn.getParams().getIp(), conn.getParams().getPort(), conn.getParams().getCluster(), conn.getParams().getUseSsl());
 		client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(), conn.getParams().getService());
 		client.execute(sql);

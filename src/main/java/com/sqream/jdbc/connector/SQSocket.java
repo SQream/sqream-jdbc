@@ -24,29 +24,29 @@ class SQSocket {
     private int port;
     private boolean useSsl = false;
 
-    SQSocket(String ip, int port) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    SQSocket(String ip, int port) throws IOException, NoSuchAlgorithmException {
         this.ip = ip;
         this.port = port;
-        ssl_context = SSLContext.getInstance("TLSv1.2");
-        ssl_context.init(null,
-                new TrustManager[]{new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return null;
-                    }
-
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                    }
-
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                    }
-                }},
-                null);
     }
 
-    void connect(boolean useSsl) throws IOException {
+    void connect(boolean useSsl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         this.useSsl = useSsl;
         s.connect(new InetSocketAddress(ip, port));
         if (useSsl) {
+            ssl_context = SSLContext.getInstance("TLSv1.2");
+            ssl_context.init(null,
+                    new TrustManager[]{new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
+                        }
+
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
+                    }},
+                    null);
             ss = ClientTlsChannel.newBuilder(s, ssl_context).build();
         }
     }
@@ -62,7 +62,10 @@ class SQSocket {
         }
     }
 
-    void reconnect(String ip, int port, boolean useSsl) throws IOException {
+    void reconnect(String ip, int port, boolean useSsl) throws IOException, KeyManagementException, NoSuchAlgorithmException {
+        if (this.isOpen()) {
+            this.close();
+        }
         this.s = SocketChannel.open();
         this.ip = ip;
         this.port = port;

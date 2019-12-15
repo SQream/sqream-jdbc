@@ -38,12 +38,12 @@ import java.util.Calendar;
 
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorImpl;
-import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
+import com.sqream.jdbc.connector.ConnException;
 
 
 public class SQPreparedStatment implements PreparedStatement {
 
-    private ConnectorImpl Client = null;
+    private Connector Client;
     private SQResultSet SQRS = null;
     private SQResultSetMetaData metaData = null;
     private String sql;
@@ -211,8 +211,7 @@ public class SQPreparedStatment implements PreparedStatement {
         try {
 			Client.set_date(colNum, date);
 		} catch (UnsupportedEncodingException | ConnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new SQLException(e.getMessage());
 		} setCounter++; 
     }
 

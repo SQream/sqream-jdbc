@@ -9,16 +9,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.sqream.jdbc.connector.ConnectorImpl;
-import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
-import com.sqream.jdbc.connector.enums.StatementType;
+import com.sqream.jdbc.connector.Connector;
+import com.sqream.jdbc.connector.ConnException;
 
 import static com.sqream.jdbc.connector.enums.StatementType.INSERT;
 
 
 public class SQParameterMetaData implements ParameterMetaData{
 	
-	  ConnectorImpl conn;
+	  Connector conn;
 	  int param_count = 0;
 	  
 	  Map<String, Integer> sqream_to_sql = Stream.of(new Object[][] { 
@@ -37,7 +36,7 @@ public class SQParameterMetaData implements ParameterMetaData{
 	  
 	  
 	  
-	  public SQParameterMetaData(ConnectorImpl _conn) throws SQLException {
+	  public SQParameterMetaData(Connector _conn) throws SQLException {
 		  
 	     if (_conn == null)
 	    	 throw new SQLException("null connector object passed to SQParameterMetaData");
@@ -45,6 +44,7 @@ public class SQParameterMetaData implements ParameterMetaData{
 	     conn = _conn;
 	     // A query is marked "INSERT" in Connector.java when we get a non-empty queryTypeIn - network insert
     	 param_count = (conn.getQueryType().equals(INSERT.getValue())) ? conn.getRowLength() : 0;
+    	 
 	  }
 	  
 	  

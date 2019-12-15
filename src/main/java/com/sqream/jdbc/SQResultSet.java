@@ -27,9 +27,8 @@ import java.util.Map;
 
 import javax.script.ScriptException;
 
+import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
-import com.sqream.jdbc.connector.ConnectorImpl;
-import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
 import com.sqream.jdbc.enums.RS_STAT;
 
 class SQResultSet implements ResultSet {
@@ -114,7 +113,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public void updateDate(int columnIndex, Date x) {
 		this.baseUsageError();
-		//FIXME: Alex K 08.12.19: where is implementation of method? Need to implement or throw UnsupportedException.
+		//FIXME: where is implementation of method? Need to implement or throw UnsupportedException.
 	}
 
 	/**

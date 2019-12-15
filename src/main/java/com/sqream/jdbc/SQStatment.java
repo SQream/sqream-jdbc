@@ -15,7 +15,7 @@ import javax.script.ScriptException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnectorImpl;
-import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
+import com.sqream.jdbc.connector.ConnException;
 
 
 public class SQStatment implements Statement {
@@ -50,11 +50,11 @@ public class SQStatment implements Statement {
 		if (!client.isOpenStatement()) {
 			return;
 		}
-		
+
 		statementId = client.getStatementId();
 		String sql = "select stop_statement(" + statementId + ")";
 		
-		ConnectorImpl cancel = null;
+		Connector cancel = null;
 		try {
 			cancel = new ConnectorImpl(connection.getParams().getIp(), connection.getParams().getPort(), connection.getParams().getCluster(), connection.getParams().getUseSsl());
 			cancel.connect(connection.getParams().getDbName(), connection.getParams().getUser(), connection.getParams().getPassword(), connection.getParams().getService());
@@ -189,7 +189,7 @@ public class SQStatment implements Statement {
 		} 
 		return 0;
 	}
-	
+
 	@Override
 	public void setFetchSize(int arg0) throws SQLException {
 		SIZE_RESULT = arg0;

@@ -12,10 +12,11 @@ import java.util.logging.Logger;
 
 import javax.script.ScriptException;
 
+import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.Test;
 
-import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
+import com.sqream.jdbc.connector.ConnException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 

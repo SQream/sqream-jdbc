@@ -13,15 +13,18 @@ import javax.script.ScriptException;
 
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
-import com.sqream.jdbc.connector.ConnectorImpl;
-import com.sqream.jdbc.connector.ConnectorImpl.ConnException;
+import com.sqream.jdbc.connector.ConnException;
 
 //Logging
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class SQConnection implements Connection {
+	private static final Logger LOGGER = Logger.getLogger(SQConnection.class.getName());
+
 	private static final int[] RESULTSET_TYPES =
 			new int[]{ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE};
 	private static final int[] RESULTSET_CONCURRENCY =
@@ -418,9 +421,8 @@ public class SQConnection implements Connection {
 //		System.out.println("clearWarnings");
 	}
 
-	private boolean log(String line) throws SQLException {
-		//FIXME: Alex K 08.12.19: replace log function with logger
-		return true;
+	private void log(String line) throws SQLException {
+		LOGGER.log(Level.FINE, line);
 	}
 
 	public ConnectionParams getParams() {

@@ -5,11 +5,12 @@ import org.junit.runners.Suite;
 
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ 
-	 //Negative.class,
-	 JDBC_Positive.class,
-	 //Batch.class
-	})
+@Suite.SuiteClasses({
+		//Negative.class,
+		JDBC_Positive.class,
+		JDBC_Negative.class
+		//Batch.class
+})
 
 public class JDBCTest {
 	public static final String DbName="master";

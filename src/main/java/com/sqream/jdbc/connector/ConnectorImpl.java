@@ -127,17 +127,6 @@ public class ConnectorImpl implements Connector {
     // Managing stop_statement
     private AtomicBoolean IsCancelStatement = new AtomicBoolean(false);
 
-    
-    // Aux Classes
-    // -----------
-    public static class ConnException extends Exception {
-        /*  Connector exception class */
-        
-        private static final long serialVersionUID = 1L;
-        public ConnException(String message) {
-            super(message);
-        }
-    }
 
     public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         /* JSON parsing engine setup, initial socket connection */
@@ -155,7 +144,7 @@ public class ConnectorImpl implements Connector {
         }
     }
 
-    private void reconnectToNode() throws IOException{
+    private void reconnectToNode() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         ByteBuffer response_buffer = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);
         // Get data from server picker
         response_buffer.clear();
@@ -432,7 +421,7 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public int execute(String statement, int _chunk_size) throws IOException, ScriptException, ConnException {
+    public int execute(String statement, int _chunk_size) throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException {
         
     	int chunk_size = _chunk_size;
     	if (chunk_size < 0)
@@ -471,7 +460,11 @@ public class ConnectorImpl implements Connector {
         String prepareStr = prepare_jsonify.toString(WriterConfig.MINIMAL);
 
         JsonObject response_json =  _parse_sqream_json(socket.sendMessage(prepareStr, true));
-        
+
+        if(response_json.get("error") != null) {
+            throw new ConnException(response_json.get("error").asString());
+        }
+
         // Parse response parameters
         int listener_id =    response_json.get("listener_id").asInt();
         port =           response_json.get("port").asInt();
@@ -626,7 +619,7 @@ public class ConnectorImpl implements Connector {
     }
     
     boolean _validate_index(int col_num) throws ConnException {
-    	if (col_num <0 || col_num > row_length) {
+    	if (col_num <0 || col_num >= row_length) {
             throw new ConnException("Illegal index on get/set\nAllowed indices are 0-" + (row_length - 1));
         }
     	return true;

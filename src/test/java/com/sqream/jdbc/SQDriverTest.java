@@ -6,6 +6,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.*;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import static org.junit.Assert.*;
 
@@ -63,9 +64,9 @@ public class SQDriverTest {
         assertTrue(driver.jdbcCompliant());
     }
 
-    @Test(expected = SQLFeatureNotSupportedException.class)
+    @Test
     public void getParentLoggerTest() throws SQLFeatureNotSupportedException {
-        driver.getParentLogger();
+        assertNotNull(driver.getParentLogger());
     }
 
     @Test
@@ -88,5 +89,38 @@ public class SQDriverTest {
     public void whenPropertiesDoNotContainUserOrPasswordConnectReturnConnectionTest() throws SQLException {
         Connection connection = driver.connect(CORRECT_URI, new Properties());
         assertNotNull(connection);
+    }
+
+    @Test
+    public void loggerLevelIsOffTest() throws SQLException {
+        driver.connect(CORRECT_URI, new Properties());
+        Level expectedLevel = driver.getParentLogger().getLevel();
+        assertEquals(expectedLevel, Level.OFF);
+    }
+
+    @Test
+    public void loggerLevelDebugTest() throws SQLException {
+        driver.connect(CORRECT_URI + "?loggerLevel=DEBUG", new Properties());
+        Level expectedLevel = driver.getParentLogger().getLevel();
+        assertEquals(expectedLevel, Level.FINE);
+    }
+
+    @Test
+    public void loggerLevelTraceTest() throws SQLException {
+        driver.connect(CORRECT_URI + "?loggerLevel=TRACE", new Properties());
+        Level expectedLevel = driver.getParentLogger().getLevel();
+        assertEquals(expectedLevel, Level.FINEST);
+    }
+
+    @Test
+    public void loggerLevelWrongParamKeyIgnoredTest() throws SQLException {
+        driver.connect(CORRECT_URI + "?loggerWronKeyLevel=DEBUG", new Properties());
+        Level expectedLevel = driver.getParentLogger().getLevel();
+        assertEquals(expectedLevel, Level.OFF);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void loggerLevelUnsupportedLevel() throws SQLException {
+        driver.connect(CORRECT_URI + "?loggerLevel=UNSUPPORTED_LEVEL", new Properties());
     }
 }

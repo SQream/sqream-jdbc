@@ -1,9 +1,14 @@
 cache:
   paths:
 before_script:
+  - "cd /home/gitlab-runner/sqream-with-submodules/sqream"
+  - "git checkout develop"
+  - "git pull"
+  - "make -j7 all | tee /home/gitlab-runner/build_logs/${CI_COMMIT_REF_NAME}.log && echo $?" 
 tests_and_benchmark:
   script:
-    - "mvn package -DskipTests"
+    # "python3 test_all.py"
+    - "./tests/jdbc_java_native_api.py"  
   only:
     refs:
       - merge_requests

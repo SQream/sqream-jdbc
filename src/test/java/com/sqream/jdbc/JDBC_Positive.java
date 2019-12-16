@@ -122,11 +122,11 @@ public class JDBC_Positive {
 	
 	public boolean hundred_mil_fetch() throws SQLException {
 		
-		boolean a_ok = false;  // The test is visual, pass if ends
+		boolean a_ok = true;  // The test is visual, pass if ends
 		
 		conn = DriverManager.getConnection(url,"sqream","sqream");
 		
-		String sql = "create or replace table test_fetch (ints int)";
+		String sql = "create or replace table test_fetch (werdz text)";
 	    stmt = conn.createStatement();
 	    stmt.execute(sql);
 	    stmt.close();
@@ -134,9 +134,10 @@ public class JDBC_Positive {
 	    sql = "insert into test_fetch values (?)";
         ps = conn.prepareStatement(sql);
         int random_int = 8;
+        String random_text = "bla";
         int times = 100000000;  // Assuming chunk size is around 1 million, giving X10 more
         for (int i = 0; i < times; i++) {
-            ps.setInt(1, random_int);
+            ps.setString(1, random_text);
             ps.addBatch();
         }
         ps.executeBatch();
@@ -148,11 +149,14 @@ public class JDBC_Positive {
 	    rs = stmt.executeQuery(sql);
 	    
 	    while(rs.next()) { 
-	        rs.getInt(1);
+	    	String res = rs.getString(1);
+	        if (!res.equals(random_text)) {
+	        	print ("hundred mil expected result: " + random_text + " got: " + res);
+	        	a_ok = false;  
+	        }
+	        	
 	    }
 	    
-        a_ok = true;    
-        
 	    
 	    return a_ok;
 	}
@@ -244,7 +248,7 @@ public class JDBC_Positive {
         
         // Create table for test
         conn = DriverManager.getConnection(url,"sqream","sqream");
-        String sql = "create or replace table test_display (x nvarchar(11))";
+        String sql = "create or replace table test_display (x varchar(11))";
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
@@ -261,7 +265,7 @@ public class JDBC_Positive {
         if (rsmeta.getColumnDisplaySize(1) == 11)
             a_ok = true;    
         else
-        	print("nvarchar(11) display size should be 11 but got " +  rsmeta.getColumnDisplaySize(1));
+        	print("varchar(11) display size should be 11 but got " +  rsmeta.getColumnDisplaySize(1));
         
         return a_ok;
     }
@@ -404,7 +408,7 @@ public class JDBC_Positive {
     	if (params.getPrecision(1) != 1 || params.getPrecision(2) != 1 || params.getPrecision(3) != 2 || 
 			params.getPrecision(4) != 4 || params.getPrecision(5) != 8 || params.getPrecision(6) != 4 || 
 			params.getPrecision(7) != 8 || params.getPrecision(8) != 4 || params.getPrecision(9) != 8 || 
-			params.getPrecision(10) != 10 || params.getPrecision(11) != 40)
+			params.getPrecision(10) != 10 || params.getPrecision(11) == 0)
 		{
     		print ("Bad precision returned from parameter test:\n" + params.getPrecision(1) + '\n' + params.getPrecision(2) + '\n' + params.getPrecision(3) + '\n' + params.getPrecision(4) + '\n' + params.getPrecision(5) + '\n' + params.getPrecision(6) + '\n' + params.getPrecision(7) + '\n' + params.getPrecision(8) + '\n' + params.getPrecision(9) + '\n' + params.getPrecision(10) + '\n' + params.getPrecision(11)  );
         	a_ok = false;
@@ -1137,16 +1141,15 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
-        print ("Hundred Million fetch test -  - " + (pos_tests.hundred_mil_fetch() ? "OK" : "Fail"));
-        print ("Unused fetch test - " + (pos_tests.unused_fetch() ? "OK" : "Fail"));
-        //*
-        print ("Limited fetch test - " + (pos_tests.limited_fetch() ? "OK" : "Fail"));
         print ("Display size test - " + (pos_tests.display_size() ? "OK" : "Fail"));
         print ("parameter metadata test: " + (pos_tests.parameter_metadata() ? "OK" : "Fail"));
+        print ("Hundred Million fetch test -  - " + (pos_tests.hundred_mil_fetch() ? "OK" : "Fail"));
+        print ("timeZones test - " + (pos_tests.timeZones() ? "OK" : "Fail"));
+        print ("Unused fetch test - " + (pos_tests.unused_fetch() ? "OK" : "Fail"));
+        print ("Limited fetch test - " + (pos_tests.limited_fetch() ? "OK" : "Fail"));
         print ("logging is off test:" + (pos_tests.is_logging_off() ? "OK" : "Fail"));
         print ("boolean as string test - " + (pos_tests.bool_as_string() ? "OK" : "Fail"));
         print ("Cast test - " + (pos_tests.casted_gets() ? "OK" : "Fail"));
-        print ("timeZones test - " + (pos_tests.timeZones() ? "OK" : "Fail"));
         print ("getUDF test - " + (pos_tests.getUDF() ? "OK" : "Fail"));
         print ("isSigned test - " + (pos_tests.isSigned() ? "OK" : "Fail"));
         print ("Execute batch test - " + (pos_tests.execBatchRes() ? "OK" : "Fail"));

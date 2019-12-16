@@ -3,7 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sqream</groupId>
     <artifactId>sqream-jdbc</artifactId>
-    <version>3.1</version>
+    <version>3.1</version>  
+    <!-->Don't change version line from no. 6 as used by Jenkins<-->
     <name>SQream JDBC</name>
     <packaging>jar</packaging>
     <url>http://maven.apache.org</url>
@@ -57,7 +58,7 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
-            <!--plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.1</version>
@@ -78,7 +79,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin-->
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>

@@ -12,6 +12,14 @@ public class JsonParser {
     private static final String QUERY_TYPE = "queryType";
     private static final String QUERY_TYPE_NAMED = "queryTypeNamed";
 
+    public ConnectionStateDto toConnectionState(String body) {
+        JsonObject jsonObj = parseJson(body);
+        int connId = jsonObj.get("connectionId").asInt();
+        String varcharEncoding = jsonObj.getString("varcharEncoding", "ascii");
+        varcharEncoding = (varcharEncoding.contains("874"))? "cp874" : "ascii";
+        return new ConnectionStateDto(connId, varcharEncoding);
+    }
+
     public List<ColumnMetadataDto> toQueryTypeInput(String body) {
         return toQueryType(body, QUERY_TYPE);
     }

@@ -13,7 +13,6 @@ import com.eclipsesource.json.ParseException;
 import com.eclipsesource.json.WriterConfig;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonArray;
 import com.sqream.jdbc.connector.enums.StatementType;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -233,22 +232,22 @@ public class ConnectorImpl implements Connector {
         /* Request and get data from SQream following a SELECT query */
 
         // Send fetch request and get metadata on data to be received
-        JsonObject response_json = parseJson(messenger.fetch());
-        int new_rows_fetched = response_json.get("rows").asInt();
-        JsonArray fetch_sizes =   response_json.get("colSzs").asArray();  // Chronological sizes of all rows recieved, only needed for nvarchars
-        if (new_rows_fetched == 0) {
+
+        FetchMetadataDto fetchMeta = jsonParser.toFetchMetadata(messenger.fetch());
+
+        if (fetchMeta.getNewRowsFetched() == 0) {
             close();  // Auto closing statement if done fetching
-            return new_rows_fetched;
+            return fetchMeta.getNewRowsFetched();
         }
         // Initiate storage columns using the "colSzs" returned by SQream
         // All buffers in a single array to use SocketChannel's read(ByteBuffer[] dsts)
         int col_buf_size;
-        ByteBuffer[] fetch_buffers = new ByteBuffer[fetch_sizes.size()];
+        ByteBuffer[] fetch_buffers = new ByteBuffer[fetchMeta.colAmount()];
         colStorage.init(row_length);
 
-        for (int idx=0; idx < fetch_sizes.size(); idx++)
-            fetch_buffers[idx] = ByteBuffer.allocateDirect(fetch_sizes.get(idx).asInt()).order(ByteOrder.LITTLE_ENDIAN);
-
+        for (int i=0; i < fetchMeta.colAmount(); i++) {
+            fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);
+        }
         // Sort buffers to appropriate arrays (row_length determied during _query_type())
         for (int idx=0, buf_idx = 0; idx < row_length; idx++, buf_idx++) {
             if(colMetadata.isNullable(idx)) {
@@ -270,7 +269,7 @@ public class ConnectorImpl implements Connector {
         data_buffers.add(colStorage.getDataColumns());
         null_buffers.add(colStorage.getNullColumns());
         nvarc_len_buffers.add(colStorage.getNvarcLenColumns());
-        rows_per_batch.add(new_rows_fetched);
+        rows_per_batch.add(fetchMeta.getNewRowsFetched());
 
         // Initial naive implememntation - Get all socket data in advance
         int bytes_read = socket.getParseHeader();   // Get header out of the way
@@ -279,7 +278,7 @@ public class ConnectorImpl implements Connector {
             //Arrays.stream(fetch_buffers).forEach(fetched -> fetched.flip());
         }
 
-        return new_rows_fetched;  // counter nullified by next()
+        return fetchMeta.getNewRowsFetched();  // counter nullified by next()
     }
 
 
@@ -387,7 +386,7 @@ public class ConnectorImpl implements Connector {
         }
         openStatement = true;
         // Get statement ID, send prepareStatement and get response parameters
-        statementId = parseJson(messenger.getStatementId()).get("statementId").asInt();
+        statementId = jsonParser.toStatementId(messenger.getStatementId());
 
         // Generating a valid json string via external library
         JsonObject prepare_jsonify;

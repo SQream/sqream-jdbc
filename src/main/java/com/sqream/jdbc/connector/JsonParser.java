@@ -3,6 +3,7 @@ package com.sqream.jdbc.connector;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,21 @@ public class JsonParser {
 
     public List<ColumnMetadataDto> toQueryTypeOut(String body) {
         return toQueryType(body, QUERY_TYPE_NAMED);
+    }
+
+    public FetchMetadataDto toFetchMetadata(String body) {
+        JsonObject jsonObj = parseJson(body);
+        int newRowsFetched = jsonObj.get("rows").asInt();
+        JsonArray jsonSizes = jsonObj.get("colSzs").asArray();
+        int[] sizes = new int[jsonSizes.size()];
+        for (int i = 0; i < jsonSizes.size(); i++) {
+            sizes[i] = jsonSizes.get(i).asInt();
+        }
+        return new FetchMetadataDto(newRowsFetched, sizes);
+    }
+
+    public int toStatementId(String body) {
+        return parseJson(body).get("statementId").asInt();
     }
 
     private List<ColumnMetadataDto> toQueryType(String body, String type) {

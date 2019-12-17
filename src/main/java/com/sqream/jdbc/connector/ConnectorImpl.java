@@ -356,10 +356,9 @@ public class ConnectorImpl implements Connector {
         password = _password;
         service = _service;
 
-        JsonObject response_json = parseJson(messenger.connect(database, user, password, service));
-        connection_id = response_json.get("connectionId").asInt();
-        varchar_encoding = response_json.getString("varcharEncoding", "ascii");
-        varchar_encoding = (varchar_encoding.contains("874"))? "cp874" : "ascii";
+        ConnectionStateDto connState = jsonParser.toConnectionState(messenger.connect(database, user, password, service));
+        connection_id = connState.getConnectionId();
+        varchar_encoding = connState.getVarcharEncoding();
 
         return connection_id;
     }

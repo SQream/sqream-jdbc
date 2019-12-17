@@ -57,6 +57,7 @@ public class ConnectorImpl implements Connector {
     // Date/Time conversion related
     private static final ZoneId SYSTEM_TZ = ZoneId.systemDefault();
     private static final Charset UTF8 = StandardCharsets.UTF_8;
+    private static final String DENIED = "denied";
 
     private SQSocketConnector socket;
     private Messenger messenger;
@@ -81,6 +82,7 @@ public class ConnectorImpl implements Connector {
 
     private ColumnsMetadata colMetadata;
     private ColumnStorage colStorage;
+    private JsonParser jsonParser;
 
     private boolean openStatement = false;
 
@@ -115,6 +117,7 @@ public class ConnectorImpl implements Connector {
         this.messenger = new Messenger(socket);
         this.colMetadata = new ColumnsMetadata();
         this.colStorage = new ColumnStorage();
+        this.jsonParser = new JsonParser();
     }
 
     private void reconnectToNode() throws NoSuchAlgorithmException, IOException, KeyManagementException {
@@ -162,9 +165,9 @@ public class ConnectorImpl implements Connector {
 
     // ()  /* Unpack the json of column data arriving via queryType/(named). Called by prepare()  */
     //@SuppressWarnings("rawtypes") // "Map is a raw type" @ col_data = (Map)query_type.get(idx);
-    private void parseQueryType(JsonArray query_type) throws IOException, ScriptException{
+    private void parseQueryType(List<ColumnMetadataDto> queryType) throws IOException, ScriptException{
 
-        row_length = query_type.size();
+        row_length = queryType.size();
         if(row_length ==0) {
             return;
         }
@@ -174,20 +177,16 @@ public class ConnectorImpl implements Connector {
         col_calls = new int[row_length];
         // Parse the queryType json to get metadata for every column
         // An internal item looks like: {"isTrueVarChar":false,"nullable":true,"type":["ftInt",4,0]}
-        for(int idx=0; idx < row_length; idx++) {
+        for(int i=0; i < row_length; i++) {
             // Parse JSON to correct objects
-            JsonObject col_data = query_type.get(idx).asObject();
-            JsonArray col_type_data = col_data.get("type").asArray(); // type is a list of 3 items
+            ColumnMetadataDto colMetaDataDto = queryType.get(i);
+
+            if (!statement_type.equals(SELECT)) {
+                colMetaDataDto.setName(DENIED);
+            }
 
             // Assign data from parsed JSON objects to metadata arrays
-            colMetadata.setByIndex(
-                    idx,
-                    col_data.get("nullable").asBoolean(),
-                    col_data.get("isTrueVarChar").asBoolean(),
-                    statement_type.equals(SELECT) ? col_data.get("name").asString() : "denied",
-                    col_type_data.get(0).asString(),
-                    col_type_data.get(1).asInt()
-            );
+            colMetadata.setByIndex(i, colMetaDataDto);
         }
 
         // Create Storage for insert / select operations
@@ -433,11 +432,11 @@ public class ConnectorImpl implements Connector {
 
         // Getting query type manouver and setting the type of query
         messenger.execute();
-        JsonArray query_type =  parseJson(messenger.queryTypeInput()).get("queryType").asArray();
+        List<ColumnMetadataDto> queryType = jsonParser.toQueryTypeInput(messenger.queryTypeInput());
 
-        if (query_type.isEmpty()) {
-            query_type =  parseJson(messenger.queryTypeOut()).get("queryTypeNamed").asArray();
-            statement_type = query_type.isEmpty() ? DML : SELECT;
+        if (queryType.isEmpty()) {
+            queryType = jsonParser.toQueryTypeOut(messenger.queryTypeOut());
+            statement_type = queryType.isEmpty() ? DML : SELECT;
         }
         else {
             statement_type = INSERT;
@@ -445,7 +444,7 @@ public class ConnectorImpl implements Connector {
 
         // Select or Insert statement - parse queryType response for metadata
         if (!statement_type.equals(DML)) {
-            parseQueryType(query_type);
+            parseQueryType(queryType);
         }
         // First fetch on the house, auto close statement if no data returned
         if (statement_type.equals(SELECT)) {

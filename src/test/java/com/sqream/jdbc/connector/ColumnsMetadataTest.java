@@ -38,14 +38,7 @@ public class ColumnsMetadataTest {
             int curSize = 10 + i;
             boolean isNullable = i % 2 == 0;
             boolean isTruVarchar = i % 2 == 0;
-            metaData.setByIndex(
-                    i,
-                    isNullable,
-                    isTruVarchar,
-                    testName,
-                    testType,
-                    curSize
-            );
+            metaData.setByIndex(i, new ColumnMetadataDto(isTruVarchar, testName, isNullable, testType, curSize));
 
             EXPECTED_ALL_NAMES.add(testName);
             EXPECTED_ALL_TYPES.add(testType);

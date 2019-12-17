@@ -44,6 +44,22 @@ public class JsonParser {
         return parseJson(body).get("statementId").asInt();
     }
 
+    public StatementStateDto toStatementState(String body) throws ConnException {
+        JsonObject jsonObj = parseJson(body);
+
+        if(jsonObj.get("error") != null) {
+            throw new ConnException(jsonObj.get("error").asString());
+        }
+
+        int listenerId = jsonObj.get("listener_id").asInt();
+        int port = jsonObj.get("port").asInt();
+        int portSsl = jsonObj.get("port_ssl").asInt();
+        boolean reconnect = jsonObj.get("reconnect").asBoolean();
+        String ip = jsonObj.get("ip").asString();
+
+        return new StatementStateDto(listenerId, port, portSsl, reconnect, ip);
+    }
+
     private List<ColumnMetadataDto> toQueryType(String body, String type) {
         List<ColumnMetadataDto> resultList = new ArrayList<>();
         JsonArray jsonArray = parseJson(body).get(type).asArray();

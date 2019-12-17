@@ -405,26 +405,15 @@ public class ConnectorImpl implements Connector {
         //String prepareStr = (String) engine.eval("JSON.stringify({prepareStatement: statement, chunkSize: 0})");
         String prepareStr = prepare_jsonify.toString(WriterConfig.MINIMAL);
 
-        JsonObject response_json =  parseJson(socket.sendMessage(prepareStr, true));
+        StatementStateDto statementState = jsonParser.toStatementState(socket.sendMessage(prepareStr, true));
 
-        if(response_json.get("error") != null) {
-            throw new ConnException(response_json.get("error").asString());
-        }
-
-        // Parse response parameters
-        int listener_id =    response_json.get("listener_id").asInt();
-        int port =           response_json.get("port").asInt();
-        int port_ssl =       response_json.get("port_ssl").asInt();
-        boolean reconnect =      response_json.get("reconnect").asBoolean();
-        String ip =             response_json.get("ip").asString();
-
-        port = useSsl ? port_ssl : port;
+        int port = useSsl ? statementState.getPortSsl() : statementState.getPort();
         // Reconnect and reestablish statement if redirected by load balancer
-        if (reconnect) {
-            socket.reconnect(ip, port, useSsl);
+        if (statementState.isReconnect()) {
+            socket.reconnect(statementState.getIp(), port, useSsl);
 
             // Sending reconnect, reconstruct commands
-            messenger.reconnect(database, user, password, service, connection_id, listener_id);
+            messenger.reconnect(database, user, password, service, connection_id, statementState.getListenerId());
             messenger.isStatementReconstructed(statementId);
         }
 

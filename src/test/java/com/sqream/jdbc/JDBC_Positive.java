@@ -119,6 +119,61 @@ public class JDBC_Positive {
 		return Timestamp.valueOf(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
 	}
 	
+	public boolean stores_supports_functions() throws SQLException {
+	     
+		boolean a_ok = true;
+        
+        conn = DriverManager.getConnection(url,"sqream","sqream");
+        dbmeta = conn.getMetaData();
+        
+        if (dbmeta.storesLowerCaseIdentifiers() != true) {
+        	a_ok = false;
+		}
+        	
+        if (dbmeta.storesMixedCaseQuotedIdentifiers() != true) {
+        	a_ok = false;
+		}
+        
+        if (dbmeta.supportsMixedCaseQuotedIdentifiers() != true) {
+        	a_ok = false;
+		}
+           
+        
+        return a_ok;
+        
+    }
+	
+	
+	public boolean get_x_functions() throws SQLException {
+	     
+		boolean a_ok = true;
+        
+        conn = DriverManager.getConnection(url,"sqream","sqream");
+        dbmeta = conn.getMetaData();
+        
+        if (!dbmeta.getTimeDateFunctions().equals("curdate, curtime, dayname, dayofmonth, dayofweek, dayofyear, hour, minute, month, monthname, now, quarter, timestampadd, timestampdiff, second, week, year")) {
+        	print (dbmeta.getTimeDateFunctions());
+        	a_ok = false;
+		}
+        	
+    	if (!dbmeta.getStringFunctions().equals("CHAR_LENGTH, CHARINDEX, ||, ISPREFIXOF, LEFT, LEN, LIKE, LOWER, LTRIM, OCTET_LENGTH, PATINDEX, REGEXP_COUNT, REGEXP_INSTR, REGEXP_SUBSTR, REPLACE, REVERSE, RIGHT, RLIKE, RTRIM, SUBSTRING, TRIM, LOWER")) {
+    		print (dbmeta.getStringFunctions());
+    		a_ok = false;
+		}	
+		if (!dbmeta.getSystemFunctions().equals("explain, show_connections, show_locks, show_node_info, show_server_status, show_version, stop_statement")) {
+			print(dbmeta.getSystemFunctions());
+			a_ok = false;
+		}		
+		if (!dbmeta.getNumericFunctions().equals("ABS, ACOS, ASIN, ATAN, ATN2, CEILING, CEIL, COS, COT, CRC64, DEGREES, EXP, FLOOR, LOG, LOG10, MOD, %, PI, POWER, RADIANS, ROUND, SIN, SQRT, SQUARE, TAN, TRUNC")) {
+			print(dbmeta.getNumericFunctions());
+			a_ok = false;
+		}
+		
+		
+        return a_ok;
+        
+    }
+	
 	
 	public boolean hundred_mil_fetch() throws SQLException {
 		
@@ -1141,6 +1196,8 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        print ("Stores supports functions test - " + (pos_tests.stores_supports_functions() ? "OK" : "Fail"));
+        print ("Get X functions test - " + (pos_tests.get_x_functions() ? "OK" : "Fail"));
         print ("Display size test - " + (pos_tests.display_size() ? "OK" : "Fail"));
         print ("parameter metadata test: " + (pos_tests.parameter_metadata() ? "OK" : "Fail"));
         print ("Hundred Million fetch test -  - " + (pos_tests.hundred_mil_fetch() ? "OK" : "Fail"));

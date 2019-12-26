@@ -12,6 +12,7 @@ public class JsonParser {
 
     private static final String QUERY_TYPE = "queryType";
     private static final String QUERY_TYPE_NAMED = "queryTypeNamed";
+    private static final int TEXT_ITEM_SIZE = 100_000;
 
     public ConnectionStateDto toConnectionState(String body) {
         JsonObject jsonObj = parseJson(body);
@@ -80,7 +81,7 @@ public class JsonParser {
         boolean nullable = jsonObj.get("nullable").asBoolean();
         JsonArray type = jsonObj.get("type").asArray();
         String valueType = type.get(0).asString();
-        int valueSize = type.get(1).asInt();
+        int valueSize = type.get(1).asInt() != 0 ? type.get(1).asInt() : TEXT_ITEM_SIZE;
 
         return new ColumnMetadataDto(truVarchar, name, nullable, valueType, valueSize);
     }

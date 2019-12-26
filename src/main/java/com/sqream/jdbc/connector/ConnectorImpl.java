@@ -194,27 +194,14 @@ public class ConnectorImpl implements Connector {
             // Calculate number of rows to flush at
             int row_size = colMetadata.getSizesSum() + colMetadata.getAmountNullablleColumns();    // not calculating nvarc lengths for now
             rows_per_flush = ROWS_PER_FLUSH;
-            colStorage.init(row_length);
-            colStorage.setNullReseter(rows_per_flush);
+            colStorage.init(colMetadata, ROWS_PER_FLUSH);
 
             // Instantiate flags for managing network insert operations
             row_counter = 0;
             columns_set = new BitSet(row_length); // defaults to false
 
             // Initiate buffers for each column using the metadata
-            for (int idx=0; idx < row_length; idx++) {
-                colStorage.initDataColumns(idx, colMetadata.getSize(idx)*rows_per_flush);
-                if (colMetadata.isNullable(idx)) {
-                    colStorage.initNullColumns(idx, rows_per_flush);
-                } else {
-                    colStorage.resetNullColumns(idx);
-                }
-                if (colMetadata.isTruVarchar(idx)) {
-                    colStorage.initNvarcLenColumns(idx, rows_per_flush);
-                } else {
-                    colStorage.resetNvarcLenColumns(idx);
-                }
-            }
+            colStorage.initColumns();
         }
         if (statement_type.equals(SELECT)) {
 
@@ -243,7 +230,7 @@ public class ConnectorImpl implements Connector {
         // All buffers in a single array to use SocketChannel's read(ByteBuffer[] dsts)
         int col_buf_size;
         ByteBuffer[] fetch_buffers = new ByteBuffer[fetchMeta.colAmount()];
-        colStorage.init(row_length);
+        colStorage.init(colMetadata, ROWS_PER_FLUSH);
 
         for (int i=0; i < fetchMeta.colAmount(); i++) {
             fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);

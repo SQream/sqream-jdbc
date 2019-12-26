@@ -44,10 +44,10 @@ public class ColumnStorage {
         }
     }
 
-    public void reload(ByteBuffer[] dataBuffer, ByteBuffer[] nullBuffer, ByteBuffer[] nvarcLenBuffer) {
-        this.data_columns = dataBuffer;
-        this.null_columns = nullBuffer;
-        this.nvarc_len_columns = nvarcLenBuffer;
+    public void reload(BlockDto block) {
+        this.data_columns = block.getDataBuffers();
+        this.null_columns = block.getNullBuffers();
+        this.nvarc_len_columns = block.getNvarcLenBuffers();
     }
 
     private void initDataColumns(int index, int size) {

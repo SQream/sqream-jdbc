@@ -14,8 +14,10 @@ public class ColumnsMetadata {
     private BitSet colNullable;
     private BitSet colTvc;
     private HashMap<String, Integer> colNamesMap;
+    private int rowLength;
 
     public void init(int rowLength) {
+        this.rowLength = rowLength;
         colNames = new String[rowLength];
         colTypes = new String[rowLength];
         colSizes = new int[rowLength];
@@ -24,17 +26,21 @@ public class ColumnsMetadata {
         colNamesMap = new HashMap<>();
     }
 
-    public void setByIndex(int index, ColumnMetadataDto colMetaData) {
-        colNullable.set(index, colMetaData.isNullable());
-        colTvc.set(index, colMetaData.isTruVarchar());
-        colNames[index] = colMetaData.getName();
-        colTypes[index] = colMetaData.getValueType();
-        colSizes[index] = colMetaData.getValueSize();
+    public void setByIndex(int index, ColumnMetadataDto colMetadata) {
+        colNullable.set(index, colMetadata.isNullable());
+        colTvc.set(index, colMetadata.isTruVarchar());
+        colNames[index] = colMetadata.getName();
+        colTypes[index] = colMetadata.getValueType();
+        colSizes[index] = colMetadata.getValueSize();
         colNamesMap.put(colNames[index].toLowerCase(), index + 1);
     }
 
     String getName(int index) {
         return colNames[index];
+    }
+
+    int getRowLength() {
+        return rowLength;
     }
 
     String getType(int index) {

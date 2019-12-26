@@ -242,7 +242,7 @@ public class JDBC_Positive {
         
         // Create table for test
         conn = DriverManager.getConnection(url,"sqream","sqream");
-        String sql = "create or replace table test_display (x nvarchar(11))";
+        String sql = "create or replace table test_display (x varchar(11))";
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
@@ -259,7 +259,7 @@ public class JDBC_Positive {
         if (rsmeta.getColumnDisplaySize(1) == 11)
             a_ok = true;    
         else
-        	log.info("nvarchar(11) display size should be 11 but got " +  rsmeta.getColumnDisplaySize(1));
+        	log.info("varchar(11) display size should be 11 but got " +  rsmeta.getColumnDisplaySize(1));
 
         assertTrue(a_ok);
     }
@@ -397,8 +397,8 @@ public class JDBC_Positive {
     	//params.getParameterType(1)
     	if (params.getPrecision(1) != 1 || params.getPrecision(2) != 1 || params.getPrecision(3) != 2 || 
 			params.getPrecision(4) != 4 || params.getPrecision(5) != 8 || params.getPrecision(6) != 4 || 
-			params.getPrecision(7) != 8 || params.getPrecision(8) != 4 || params.getPrecision(9) != 8 || 
-			params.getPrecision(10) != 10 || params.getPrecision(11) != 40)
+			params.getPrecision(7) != 8 || params.getPrecision(8) != 4 || params.getPrecision(9) != 8 ||
+            params.getPrecision(10) != 10 || params.getPrecision(11) == 0)
 		{
     		log.info ("Bad precision returned from parameter test:\n" + params.getPrecision(1) + '\n' + params.getPrecision(2) + '\n' + params.getPrecision(3) + '\n' + params.getPrecision(4) + '\n' + params.getPrecision(5) + '\n' + params.getPrecision(6) + '\n' + params.getPrecision(7) + '\n' + params.getPrecision(8) + '\n' + params.getPrecision(9) + '\n' + params.getPrecision(10) + '\n' + params.getPrecision(11)  );
         	a_ok = false;

@@ -87,9 +87,7 @@ public class ConnectorImpl implements Connector {
     private boolean openStatement = false;
 
     // Column Storage
-    private List<ByteBuffer[]> data_buffers = new ArrayList<>();
-    private List<ByteBuffer[]> null_buffers = new ArrayList<>();
-    private List<ByteBuffer []> nvarc_len_buffers = new ArrayList<>();
+    private List<BlockDto> queue = new ArrayList<>();
     private List<Integer> rows_per_batch = new ArrayList<>();
     private int rows_in_current_batch;
     private int fetch_limit = 0;
@@ -105,6 +103,8 @@ public class ConnectorImpl implements Connector {
     // Managing stop_statement
     private AtomicBoolean IsCancelStatement = new AtomicBoolean(false);
 
+    private InsertValidator validator;
+
     public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         /* JSON parsing engine setup, initial socket connection */
         useSsl = ssl;
@@ -118,6 +118,7 @@ public class ConnectorImpl implements Connector {
         this.colMetadata = new ColumnsMetadata();
         this.colStorage = new ColumnStorage();
         this.jsonParser = new JsonParser();
+        this.validator = new InsertValidator(colMetadata);
     }
 
     private void reconnectToNode() throws NoSuchAlgorithmException, IOException, KeyManagementException {
@@ -253,9 +254,11 @@ public class ConnectorImpl implements Connector {
         }
 
         // Add buffers to buffer list
-        data_buffers.add(colStorage.getDataColumns());
-        null_buffers.add(colStorage.getNullColumns());
-        nvarc_len_buffers.add(colStorage.getNvarcLenColumns());
+        queue.add(new BlockDto(
+                colStorage.getDataColumns(),
+                colStorage.getNullColumns(),
+                colStorage.getNvarcLenColumns()));
+
         rows_per_batch.add(fetchMeta.getNewRowsFetched());
 
         // Initial naive implememntation - Get all socket data in advance
@@ -467,16 +470,10 @@ public class ConnectorImpl implements Connector {
 
                 // Set new active buffer to be reading data from
                 rows_in_current_batch = rows_per_batch.get(0);
-                colStorage.reload(
-                        data_buffers.get(0),
-                        null_buffers.get(0),
-                        nvarc_len_buffers.get(0)
-                );
+                colStorage.reload(queue.get(0));
 
                 // Remove active buffer from list
-                data_buffers.remove(0);
-                null_buffers.remove(0);
-                nvarc_len_buffers.remove(0);
+                queue.remove(0);
                 rows_per_batch.remove(0);
             }
             row_counter++;
@@ -789,19 +786,25 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean set_boolean(int col_num, Boolean value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
+    public boolean set_boolean(int colNum, Boolean value) throws ConnException {
+        validator.validateSet(colNum - 1, value, "ftBool");
         // Set actual value
-        colStorage.getDataColumns(col_num).put((byte)(_validate_set(col_num, value, "ftBool") ? 0 : (value == true) ? 1 : 0));
+        if (value != null) {
+            colStorage.getDataColumns(colNum - 1).put((byte) ((value) ? 1 : 0));
+        } else {
+            colStorage.getDataColumns(colNum - 1).put((byte) 0);
+            colStorage.getNullColumn(colNum - 1).put((byte) 1);
+        }
         // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(col_num);
+        columns_set.set(colNum - 1);
 
         return true;
     }
 
     @Override
     public boolean set_ubyte(int col_num, Byte value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
+        validator.validateSet(col_num, value, "ftUByte");
+        validator.validateUbyte(value);
         // Check the byte is positive
         if (value!= null && value < 0 )
             throw new ConnException("Trying to set a negative byte value on an unsigned byte column");
@@ -817,7 +820,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean set_short(int col_num, Short value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
+        validator.validateSet(col_num, value, "ftShort");
         // Set actual value
         colStorage.getDataColumns(col_num).putShort(_validate_set(col_num, value, "ftShort") ? 0 : value);
 
@@ -829,7 +832,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean set_int(int col_num, Integer value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
+        validator.validateSet(col_num, value, "ftInt");
         // Set actual value
         colStorage.getDataColumns(col_num).putInt(_validate_set(col_num, value, "ftInt") ? 0 : value);
 
@@ -841,7 +844,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean set_long(int col_num, Long value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
+        validator.validateSet(col_num, value, "ftLong");
         // Set actual value
         colStorage.getDataColumns(col_num).putLong(_validate_set(col_num, value, "ftLong") ? (long) 0 : value);
 
@@ -853,7 +856,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean set_float(int col_num, Float value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
+        validator.validateSet(col_num, value, "ftFloat");
         // Set actual value
         colStorage.getDataColumns(col_num).putFloat(_validate_set(col_num, value, "ftFloat") ? (float)0.0 : value);
 
@@ -865,7 +868,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean set_double(int col_num, Double value) throws ConnException {  col_num--;
-        _validate_index(col_num);
+        validator.validateSet(col_num, value, "ftDouble");
         // Set actual value
         colStorage.getDataColumns(col_num).putDouble(_validate_set(col_num, value, "ftDouble") ? 0.0 : value);
 
@@ -877,7 +880,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean set_varchar(int col_num, String value) throws ConnException, UnsupportedEncodingException {  col_num--;
-        _validate_index(col_num);
+        validator.validateSet(col_num, value, "ftVarchar");
         // Set actual value - padding with spaces to the left if needed
         string_bytes = _validate_set(col_num, value, "ftVarchar") ? "".getBytes(varchar_encoding) : value.getBytes(varchar_encoding);
         int colSize = colMetadata.getSize(col_num);
@@ -900,7 +903,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean set_nvarchar(int col_num, String value) throws ConnException, UnsupportedEncodingException {  col_num--;
-        _validate_index(col_num);
+        validator.validateSet(col_num, value, "ftBlob");
         // Convert string to bytes
         string_bytes = _validate_set(col_num, value, "ftBlob") ? "".getBytes(UTF8) : value.getBytes(UTF8);
 

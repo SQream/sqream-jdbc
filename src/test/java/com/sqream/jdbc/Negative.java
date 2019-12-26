@@ -67,7 +67,7 @@ public class Negative {
 		if (table_type == "bool")
 			try {
 				conn.set_ubyte(1, test_ubyte);
-			} catch (ConnException e) {
+			} catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
 					a_ok = true;
@@ -76,7 +76,7 @@ public class Negative {
 		else if (table_type == "tinyint") 
 			try {
 				conn.set_double(1, test_double);
-			}catch (ConnException e) {
+			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
 					a_ok = true;
@@ -85,7 +85,7 @@ public class Negative {
 		else if (table_type == "smallint") 
 			try {
 				conn.set_ubyte(1, test_ubyte);
-			}catch (ConnException e) {
+			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
 					a_ok = true;
@@ -94,7 +94,7 @@ public class Negative {
 		else if (table_type == "int") 
 			try {
 				conn.set_short(1, test_short);
-			}catch (ConnException e) {
+			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
 					a_ok = true;
@@ -103,7 +103,7 @@ public class Negative {
 		else if (table_type == "bigint")
 			try {
 				conn.set_int(1, test_int);
-			}catch (ConnException e) {
+			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
 					a_ok = true;
@@ -112,7 +112,7 @@ public class Negative {
 		else if (table_type == "real")
 			try {
 				conn.set_long(1, test_long);
-			}catch (ConnException e) {
+			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
 					a_ok = true;
@@ -121,7 +121,7 @@ public class Negative {
 		else if (table_type == "double")
 			try {
 			 	conn.set_float(1, test_real);
-			}catch (ConnException e) {
+			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
 					a_ok = true;
@@ -130,7 +130,7 @@ public class Negative {
 		else if (table_type == "varchar(100)")
 			try {
 				conn.set_nvarchar(1, test_nvarchar);
-			}catch (ConnException e) {
+			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
 					a_ok = true;
@@ -139,7 +139,7 @@ public class Negative {
 		else if (table_type == "nvarchar(100)")
 			try {
 				conn.set_varchar(1, test_varchar);
-			}catch (ConnException e) {
+			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
 					a_ok = true;
@@ -375,7 +375,7 @@ public class Negative {
 				try {
 					log.info("Attempted bad insert value: " + bad);
 					conn.set_ubyte(1, bad);
-				}catch (ConnException e) {
+				}catch (IllegalArgumentException e) {
 					if (e.getMessage().contains("Trying to set")) {
 						log.info("Correct error message on setting bad value");
 						a_ok = true;

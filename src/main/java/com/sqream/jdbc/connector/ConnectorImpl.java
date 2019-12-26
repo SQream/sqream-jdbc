@@ -74,7 +74,6 @@ public class ConnectorImpl implements Connector {
     // Binary data related
     private static final int FLUSH_SIZE = 10_000_000;
     int ROWS_PER_FLUSH = 100000;
-    int TEXT_ITEM_SIZE = (int) Math.pow(10, 5);
     private int rows_per_flush;
 
     // Column metadata

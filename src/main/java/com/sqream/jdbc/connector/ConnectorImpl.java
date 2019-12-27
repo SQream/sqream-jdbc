@@ -56,7 +56,6 @@ public class ConnectorImpl implements Connector {
     // Date/Time conversion related
     private static final ZoneId SYSTEM_TZ = ZoneId.systemDefault();
     private static final Charset UTF8 = StandardCharsets.UTF_8;
-    private static final String DENIED = "denied";
 
     private SQSocketConnector socket;
     private Messenger messenger;
@@ -166,9 +165,9 @@ public class ConnectorImpl implements Connector {
 
     // ()  /* Unpack the json of column data arriving via queryType/(named). Called by prepare()  */
     //@SuppressWarnings("rawtypes") // "Map is a raw type" @ col_data = (Map)query_type.get(idx);
-    private void parseQueryType(List<ColumnMetadataDto> queryType) throws IOException, ScriptException{
+    private void parseQueryType(List<ColumnMetadataDto> metadataDtos) throws IOException, ScriptException{
 
-        row_length = queryType.size();
+        row_length = metadataDtos.size();
         if(row_length ==0) {
             return;
         }
@@ -178,17 +177,7 @@ public class ConnectorImpl implements Connector {
         col_calls = new int[row_length];
         // Parse the queryType json to get metadata for every column
         // An internal item looks like: {"isTrueVarChar":false,"nullable":true,"type":["ftInt",4,0]}
-        for(int i=0; i < row_length; i++) {
-            // Parse JSON to correct objects
-            ColumnMetadataDto colMetaDataDto = queryType.get(i);
-
-            if (!statement_type.equals(SELECT)) {
-                colMetaDataDto.setName(DENIED);
-            }
-
-            // Assign data from parsed JSON objects to metadata arrays
-            colMetadata.setByIndex(i, colMetaDataDto);
-        }
+        colMetadata.set(metadataDtos, row_length, statement_type);
 
         // Create Storage for insert / select operations
         if (statement_type.equals(INSERT)) {
@@ -237,27 +226,10 @@ public class ConnectorImpl implements Connector {
             fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);
         }
         // Sort buffers to appropriate arrays (row_length determied during _query_type())
-        for (int idx=0, buf_idx = 0; idx < row_length; idx++, buf_idx++) {
-            if(colMetadata.isNullable(idx)) {
-                colStorage.setNullColumns(idx, fetch_buffers[buf_idx]);
-                buf_idx++;
-            } else {
-                colStorage.resetNullColumns(idx);
-            }
-            if(colMetadata.isTruVarchar(idx)) {
-                colStorage.setNvarcLenColumns(idx, fetch_buffers[buf_idx]);
-                buf_idx++;
-            } else {
-                colStorage.resetNvarcLenColumns(idx);
-            }
-            colStorage.setDataColumns(idx, fetch_buffers[buf_idx]);
-        }
+        colStorage.load(fetch_buffers, row_length);
 
         // Add buffers to buffer list
-        queue.add(new BlockDto(
-                colStorage.getDataColumns(),
-                colStorage.getNullColumns(),
-                colStorage.getNvarcLenColumns()));
+        queue.add(colStorage.getBlock());
 
         rows_per_batch.add(fetchMeta.getNewRowsFetched());
 
@@ -318,17 +290,21 @@ public class ConnectorImpl implements Connector {
         socket.sendData(header_buffer, false);
 
         // Send available columns
+        sendDataToSocket();
+        messenger.isPutted();
+        return row_counter;  // counter nullified by next()
+    }
+
+    private void sendDataToSocket() throws IOException, ConnException {
         for(int idx=0; idx < row_length; idx++) {
-            if(colStorage.getNullColumn(idx) != null) {
+            if(colMetadata.isNullable(idx)) {
                 socket.sendData((ByteBuffer) colStorage.getNullColumn(idx).position(row_counter), false);
             }
-            if(colStorage.getNvarcLenColumn(idx) != null) {
+            if(colMetadata.isTruVarchar(idx)) {
                 socket.sendData(colStorage.getNvarcLenColumn(idx), false);
             }
             socket.sendData(colStorage.getDataColumns(idx), false);
         }
-        messenger.isPutted();
-        return row_counter;  // counter nullified by next()
     }
 
     // User API Functions

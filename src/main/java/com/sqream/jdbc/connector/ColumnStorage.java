@@ -44,6 +44,25 @@ public class ColumnStorage {
         }
     }
 
+    public void load(ByteBuffer[] fetchBuffers, int rowLength) {
+        // Sort buffers to appropriate arrays (row_length determied during _query_type())
+        for (int idx=0, buf_idx = 0; idx < rowLength; idx++, buf_idx++) {
+            if(metadata.isNullable(idx)) {
+                setNullColumns(idx, fetchBuffers[buf_idx]);
+                buf_idx++;
+            } else {
+                resetNullColumns(idx);
+            }
+            if(metadata.isTruVarchar(idx)) {
+                setNvarcLenColumns(idx, fetchBuffers[buf_idx]);
+                buf_idx++;
+            } else {
+                resetNvarcLenColumns(idx);
+            }
+            setDataColumns(idx, fetchBuffers[buf_idx]);
+        }
+    }
+
     public void reload(BlockDto block) {
         this.data_columns = block.getDataBuffers();
         this.null_columns = block.getNullBuffers();
@@ -106,16 +125,8 @@ public class ColumnStorage {
         data_columns[index] = value;
     }
 
-    public ByteBuffer[] getDataColumns() {
-        return data_columns;
-    }
-
-    public ByteBuffer[] getNullColumns() {
-        return null_columns;
-    }
-
-    public ByteBuffer[] getNvarcLenColumns() {
-        return nvarc_len_columns;
+    public BlockDto getBlock() {
+        return new BlockDto(data_columns, null_columns, nvarc_len_columns);
     }
 
     public ByteBuffer getDataColumns(int index) {

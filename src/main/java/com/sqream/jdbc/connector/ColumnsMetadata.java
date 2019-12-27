@@ -1,12 +1,15 @@
 package com.sqream.jdbc.connector;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Set;
+import com.sqream.jdbc.connector.enums.StatementType;
+
+import java.util.*;
 import java.util.stream.IntStream;
 
+import static com.sqream.jdbc.connector.enums.StatementType.SELECT;
+
 public class ColumnsMetadata {
+
+    private static final String DENIED = "denied";
 
     private String[] colNames;
     private String[] colTypes;
@@ -33,6 +36,20 @@ public class ColumnsMetadata {
         colTypes[index] = colMetadata.getValueType();
         colSizes[index] = colMetadata.getValueSize();
         colNamesMap.put(colNames[index].toLowerCase(), index + 1);
+    }
+
+    public void set(List<ColumnMetadataDto> metadataDtos, int rowLength, StatementType statementType) {
+        for(int i=0; i < rowLength; i++) {
+            // Parse JSON to correct objects
+            ColumnMetadataDto colMetaDataDto = metadataDtos.get(i);
+
+            if (!statementType.equals(SELECT)) {
+                colMetaDataDto.setName(DENIED);
+            }
+
+            // Assign data from parsed JSON objects to metadata arrays
+            setByIndex(i, colMetaDataDto);
+        }
     }
 
     String getName(int index) {

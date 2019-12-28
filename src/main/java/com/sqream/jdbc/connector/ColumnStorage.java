@@ -12,9 +12,7 @@ public class ColumnStorage {
     private ColumnsMetadata metadata;
     private int blockSize;
 
-
-
-    public void init(ColumnsMetadata metadata, int blockSize) {
+    private void init(ColumnsMetadata metadata, int blockSize) {
         this.metadata = metadata;
         this.blockSize = blockSize;
         data_columns = new ByteBuffer[metadata.getRowLength()];
@@ -27,43 +25,45 @@ public class ColumnStorage {
         null_resetter = ByteBuffer.allocate(blockSize);
     }
 
-    public void initColumns() {
+    public void initColumns(ColumnsMetadata metadata, int blockSize) {
+        init(metadata, blockSize);
         // Initiate buffers for each column using the metadata
         for (int idx = 0; idx < metadata.getRowLength(); idx++) {
             initDataColumns(idx, metadata.getSize(idx) * blockSize);
             if (metadata.isNullable(idx)) {
                 initNullColumns(idx, blockSize);
             } else {
-                resetNullColumns(idx);
+                null_columns[idx] = null;
             }
             if (metadata.isTruVarchar(idx)) {
                 initNvarcLenColumns(idx, blockSize);
             } else {
-                resetNvarcLenColumns(idx);
+                nvarc_len_columns[idx] = null;
             }
         }
     }
 
-    public void load(ByteBuffer[] fetchBuffers, int rowLength) {
+    public void load(ByteBuffer[] fetchBuffers, ColumnsMetadata metadata, int blockSize) {
+        init(metadata, blockSize);
         // Sort buffers to appropriate arrays (row_length determied during _query_type())
-        for (int idx=0, buf_idx = 0; idx < rowLength; idx++, buf_idx++) {
+        for (int idx=0, buf_idx = 0; idx < metadata.getRowLength(); idx++, buf_idx++) {
             if(metadata.isNullable(idx)) {
-                setNullColumns(idx, fetchBuffers[buf_idx]);
+                null_columns[idx] = fetchBuffers[buf_idx];
                 buf_idx++;
             } else {
-                resetNullColumns(idx);
+                null_columns[idx] = null;
             }
             if(metadata.isTruVarchar(idx)) {
-                setNvarcLenColumns(idx, fetchBuffers[buf_idx]);
+                nvarc_len_columns[idx] = fetchBuffers[buf_idx];
                 buf_idx++;
             } else {
-                resetNvarcLenColumns(idx);
+                nvarc_len_columns[idx] = null;
             }
-            setDataColumns(idx, fetchBuffers[buf_idx]);
+            data_columns[idx] = fetchBuffers[buf_idx];
         }
     }
 
-    public void reload(BlockDto block) {
+    public void loadBlock(BlockDto block) {
         this.data_columns = block.getDataBuffers();
         this.null_columns = block.getNullBuffers();
         this.nvarc_len_columns = block.getNvarcLenBuffers();
@@ -77,16 +77,8 @@ public class ColumnStorage {
         null_columns[index] = ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
     }
 
-    public void resetNullColumns(int index) {
-        null_columns[index] = null;
-    }
-
     private void initNvarcLenColumns(int index, int size) {
         nvarc_len_columns[index] = ByteBuffer.allocateDirect(4 * size).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
-    public void resetNvarcLenColumns(int index) {
-        nvarc_len_columns[index] = null;
     }
 
     public void clearBuffers(int row_length) {
@@ -111,14 +103,6 @@ public class ColumnStorage {
             total_bytes += data_columns[idx].position();
         }
         return total_bytes;
-    }
-
-    public void setNullColumns(int index, ByteBuffer value) {
-        null_columns[index] = value;
-    }
-
-    public void setNvarcLenColumns(int index, ByteBuffer value) {
-        nvarc_len_columns[index] = value;
     }
 
     public void setDataColumns(int index, ByteBuffer value) {

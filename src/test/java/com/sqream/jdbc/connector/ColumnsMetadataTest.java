@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 
 public class ColumnsMetadataTest {
 
-    private ColumnsMetadata metaData;
+    private TableMetadata metaData;
     private static final int ROW_LENGTH = 5;
     private List<String> EXPECTED_ALL_NAMES;
     private List<String> EXPECTED_ALL_TYPES;
@@ -23,7 +23,7 @@ public class ColumnsMetadataTest {
 
     @Before
     public void setUp() {
-        metaData = new ColumnsMetadata();
+        metaData = new TableMetadata();
         EXPECTED_ALL_NAMES = new ArrayList<>(ROW_LENGTH);
         EXPECTED_ALL_TYPES = new ArrayList<>(ROW_LENGTH);
         EXPECTED_ALL_SIZES = new ArrayList<>(ROW_LENGTH);

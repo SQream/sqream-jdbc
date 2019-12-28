@@ -9,10 +9,10 @@ public class ColumnStorage {
     private ByteBuffer[] null_columns;
     private ByteBuffer[] nvarc_len_columns;
     private ByteBuffer null_resetter;
-    private ColumnsMetadata metadata;
+    private TableMetadata metadata;
     private int blockSize;
 
-    private void init(ColumnsMetadata metadata, int blockSize) {
+    private void init(TableMetadata metadata, int blockSize) {
         this.metadata = metadata;
         this.blockSize = blockSize;
         data_columns = new ByteBuffer[metadata.getRowLength()];
@@ -25,7 +25,7 @@ public class ColumnStorage {
         null_resetter = ByteBuffer.allocate(blockSize);
     }
 
-    public void initColumns(ColumnsMetadata metadata, int blockSize) {
+    public void initColumns(TableMetadata metadata, int blockSize) {
         init(metadata, blockSize);
         // Initiate buffers for each column using the metadata
         for (int idx = 0; idx < metadata.getRowLength(); idx++) {
@@ -43,7 +43,7 @@ public class ColumnStorage {
         }
     }
 
-    public void load(ByteBuffer[] fetchBuffers, ColumnsMetadata metadata, int blockSize) {
+    public void load(ByteBuffer[] fetchBuffers, TableMetadata metadata, int blockSize) {
         init(metadata, blockSize);
         // Sort buffers to appropriate arrays (row_length determied during _query_type())
         for (int idx=0, buf_idx = 0; idx < metadata.getRowLength(); idx++, buf_idx++) {

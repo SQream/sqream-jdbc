@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 
 import static com.sqream.jdbc.connector.enums.StatementType.SELECT;
 
-public class ColumnsMetadata {
+public class TableMetadata {
 
     private static final String DENIED = "denied";
 
@@ -38,16 +38,12 @@ public class ColumnsMetadata {
         colNamesMap.put(colNames[index].toLowerCase(), index + 1);
     }
 
-    public void set(List<ColumnMetadataDto> metadataDtos, int rowLength, StatementType statementType) {
-        for(int i=0; i < rowLength; i++) {
-            // Parse JSON to correct objects
+    public void set(List<ColumnMetadataDto> metadataDtos, StatementType statementType) {
+        for(int i=0; i < metadataDtos.size(); i++) {
             ColumnMetadataDto colMetaDataDto = metadataDtos.get(i);
-
             if (!statementType.equals(SELECT)) {
                 colMetaDataDto.setName(DENIED);
             }
-
-            // Assign data from parsed JSON objects to metadata arrays
             setByIndex(i, colMetaDataDto);
         }
     }

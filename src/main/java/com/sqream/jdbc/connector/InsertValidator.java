@@ -1,13 +1,12 @@
 package com.sqream.jdbc.connector;
 
-import java.sql.SQLOutput;
 import java.text.MessageFormat;
 
 public class InsertValidator {
 
-    private ColumnsMetadata metadata;
+    private TableMetadata metadata;
 
-    public InsertValidator(ColumnsMetadata metadata) {
+    public InsertValidator(TableMetadata metadata) {
         this.metadata = metadata;
     }
 

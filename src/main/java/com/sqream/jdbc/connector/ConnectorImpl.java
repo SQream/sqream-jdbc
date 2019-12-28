@@ -184,14 +184,13 @@ public class ConnectorImpl implements Connector {
             // Calculate number of rows to flush at
             int row_size = colMetadata.getSizesSum() + colMetadata.getAmountNullablleColumns();    // not calculating nvarc lengths for now
             rows_per_flush = ROWS_PER_FLUSH;
-            colStorage.init(colMetadata, ROWS_PER_FLUSH);
 
             // Instantiate flags for managing network insert operations
             row_counter = 0;
             columns_set = new BitSet(row_length); // defaults to false
 
             // Initiate buffers for each column using the metadata
-            colStorage.initColumns();
+            colStorage.initColumns(colMetadata, ROWS_PER_FLUSH);
         }
         if (statement_type.equals(SELECT)) {
 
@@ -220,13 +219,12 @@ public class ConnectorImpl implements Connector {
         // All buffers in a single array to use SocketChannel's read(ByteBuffer[] dsts)
         int col_buf_size;
         ByteBuffer[] fetch_buffers = new ByteBuffer[fetchMeta.colAmount()];
-        colStorage.init(colMetadata, ROWS_PER_FLUSH);
 
         for (int i=0; i < fetchMeta.colAmount(); i++) {
             fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);
         }
         // Sort buffers to appropriate arrays (row_length determied during _query_type())
-        colStorage.load(fetch_buffers, row_length);
+        colStorage.load(fetch_buffers, colMetadata, ROWS_PER_FLUSH);
 
         // Add buffers to buffer list
         queue.add(colStorage.getBlock());
@@ -446,7 +444,7 @@ public class ConnectorImpl implements Connector {
 
                 // Set new active buffer to be reading data from
                 rows_in_current_batch = rows_per_batch.get(0);
-                colStorage.reload(queue.get(0));
+                colStorage.loadBlock(queue.get(0));
 
                 // Remove active buffer from list
                 queue.remove(0);

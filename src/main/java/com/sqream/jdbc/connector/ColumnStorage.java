@@ -128,4 +128,65 @@ public class ColumnStorage {
     public boolean isValueNotNull(int colNum, int rowCounter) {
         return null_columns[colNum] == null || null_columns[colNum].get(rowCounter) == 0;
     }
+
+    public void setBoolean(int index, Boolean value) {
+        if (value != null) {
+            data_columns[index].put((byte) ((value) ? 1 : 0));
+        } else {
+            setAsNull(index);
+        }
+    }
+
+    public void setUbyte(int index, Byte value) {
+        if (value != null) {
+            data_columns[index].put(value);
+        } else {
+            setAsNull(index);
+        }
+    }
+
+    public void setShort(int index, Short value) {
+        if (value != null) {
+            data_columns[index].putShort(value);
+        } else {
+            setAsNull(index);
+        }
+    }
+
+    public void setInt(int index, Integer value) {
+        if (value != null) {
+            data_columns[index].putInt(value);
+        } else {
+            setAsNull(index);
+        }
+    }
+
+    public void setLong(int index, Long value) {
+        if (value != null) {
+            data_columns[index].putLong(value);
+        } else {
+            setAsNull(index);
+        }
+    }
+
+    public void setFloat(int index, Float value) {
+        if (value != null) {
+            data_columns[index].putFloat(value);
+        } else {
+            setAsNull(index);
+        }
+    }
+
+    public void setDouble(int index, Double value) {
+        if (value != null) {
+            data_columns[index].putDouble(value);
+        } else {
+            setAsNull(index);
+        }
+    }
+
+    private void setAsNull(int index) {
+        data_columns[index].put((byte) 0);
+        null_columns[index].put((byte) 1);
+    }
 }

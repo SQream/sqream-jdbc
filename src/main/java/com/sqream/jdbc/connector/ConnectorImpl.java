@@ -762,13 +762,26 @@ public class ConnectorImpl implements Connector {
     @Override
     public boolean set_boolean(int colNum, Boolean value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftBool");
-        // Set actual value
-        if (value != null) {
-            colStorage.getDataColumns(colNum - 1).put((byte) ((value) ? 1 : 0));
-        } else {
-            colStorage.getDataColumns(colNum - 1).put((byte) 0);
-            colStorage.getNullColumn(colNum - 1).put((byte) 1);
-        }
+        colStorage.setBoolean(colNum - 1, value);
+        // Mark column as set (BitSet at location col_num set to true
+        columns_set.set(colNum - 1);
+        return true;
+    }
+
+    @Override
+    public boolean set_ubyte(int colNum, Byte value) throws ConnException {
+        validator.validateSet(colNum - 1, value, "ftUByte");
+        validator.validateUbyte(value);
+        colStorage.setUbyte(colNum - 1, value);
+        // Mark column as set (BitSet at location col_num set to true
+        columns_set.set(colNum - 1);
+        return true;
+    }
+
+    @Override
+    public boolean set_short(int colNum, Short value) throws ConnException {
+        validator.validateSet(colNum - 1, value, "ftShort");
+        colStorage.setShort(colNum - 1, value);
         // Mark column as set (BitSet at location col_num set to true
         columns_set.set(colNum - 1);
 
@@ -776,79 +789,39 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean set_ubyte(int col_num, Byte value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        validator.validateSet(col_num, value, "ftUByte");
-        validator.validateUbyte(value);
-        // Check the byte is positive
-        if (value!= null && value < 0 )
-            throw new ConnException("Trying to set a negative byte value on an unsigned byte column");
-
-        // Set actual value - null or positive at this point
-        colStorage.getDataColumns(col_num).put(_validate_set(col_num, value, "ftUByte") ? 0 : value);
-
+    public boolean set_int(int colNum, Integer value) throws ConnException {
+        validator.validateSet(colNum - 1, value, "ftInt");
+        colStorage.setInt(colNum - 1, value);
         // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(col_num);
+        columns_set.set(colNum - 1);
+        return true;
+    }
+
+    @Override
+    public boolean set_long(int colNum, Long value) throws ConnException {
+        validator.validateSet(colNum - 1, value, "ftLong");
+        colStorage.setLong(colNum - 1, value);
+        // Mark column as set (BitSet at location col_num set to true
+        columns_set.set(colNum - 1);
 
         return true;
     }
 
     @Override
-    public boolean set_short(int col_num, Short value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        validator.validateSet(col_num, value, "ftShort");
-        // Set actual value
-        colStorage.getDataColumns(col_num).putShort(_validate_set(col_num, value, "ftShort") ? 0 : value);
-
+    public boolean set_float(int colNum, Float value) throws ConnException {
+        validator.validateSet(colNum - 1, value, "ftFloat");
+        colStorage.setFloat(colNum - 1, value);
         // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(col_num);
-
+        columns_set.set(colNum - 1);
         return true;
     }
 
     @Override
-    public boolean set_int(int col_num, Integer value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        validator.validateSet(col_num, value, "ftInt");
-        // Set actual value
-        colStorage.getDataColumns(col_num).putInt(_validate_set(col_num, value, "ftInt") ? 0 : value);
-
-        // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(col_num);
-
-        return true;
-    }
-
-    @Override
-    public boolean set_long(int col_num, Long value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        validator.validateSet(col_num, value, "ftLong");
-        // Set actual value
-        colStorage.getDataColumns(col_num).putLong(_validate_set(col_num, value, "ftLong") ? (long) 0 : value);
-
-        // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(col_num);
-
-        return true;
-    }
-
-    @Override
-    public boolean set_float(int col_num, Float value) throws ConnException {   col_num--;  // set / get work with starting index 1
-        validator.validateSet(col_num, value, "ftFloat");
-        // Set actual value
-        colStorage.getDataColumns(col_num).putFloat(_validate_set(col_num, value, "ftFloat") ? (float)0.0 : value);
-
-        // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(col_num);
-
-        return true;
-    }
-
-    @Override
-    public boolean set_double(int col_num, Double value) throws ConnException {  col_num--;
-        validator.validateSet(col_num, value, "ftDouble");
-        // Set actual value
-        colStorage.getDataColumns(col_num).putDouble(_validate_set(col_num, value, "ftDouble") ? 0.0 : value);
-
+    public boolean set_double(int colNum, Double value) throws ConnException {
+        validator.validateSet(colNum - 1, value, "ftDouble");
+        colStorage.setDouble(colNum - 1, value);
         // Mark column as set
-        columns_set.set(col_num);
-
+        columns_set.set(colNum - 1);
         return true;
     }
 

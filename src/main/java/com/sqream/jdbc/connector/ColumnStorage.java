@@ -2,10 +2,11 @@ package com.sqream.jdbc.connector;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 public class ColumnStorage {
 
-    private ByteBuffer[] data_columns;
+    private ByteBuffer[] dataColumns;
     private ByteBuffer[] null_columns;
     private ByteBuffer[] nvarc_len_columns;
     private ByteBuffer null_resetter;
@@ -15,7 +16,7 @@ public class ColumnStorage {
     private void init(TableMetadata metadata, int blockSize) {
         this.metadata = metadata;
         this.blockSize = blockSize;
-        data_columns = new ByteBuffer[metadata.getRowLength()];
+        dataColumns = new ByteBuffer[metadata.getRowLength()];
         null_columns = new ByteBuffer[metadata.getRowLength()];
         nvarc_len_columns = new ByteBuffer[metadata.getRowLength()];
         setNullResetter();
@@ -59,18 +60,18 @@ public class ColumnStorage {
             } else {
                 nvarc_len_columns[idx] = null;
             }
-            data_columns[idx] = fetchBuffers[buf_idx];
+            dataColumns[idx] = fetchBuffers[buf_idx];
         }
     }
 
     public void loadBlock(BlockDto block) {
-        this.data_columns = block.getDataBuffers();
+        this.dataColumns = block.getDataBuffers();
         this.null_columns = block.getNullBuffers();
         this.nvarc_len_columns = block.getNvarcLenBuffers();
     }
 
     private void initDataColumns(int index, int size) {
-        data_columns[index] = ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
+        dataColumns[index] = ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
     }
 
     private void initNullColumns(int index, int size) {
@@ -91,7 +92,7 @@ public class ColumnStorage {
             }
             if(nvarc_len_columns[idx] != null)
                 nvarc_len_columns[idx].clear();
-            data_columns[idx].clear();
+            dataColumns[idx].clear();
         }
     }
 
@@ -100,21 +101,21 @@ public class ColumnStorage {
         for(int idx=0; idx < row_length; idx++) {
             total_bytes += (null_columns[idx] != null) ? row_counter : 0;
             total_bytes += (nvarc_len_columns[idx] != null) ? 4 * row_counter : 0;
-            total_bytes += data_columns[idx].position();
+            total_bytes += dataColumns[idx].position();
         }
         return total_bytes;
     }
 
     public void setDataColumns(int index, ByteBuffer value) {
-        data_columns[index] = value;
+        dataColumns[index] = value;
     }
 
     public BlockDto getBlock() {
-        return new BlockDto(data_columns, null_columns, nvarc_len_columns);
+        return new BlockDto(dataColumns, null_columns, nvarc_len_columns);
     }
 
     public ByteBuffer getDataColumns(int index) {
-        return data_columns[index];
+        return dataColumns[index];
     }
 
     public ByteBuffer getNullColumn(int index) {
@@ -131,62 +132,80 @@ public class ColumnStorage {
 
     public void setBoolean(int index, Boolean value) {
         if (value != null) {
-            data_columns[index].put((byte) ((value) ? 1 : 0));
+            dataColumns[index].put((byte) ((value) ? 1 : 0));
         } else {
-            setAsNull(index);
+            dataColumns[index].put((byte) 0);
+            markAsNull(index);
         }
     }
 
     public void setUbyte(int index, Byte value) {
         if (value != null) {
-            data_columns[index].put(value);
+            dataColumns[index].put(value);
         } else {
-            setAsNull(index);
+            dataColumns[index].put((byte) 0);
+            markAsNull(index);
         }
     }
 
     public void setShort(int index, Short value) {
         if (value != null) {
-            data_columns[index].putShort(value);
+            dataColumns[index].putShort(value);
         } else {
-            setAsNull(index);
+            dataColumns[index].putShort((short) 0);
+            markAsNull(index);
         }
     }
 
     public void setInt(int index, Integer value) {
         if (value != null) {
-            data_columns[index].putInt(value);
+            dataColumns[index].putInt(value);
         } else {
-            setAsNull(index);
+            dataColumns[index].putInt(0);
+            markAsNull(index);
         }
     }
 
     public void setLong(int index, Long value) {
         if (value != null) {
-            data_columns[index].putLong(value);
+            dataColumns[index].putLong(value);
         } else {
-            setAsNull(index);
+            dataColumns[index].putLong(0L);
+            markAsNull(index);
         }
     }
 
     public void setFloat(int index, Float value) {
         if (value != null) {
-            data_columns[index].putFloat(value);
+            dataColumns[index].putFloat(value);
         } else {
-            setAsNull(index);
+            dataColumns[index].putFloat(0f);
+            markAsNull(index);
         }
     }
 
     public void setDouble(int index, Double value) {
         if (value != null) {
-            data_columns[index].putDouble(value);
+            dataColumns[index].putDouble(value);
         } else {
-            setAsNull(index);
+            dataColumns[index].putDouble(0d);
+            markAsNull(index);
         }
     }
 
-    private void setAsNull(int index) {
-        data_columns[index].put((byte) 0);
+    public void setVarchar(int index, byte[] stringBytes, String originalString) {
+        // Generate missing spaces to fill up to size
+        byte [] spaces = new byte[metadata.getSize(index) - stringBytes.length];
+        Arrays.fill(spaces, (byte) 32);  // ascii value of space
+        // Set value and added spaces if needed
+        dataColumns[index].put(stringBytes);
+        dataColumns[index].put(spaces);
+        if (originalString == null) {
+            markAsNull(index);
+        }
+    }
+
+    private void markAsNull(int index) {
         null_columns[index].put((byte) 1);
     }
 }

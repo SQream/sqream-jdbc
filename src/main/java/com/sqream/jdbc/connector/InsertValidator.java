@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector;
 
+import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 
 public class InsertValidator {
@@ -43,6 +44,12 @@ public class InsertValidator {
     public void validateUbyte(Byte value) {
         if (value != null && value < 0) {
             throw new IllegalArgumentException("Trying to set a negative byte value on an unsigned byte column");
+        }
+    }
+
+    public void validateVarchar(int index, int byteArraySize) {
+        if (byteArraySize > metadata.getSize(index)) {
+            throw new IllegalArgumentException("Trying to set string of size " + byteArraySize + " on column of size " + metadata.getSize(index));
         }
     }
 }

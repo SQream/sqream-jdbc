@@ -803,7 +803,6 @@ public class ConnectorImpl implements Connector {
         colStorage.setLong(colNum - 1, value);
         // Mark column as set (BitSet at location col_num set to true
         columns_set.set(colNum - 1);
-
         return true;
     }
 
@@ -826,25 +825,13 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean set_varchar(int col_num, String value) throws ConnException, UnsupportedEncodingException {  col_num--;
-        validator.validateSet(col_num, value, "ftVarchar");
-        // Set actual value - padding with spaces to the left if needed
-        string_bytes = _validate_set(col_num, value, "ftVarchar") ? "".getBytes(varchar_encoding) : value.getBytes(varchar_encoding);
-        int colSize = tableMetadata.getSize(col_num);
-        if (string_bytes.length > colSize)
-            throw new ConnException("Trying to set string of size " + string_bytes.length + " on column of size " +  colSize);
-        // Generate missing spaces to fill up to size
-        byte [] spaces = new byte[colSize - string_bytes.length];
-        Arrays.fill(spaces, (byte) 32);  // ascii value of space
-
-        // Set value and added spaces if needed
-        colStorage.getDataColumns(col_num).put(string_bytes);
-        colStorage.getDataColumns(col_num).put(spaces);
-        // data_columns[col_num].put(String.format("%-" + col_sizes[col_num] + "s", value).getBytes());
-
+    public boolean set_varchar(int colNum, String value) throws ConnException, UnsupportedEncodingException {
+        validator.validateSet(colNum - 1, value, "ftVarchar");
+        // converting to byte array before validation
+        byte[] stringBytes = value == null ? "".getBytes(varchar_encoding) : value.getBytes(varchar_encoding);
+        validator.validateVarchar(colNum - 1, stringBytes.length);
         // Mark column as set
-        columns_set.set(col_num);
-
+        columns_set.set(colNum);
         return true;
     }
 

@@ -27,10 +27,6 @@ public class ColumnStorage {
         setNullResetter();
     }
 
-    private void setNullResetter() {
-        null_resetter = ByteBuffer.allocate(blockSize);
-    }
-
     public void initColumns(TableMetadata metadata, int blockSize) {
         init(metadata, blockSize);
         // Initiate buffers for each column using the metadata
@@ -75,18 +71,6 @@ public class ColumnStorage {
         this.nvarc_len_columns = block.getNvarcLenBuffers();
     }
 
-    private void initDataColumns(int index, int size) {
-        dataColumns[index] = ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
-    private void initNullColumns(int index, int size) {
-        null_columns[index] = ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
-    private void initNvarcLenColumns(int index, int size) {
-        nvarc_len_columns[index] = ByteBuffer.allocateDirect(4 * size).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
     public void clearBuffers(int row_length) {
         for(int idx=0; idx < row_length; idx++) {
             if (null_columns[idx] != null) {
@@ -109,10 +93,6 @@ public class ColumnStorage {
             total_bytes += dataColumns[idx].position();
         }
         return total_bytes;
-    }
-
-    public void setDataColumns(int index, ByteBuffer value) {
-        dataColumns[index] = value;
     }
 
     public BlockDto getBlock() {
@@ -243,6 +223,22 @@ public class ColumnStorage {
         }
     }
 
+    private void setNullResetter() {
+        null_resetter = ByteBuffer.allocate(blockSize);
+    }
+
+    private void initDataColumns(int index, int size) {
+        dataColumns[index] = ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
+    }
+
+    private void initNullColumns(int index, int size) {
+        null_columns[index] = ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
+    }
+
+    private void initNvarcLenColumns(int index, int size) {
+        nvarc_len_columns[index] = ByteBuffer.allocateDirect(4 * size).order(ByteOrder.LITTLE_ENDIAN);
+    }
+
     private void markAsNull(int index) {
         null_columns[index].put((byte) 1);
     }
@@ -255,7 +251,7 @@ public class ColumnStorage {
     }
 
     //FIXME: Alex K 29.12.19 Check why ZoneId is not used. Cover with tests or remove if it's not necessary.
-    public static int dateToInt(Date d ,ZoneId zone) {
+    private static int dateToInt(Date d ,ZoneId zone) {
 
         // Consider a different implementation here
         if (d == null) {
@@ -273,7 +269,7 @@ public class ColumnStorage {
         return (365 * year + year / 4 - year / 100 + year / 400 + (month * 306 + 5) / 10 + (day - 1));
     }
 
-    public static long dtToLong(Timestamp ts, ZoneId zone) {  // ZonedDateTime
+    private static long dtToLong(Timestamp ts, ZoneId zone) {  // ZonedDateTime
 
         if (ts == null)
             return 0;

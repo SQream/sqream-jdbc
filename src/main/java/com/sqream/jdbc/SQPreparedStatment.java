@@ -210,7 +210,7 @@ public class SQPreparedStatment implements PreparedStatement {
     public void setDate(int colNum, Date date) throws SQLException {
         try {
 			Client.set_date(colNum, date);
-		} catch (UnsupportedEncodingException | ConnException e) {
+		} catch (IllegalArgumentException | UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e.getMessage());
 		} setCounter++; 
     }

@@ -830,73 +830,48 @@ public class ConnectorImpl implements Connector {
         // converting to byte array before validation
         byte[] stringBytes = value == null ? "".getBytes(varchar_encoding) : value.getBytes(varchar_encoding);
         validator.validateVarchar(colNum - 1, stringBytes.length);
+        colStorage.setVarchar(colNum - 1, stringBytes, value);
         // Mark column as set
-        columns_set.set(colNum);
+        columns_set.set(colNum -1);
         return true;
     }
 
     @Override
-    public boolean set_nvarchar(int col_num, String value) throws ConnException, UnsupportedEncodingException {  col_num--;
-        validator.validateSet(col_num, value, "ftBlob");
+    public boolean set_nvarchar(int colNum, String value) throws ConnException, UnsupportedEncodingException {
+        validator.validateSet(colNum - 1, value, "ftBlob");
         // Convert string to bytes
-        string_bytes = _validate_set(col_num, value, "ftBlob") ? "".getBytes(UTF8) : value.getBytes(UTF8);
-
-        // Add string length to lengths column
-        colStorage.getNvarcLenColumn(col_num).putInt(string_bytes.length);
-
-        // Set actual value
-        if (string_bytes.length > colStorage.getDataColumns(col_num).remaining()) {
-            ByteBuffer new_text_buf = ByteBuffer.allocateDirect((colStorage.getDataColumns(col_num).capacity() +
-                    string_bytes.length) * 2).order(ByteOrder.LITTLE_ENDIAN);
-            new_text_buf.put(colStorage.getDataColumns(col_num));
-            colStorage.setDataColumns(col_num, new_text_buf);
-        }
-        colStorage.getDataColumns(col_num).put(string_bytes);
-
+        byte[] stringBytes = value == null ? "".getBytes(UTF8) : value.getBytes(UTF8);
+        colStorage.setNvarchar(colNum - 1, stringBytes, value);
         // Mark column as set
-        columns_set.set(col_num);
-
+        columns_set.set(colNum - 1);
         return true;
     }
 
     @Override
-    public boolean set_date(int col_num, Date date, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
-        _validate_index(col_num);
-
-        // Set actual value
-        colStorage.getDataColumns(col_num).putInt(_validate_set(col_num, date, "ftDate") ? 0 : dateToInt(date, zone));
-
+    public boolean set_date(int colNum, Date date, ZoneId zone) throws ConnException, UnsupportedEncodingException {
+        validator.validateSet(colNum - 1, date, "ftDate");
+        colStorage.setDate(colNum - 1, date, zone);
         // Mark column as set
-        columns_set.set(col_num);
-
+        columns_set.set(colNum - 1);
         return true;
     }
 
     @Override
-    public boolean set_datetime(int col_num, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException {  col_num--;
-        _validate_index(col_num);
-
-        //ZonedDateTime dt = ts.toLocalDateTime().atZone(zone);
-        // ZonedDateTime dt = ts.toInstant().atZone(zone);
-
-        // Set actual value
-        colStorage.getDataColumns(col_num).putLong(_validate_set(col_num, ts, "ftDateTime") ? 0 : dtToLong(ts, zone));
-
+    public boolean set_datetime(int colNum, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException {
+        validator.validateSet(colNum - 1, ts, "ftDateTime");
+        colStorage.setDatetime(colNum - 1, ts, zone);
         // Mark column as set
-        columns_set.set(col_num);
-
+        columns_set.set(colNum - 1);
         return true;
     }
 
     @Override
     public boolean set_date(int col_num, Date value) throws ConnException, UnsupportedEncodingException {
-
         return set_date(col_num, value, SYSTEM_TZ); // system_tz, UTC
     }
 
     @Override
     public boolean set_datetime(int col_num, Timestamp value) throws ConnException, UnsupportedEncodingException {
-
         return set_datetime(col_num, value, SYSTEM_TZ); // system_tz, UTC
     }
 

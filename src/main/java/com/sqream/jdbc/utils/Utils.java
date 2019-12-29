@@ -37,50 +37,6 @@ public class Utils {
         return new Date(Timestamp.from(local_dt.atZone(zone).toInstant()).getTime());
     }
 
-    public static int dateToInt(Date d ,ZoneId zone) {
-
-        // Consider a different implementation here
-        if (d == null) {
-            return 0;
-        }
-
-        LocalDate date = d.toLocalDate();
-        int year = date.getYear();
-        int month = date.getMonthValue();
-        int day   = date.getDayOfMonth();
-
-        month = (month + 9) % 12;
-        year = year - month / 10;
-
-        return (365 * year + year / 4 - year / 100 + year / 400 + (month * 306 + 5) / 10 + (day - 1));
-    }
-
-    public static long dtToLong(Timestamp ts, ZoneId zone) {  // ZonedDateTime
-
-        if (ts == null)
-            return 0;
-
-        LocalDateTime datetime = ts.toInstant().atZone(zone).toLocalDateTime();
-
-        //LocalDateTime datetime = ts.toLocalDateTime();
-        int year  = datetime.getYear();
-        int month = datetime.getMonthValue();
-        int day   = datetime.getDayOfMonth();
-
-        month = (month + 9) % 12;
-        year = year - month / 10;
-
-        int date_as_int = (365 * year + year / 4 - year / 100 + year / 400 + (month * 306 + 5) / 10 + (day - 1));
-
-        int time_as_int =  datetime.getHour() * 3600000;
-        time_as_int += datetime.getMinute() * 60000;
-        time_as_int += datetime.getSecond() * 1000;
-        time_as_int += datetime.getNano() / 1000000;
-
-
-        return (((long) date_as_int) << 32) | (time_as_int & 0xffffffffL);
-    }
-
     public static Timestamp longToDt(long dt_as_long, ZoneId zone) {
 
         int date_as_int = (int)(dt_as_long >> 32);

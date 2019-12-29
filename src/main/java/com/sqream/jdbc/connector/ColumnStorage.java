@@ -2,6 +2,11 @@ package com.sqream.jdbc.connector;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 
 public class ColumnStorage {
@@ -200,12 +205,97 @@ public class ColumnStorage {
         // Set value and added spaces if needed
         dataColumns[index].put(stringBytes);
         dataColumns[index].put(spaces);
+
         if (originalString == null) {
+            markAsNull(index);
+        }
+    }
+
+    public void setNvarchar(int index, byte[] stringBytes, String originalString) {
+        // Add string length to lengths column
+        nvarc_len_columns[index].putInt(stringBytes.length);
+        // Set actual value
+        if (stringBytes.length > dataColumns[index].remaining()) {
+            increaseBuffer(index, stringBytes.length);
+        }
+        dataColumns[index].put(stringBytes);
+
+        if (originalString == null) {
+            markAsNull(index);
+        }
+    }
+
+    public void setDate(int index, Date date, ZoneId zone) {
+        if (date != null) {
+            dataColumns[index].putInt(dateToInt(date, zone));
+        } else {
+            dataColumns[index].putInt(0);
+            markAsNull(index);
+        }
+    }
+
+    public void setDatetime(int index, Timestamp timestamp, ZoneId zone) {
+        if (timestamp != null) {
+            dataColumns[index].putLong(dtToLong(timestamp, zone));
+        } else {
+            dataColumns[index].putLong(0L);
             markAsNull(index);
         }
     }
 
     private void markAsNull(int index) {
         null_columns[index].put((byte) 1);
+    }
+
+    private void increaseBuffer(int index, int puttingStringLength) {
+        ByteBuffer new_text_buf = ByteBuffer.allocateDirect((dataColumns[index].capacity() + puttingStringLength) * 2)
+                .order(ByteOrder.LITTLE_ENDIAN);
+        new_text_buf.put(dataColumns[index]);
+        dataColumns[index] = new_text_buf;
+    }
+
+    //FIXME: Alex K 29.12.19 Check why ZoneId is not used. Cover with tests or remove if it's not necessary.
+    public static int dateToInt(Date d ,ZoneId zone) {
+
+        // Consider a different implementation here
+        if (d == null) {
+            return 0;
+        }
+
+        LocalDate date = d.toLocalDate();
+        int year = date.getYear();
+        int month = date.getMonthValue();
+        int day   = date.getDayOfMonth();
+
+        month = (month + 9) % 12;
+        year = year - month / 10;
+
+        return (365 * year + year / 4 - year / 100 + year / 400 + (month * 306 + 5) / 10 + (day - 1));
+    }
+
+    public static long dtToLong(Timestamp ts, ZoneId zone) {  // ZonedDateTime
+
+        if (ts == null)
+            return 0;
+
+        LocalDateTime datetime = ts.toInstant().atZone(zone).toLocalDateTime();
+
+        //LocalDateTime datetime = ts.toLocalDateTime();
+        int year  = datetime.getYear();
+        int month = datetime.getMonthValue();
+        int day   = datetime.getDayOfMonth();
+
+        month = (month + 9) % 12;
+        year = year - month / 10;
+
+        int date_as_int = (365 * year + year / 4 - year / 100 + year / 400 + (month * 306 + 5) / 10 + (day - 1));
+
+        int time_as_int =  datetime.getHour() * 3600000;
+        time_as_int += datetime.getMinute() * 60000;
+        time_as_int += datetime.getSecond() * 1000;
+        time_as_int += datetime.getNano() / 1000000;
+
+
+        return (((long) date_as_int) << 32) | (time_as_int & 0xffffffffL);
     }
 }

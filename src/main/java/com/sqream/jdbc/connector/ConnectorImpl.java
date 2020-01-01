@@ -92,7 +92,7 @@ public class ConnectorImpl implements Connector {
     private int fetch_limit = 0;
 
     // Get / Set related
-    private int row_counter, total_row_counter;
+    private int rowCounter, totalRowCounter;
     private BitSet columns_set;
 
     private byte[] string_bytes; // Storing converted string to be set
@@ -186,7 +186,7 @@ public class ConnectorImpl implements Connector {
             rows_per_flush = ROWS_PER_FLUSH;
 
             // Instantiate flags for managing network insert operations
-            row_counter = 0;
+            rowCounter = 0;
             columns_set = new BitSet(row_length); // defaults to false
 
             // Initiate buffers for each column using the metadata
@@ -195,8 +195,8 @@ public class ConnectorImpl implements Connector {
         if (statement_type.equals(SELECT)) {
 
             // Instantiate select counters, Initial storage same as insert
-            row_counter = -1;
-            total_row_counter = 0;
+            rowCounter = -1;
+            totalRowCounter = 0;
             int total_rows_fetched = -1;
 
             // Get the maximal string size (or size fo another type if strings are very small)
@@ -296,7 +296,7 @@ public class ConnectorImpl implements Connector {
     private void sendDataToSocket() throws IOException, ConnException {
         for(int idx=0; idx < row_length; idx++) {
             if(tableMetadata.isNullable(idx)) {
-                socket.sendData((ByteBuffer) colStorage.getNullColumn(idx).position(row_counter), false);
+                socket.sendData((ByteBuffer) colStorage.getNullColumn(idx).position(rowCounter), false);
             }
             if(tableMetadata.isTruVarchar(idx)) {
                 socket.sendData(colStorage.getNvarcLenColumn(idx), false);
@@ -420,25 +420,25 @@ public class ConnectorImpl implements Connector {
 
             // Nullify column flags and update counter
             columns_set.clear();
-            row_counter++;
+            rowCounter++;
 
             // Flush and clean if needed
-            if (row_counter == rows_per_flush) {
-                _flush(row_counter);
+            if (rowCounter == rows_per_flush) {
+                _flush(rowCounter);
 
                 // After flush, clear row counter and all buffers
-                row_counter = 0;
+                rowCounter = 0;
                 colStorage.clearBuffers(row_length);
             }
         }
         else if (statement_type.equals(SELECT)) {
             //print ("select row counter: " + row_counter + " total: " + total_rows_fetched);
         	Arrays.fill(col_calls, 0); // calls in the same fetch - for varchar / nvarchar
-        	if (fetch_limit !=0 && total_row_counter == fetch_limit)
+        	if (fetch_limit !=0 && totalRowCounter == fetch_limit)
         		return false;  // MaxRow limit reached, stop even if more data was fetched
         	// If all data has been read, try to fetch more
-        	if (row_counter == (rows_in_current_batch -1)) {
-        		row_counter = -1;
+        	if (rowCounter == (rows_in_current_batch -1)) {
+        		rowCounter = -1;
         		if (rows_per_batch.size() == 0)
                     return false; // No more data and we've read all we have
 
@@ -450,8 +450,8 @@ public class ConnectorImpl implements Connector {
                 queue.remove(0);
                 rows_per_batch.remove(0);
             }
-            row_counter++;
-            total_row_counter++;
+            rowCounter++;
+            totalRowCounter++;
         }
         else if (statement_type.equals(DML))
             throw new ConnException ("Calling next() on a non insert / select query");
@@ -471,7 +471,7 @@ public class ConnectorImpl implements Connector {
     		if (openStatement) {
 
     			if (statement_type!= null && statement_type.equals(INSERT)) {
-    	            _flush(row_counter);
+    	            _flush(rowCounter);
     	        }
     	            // Statement is finished so no need to reset row_counter etc
 
@@ -517,31 +517,33 @@ public class ConnectorImpl implements Connector {
             throw new ConnException("Trying to get a value of type " + value_type + " from column number " + col_num + " of type " + tableMetadata.getType(col_num));
 
         // print ("null column holder: " + Arrays.toString(null_columns));
-        return colStorage.getNullColumn(col_num) == null || colStorage.getNullColumn(col_num).get(row_counter) == 0;
+        return colStorage.getNullColumn(col_num) == null || colStorage.getNullColumn(col_num).get(rowCounter) == 0;
     }
 
     // -o-o-o-o-o    By index -o-o-o-o-o
     @Override
-    public Boolean getBoolean(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-        return (_validate_get(col_num, "ftBool")) ? colStorage.getDataColumns(col_num).get(row_counter) != 0 : null;
+    public Boolean getBoolean(int colNum) throws ConnException {
+        validator.validateGet(colNum - 1, "ftBool");
+        return colStorage.getBoolean(colNum - 1, rowCounter);
     }
 
     @Override
-    public Byte get_ubyte(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-        return (_validate_get(col_num, "ftUByte")) ? colStorage.getDataColumns(col_num).get(row_counter) : null;
-    }  // .get().toUnsignedInt()  -->  to allow values between 127-255
+    public Byte get_ubyte(int colNum) throws ConnException {
+        validator.validateGet(colNum - 1, "ftUByte");
+        return colStorage.getUbyte(colNum - 1, rowCounter);
+    }
 
     @Override
-    public Short get_short(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-        //*
-        if (tableMetadata.getType(col_num).equals("ftUByte"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (short)(colStorage.getDataColumns(col_num).get(row_counter) & 0xFF) : null;
-        //*/
-
-        return (_validate_get(col_num, "ftShort")) ? colStorage.getDataColumns(col_num).getShort(row_counter * 2) : null;
+    public Short get_short(int colNum) throws ConnException {
+        int colIndex = colNum - 1;
+        validator.validateColumnIndex(colIndex);
+        if (tableMetadata.getType(colIndex).equals("ftUByte")) {
+            validator.validateGetType(colIndex, "ftUByte");
+            return colStorage.getShort(colIndex, rowCounter, "ftUByte");
+        } else {
+            validator.validateGetType(colIndex, "ftShort");
+            return colStorage.getShort(colIndex, rowCounter, "ftShort");
+        }
     }
 
     @Override
@@ -643,7 +645,7 @@ public class ConnectorImpl implements Connector {
     @Override
     public String get_nvarchar(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
         _validate_index(col_num);
-        int nvarc_len = colStorage.getNvarcLenColumn(col_num).getInt(row_counter * 4);
+        int nvarc_len = colStorage.getNvarcLenColumn(col_num).getInt(rowCounter * 4);
 
         // Get bytes the size of this specific nvarchar into string_bytes
         if (col_calls[col_num]++ > 0)
@@ -657,13 +659,13 @@ public class ConnectorImpl implements Connector {
     public Date get_date(int col_num, ZoneId zone) throws ConnException {   col_num--;  // set / get work with starting index 1
         _validate_index(col_num);
 
-        return (_validate_get(col_num, "ftDate")) ? intToDate(colStorage.getDataColumns(col_num).getInt(4*row_counter), zone) : null;
+        return (_validate_get(col_num, "ftDate")) ? intToDate(colStorage.getDataColumns(col_num).getInt(4* rowCounter), zone) : null;
     }
 
     @Override
     public Timestamp get_datetime(int col_num, ZoneId zone) throws ConnException {   col_num--;  // set / get work with starting index 1
         _validate_index(col_num);
-        return (_validate_get(col_num, "ftDateTime")) ? longToDt(colStorage.getDataColumns(col_num).getLong(8* row_counter), zone) : null;
+        return (_validate_get(col_num, "ftDateTime")) ? longToDt(colStorage.getDataColumns(col_num).getLong(8* rowCounter), zone) : null;
     }
 
     @Override

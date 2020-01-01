@@ -28,6 +28,11 @@ public class FtLongReader implements ByteReader {
         return (double) read(buffer, rowIndex);
     }
 
+    @Override
+    public Boolean readBoolean(ByteBuffer buffer, int rowIndex) {
+        throw new UnsupportedOperationException("Trying to get a value of type [Boolean] from column type [ftLong]");
+    }
+
     private long read(ByteBuffer buffer, int rowIndex) {
         return buffer.getLong(rowIndex * 8);
     }

@@ -27,4 +27,9 @@ public class FtDoubleReader implements ByteReader {
     public Double readDouble(ByteBuffer buffer, int rowIndex) {
         return buffer.getDouble(rowIndex * 8);
     }
+
+    @Override
+    public Boolean readBoolean(ByteBuffer buffer, int rowIndex) {
+        throw new UnsupportedOperationException("Trying to get a value of type [Boolean] from column type [ftDouble]");
+    }
 }

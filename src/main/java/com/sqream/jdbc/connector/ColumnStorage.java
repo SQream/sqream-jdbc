@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -111,8 +112,8 @@ public class ColumnStorage {
         return nvarc_len_columns[index];
     }
 
-    public boolean isValueNotNull(int colNum, int rowCounter) {
-        return null_columns[colNum] == null || null_columns[colNum].get(rowCounter) == 0;
+    public boolean isNotNull(int colIndex, int rowIndex) {
+        return null_columns[colIndex] == null || null_columns[colIndex].get(rowIndex) == 0;
     }
 
     public void setBoolean(int index, Boolean value) {
@@ -221,6 +222,49 @@ public class ColumnStorage {
             dataColumns[index].putLong(0L);
             markAsNull(index);
         }
+    }
+
+    public Boolean getBoolean(int colIndex, int rowIndex) {
+        return isNotNull(colIndex, rowIndex) ? dataColumns[colIndex].get(rowIndex) != 0 : null;
+    }
+
+    public Byte getUbyte(int colIndex, int rowIndex) {
+        return isNotNull(colIndex, rowIndex) ? dataColumns[colIndex].get(rowIndex) : null;
+    }
+
+    public Short getShort(int colIndex, int rowIndex, String type) {
+        return isNotNull(colIndex, rowIndex) ?
+                ByteReaderFactory
+                        .getReader(type)
+                        .readShort(dataColumns[colIndex], rowIndex) : null;
+    }
+
+    public Integer getInt(int colIndex, int rowIndex, String type) {
+        return isNotNull(colIndex, rowIndex) ?
+                ByteReaderFactory
+                        .getReader(type)
+                        .readInt(dataColumns[colIndex], rowIndex) : null;
+    }
+
+    public Long getLong(int colIndex, int rowIndex, String type) {
+        return isNotNull(colIndex, rowIndex) ?
+                ByteReaderFactory
+                        .getReader(type)
+                        .readLong(dataColumns[colIndex], rowIndex) : null;
+    }
+
+    public Float getFloat(int colIndex, int rowIndex, String type) {
+        return isNotNull(colIndex, rowIndex) ?
+                ByteReaderFactory
+                        .getReader(type)
+                        .readFloat(dataColumns[colIndex], rowIndex) : null;
+    }
+
+    public Double getDouble(int colIndex, int rowIndex, String type) {
+        return isNotNull(colIndex, rowIndex) ?
+                ByteReaderFactory
+                        .getReader(type)
+                        .readDouble(dataColumns[colIndex], rowIndex) : null;
     }
 
     private void setNullResetter() {

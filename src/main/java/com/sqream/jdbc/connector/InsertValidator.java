@@ -1,6 +1,5 @@
 package com.sqream.jdbc.connector;
 
-import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 
 public class InsertValidator {
@@ -14,7 +13,12 @@ public class InsertValidator {
     public void validateSet(int index, Object value, String type) {
         validateColumnIndex(index);
         validateNullable(index, value);
-        validateType(index, type);
+        validateSetType(index, type);
+    }
+
+    public void validateGet(int index, String type) {
+        validateColumnIndex(index);
+        validateGetType(index, type);
     }
 
     public void validateColumnIndex(int index) {
@@ -33,12 +37,22 @@ public class InsertValidator {
         }
     }
 
-    private void validateType(int index, String type) {
-        if (!metadata.getType(index).equals(type))
+    private void validateSetType(int index, String type) {
+        if (!validType(index, type))
             throw new IllegalArgumentException(
                     MessageFormat.format("Trying to set [{0}] on a column number [{1}] of type [{2}]",
                             type, index + 1, metadata.getType(index)));
+    }
 
+    public void validateGetType(int index, String type) {
+        if (!validType(index, type))
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "Trying to get a value of type [{0}] from column number [{1}] of type [{2}]",
+                            type, index + 1, metadata.getType(index)));
+    }
+
+    private boolean validType(int index, String type) {
+        return metadata.getType(index).equals(type);
     }
 
     public void validateUbyte(Byte value) {

@@ -1,4 +1,4 @@
-package com.sqream.jdbc.connector;
+package com.sqream.jdbc.connector.byteReaders;
 
 import java.text.MessageFormat;
 import java.util.HashMap;

@@ -1,31 +1,30 @@
-package com.sqream.jdbc.connector;
+package com.sqream.jdbc.connector.byteReaders;
 
 import java.nio.ByteBuffer;
 
-public class FtFloatReader implements ByteReader {
-
+public class FtUbyteReader implements ByteReader {
     @Override
     public Integer readInt(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException();
+        return buffer.get(rowIndex) & 0xFF;
     }
 
     @Override
     public Short readShort(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException();
+        return (short) (buffer.get(rowIndex) & 0xFF);
     }
 
     @Override
     public Long readLong(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException();
+        return (long) buffer.get(rowIndex) & 0xFF;
     }
 
     @Override
     public Float readFloat(ByteBuffer buffer, int rowIndex) {
-        return buffer.getFloat(rowIndex * 4);
+        return (float) (buffer.get(rowIndex) & 0xFF);
     }
 
     @Override
     public Double readDouble(ByteBuffer buffer, int rowIndex) {
-        return (double) buffer.getFloat(rowIndex * 4);
+        return (double) (buffer.get(rowIndex) & 0xFF);
     }
 }

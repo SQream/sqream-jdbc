@@ -523,7 +523,7 @@ public class ConnectorImpl implements Connector {
     // -o-o-o-o-o    By index -o-o-o-o-o
     @Override
     public Boolean getBoolean(int colNum) throws ConnException {
-        validator.validateGet(colNum - 1, "ftBool");
+        validator.validateColumnIndex(colNum - 1);
         return colStorage.getBoolean(colNum - 1, rowCounter);
     }
 

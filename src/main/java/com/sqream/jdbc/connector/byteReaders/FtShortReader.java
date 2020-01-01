@@ -28,6 +28,11 @@ public class FtShortReader implements ByteReader {
         return (double) read(buffer, rowIndex);
     }
 
+    @Override
+    public Boolean readBoolean(ByteBuffer buffer, int rowIndex) {
+        throw new UnsupportedOperationException("Trying to get a value of type [Boolean] from column type [ftShort]");
+    }
+
     private short read(ByteBuffer buffer, int rowIndex) {
         return buffer.getShort(rowIndex * 2);
     }

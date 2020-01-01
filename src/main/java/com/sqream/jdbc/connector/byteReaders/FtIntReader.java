@@ -10,7 +10,7 @@ public class FtIntReader implements ByteReader {
 
     @Override
     public Short readShort(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Short] from column type [ftFloat]");
+        throw new UnsupportedOperationException("Trying to get a value of type [Short] from column type [ftInt]");
     }
 
     @Override
@@ -26,6 +26,11 @@ public class FtIntReader implements ByteReader {
     @Override
     public Double readDouble(ByteBuffer buffer, int rowIndex) {
         return (double) read(buffer, rowIndex);
+    }
+
+    @Override
+    public Boolean readBoolean(ByteBuffer buffer, int rowIndex) {
+        throw new UnsupportedOperationException("Trying to get a value of type [Boolean] from column type [ftInt]");
     }
 
     private int read(ByteBuffer buffer, int rowIndex) {

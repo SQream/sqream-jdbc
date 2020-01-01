@@ -226,7 +226,10 @@ public class ColumnStorage {
     }
 
     public Boolean getBoolean(int colIndex, int rowIndex) {
-        return isNotNull(colIndex, rowIndex) ? dataColumns[colIndex].get(rowIndex) != 0 : null;
+        return isNotNull(colIndex, rowIndex) ?
+                ByteReaderFactory
+                        .getReader(metadata.getType(colIndex))
+                        .readBoolean(dataColumns[colIndex], rowIndex) : null;
     }
 
     public Byte getUbyte(int colIndex, int rowIndex) {

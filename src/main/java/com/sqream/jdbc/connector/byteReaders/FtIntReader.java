@@ -1,30 +1,30 @@
-package com.sqream.jdbc.connector;
+package com.sqream.jdbc.connector.byteReaders;
 
 import java.nio.ByteBuffer;
 
-public class FtLongReader implements ByteReader {
+public class FtIntReader implements ByteReader {
     @Override
     public Integer readInt(ByteBuffer buffer, int rowIndex) {
-        throw new IllegalArgumentException("Can't retrieve int from column type ftLong");
+        return buffer.getInt(rowIndex * 4);
     }
 
     @Override
     public Short readShort(ByteBuffer buffer, int rowIndex) {
-        throw new IllegalArgumentException("Can't retrieve short from column type ftLong");
+        throw new IllegalArgumentException("Can't retrieve short from column type ftInt");
     }
 
     @Override
     public Long readLong(ByteBuffer buffer, int rowIndex) {
-        return buffer.getLong(rowIndex * 8);
+        return (long) buffer.getInt(rowIndex * 4);
     }
 
     @Override
     public Float readFloat(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException();
+        return (float) buffer.getInt(rowIndex * 4);
     }
 
     @Override
     public Double readDouble(ByteBuffer buffer, int rowIndex) {
-        return (double) buffer.getLong(rowIndex * 8);
+        return (double) buffer.getInt(rowIndex * 4);
     }
 }

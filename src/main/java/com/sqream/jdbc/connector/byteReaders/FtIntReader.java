@@ -5,26 +5,30 @@ import java.nio.ByteBuffer;
 public class FtIntReader implements ByteReader {
     @Override
     public Integer readInt(ByteBuffer buffer, int rowIndex) {
-        return buffer.getInt(rowIndex * 4);
+        return read(buffer, rowIndex);
     }
 
     @Override
     public Short readShort(ByteBuffer buffer, int rowIndex) {
-        throw new IllegalArgumentException("Can't retrieve short from column type ftInt");
+        throw new UnsupportedOperationException("Trying to get a value of type [Short] from column type [ftFloat]");
     }
 
     @Override
     public Long readLong(ByteBuffer buffer, int rowIndex) {
-        return (long) buffer.getInt(rowIndex * 4);
+        return (long) read(buffer, rowIndex);
     }
 
     @Override
     public Float readFloat(ByteBuffer buffer, int rowIndex) {
-        return (float) buffer.getInt(rowIndex * 4);
+        return (float) read(buffer, rowIndex);
     }
 
     @Override
     public Double readDouble(ByteBuffer buffer, int rowIndex) {
-        return (double) buffer.getInt(rowIndex * 4);
+        return (double) read(buffer, rowIndex);
+    }
+
+    private int read(ByteBuffer buffer, int rowIndex) {
+        return buffer.getInt(rowIndex * 4);
     }
 }

@@ -233,38 +233,38 @@ public class ColumnStorage {
         return isNotNull(colIndex, rowIndex) ? dataColumns[colIndex].get(rowIndex) : null;
     }
 
-    public Short getShort(int colIndex, int rowIndex, String type) {
+    public Short getShort(int colIndex, int rowIndex) {
         return isNotNull(colIndex, rowIndex) ?
                 ByteReaderFactory
-                        .getReader(type)
+                        .getReader(metadata.getType(colIndex))
                         .readShort(dataColumns[colIndex], rowIndex) : null;
     }
 
-    public Integer getInt(int colIndex, int rowIndex, String type) {
+    public Integer getInt(int colIndex, int rowIndex) {
         return isNotNull(colIndex, rowIndex) ?
                 ByteReaderFactory
-                        .getReader(type)
+                        .getReader(metadata.getType(colIndex))
                         .readInt(dataColumns[colIndex], rowIndex) : null;
     }
 
-    public Long getLong(int colIndex, int rowIndex, String type) {
+    public Long getLong(int colIndex, int rowIndex) {
         return isNotNull(colIndex, rowIndex) ?
                 ByteReaderFactory
-                        .getReader(type)
+                        .getReader(metadata.getType(colIndex))
                         .readLong(dataColumns[colIndex], rowIndex) : null;
     }
 
-    public Float getFloat(int colIndex, int rowIndex, String type) {
+    public Float getFloat(int colIndex, int rowIndex) {
         return isNotNull(colIndex, rowIndex) ?
                 ByteReaderFactory
-                        .getReader(type)
+                        .getReader(metadata.getType(colIndex))
                         .readFloat(dataColumns[colIndex], rowIndex) : null;
     }
 
-    public Double getDouble(int colIndex, int rowIndex, String type) {
+    public Double getDouble(int colIndex, int rowIndex) {
         return isNotNull(colIndex, rowIndex) ?
                 ByteReaderFactory
-                        .getReader(type)
+                        .getReader(metadata.getType(colIndex))
                         .readDouble(dataColumns[colIndex], rowIndex) : null;
     }
 

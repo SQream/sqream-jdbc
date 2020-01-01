@@ -6,26 +6,30 @@ public class FtFloatReader implements ByteReader {
 
     @Override
     public Integer readInt(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Trying to get a value of type [Integer] from column type [ftFloat]");
     }
 
     @Override
     public Short readShort(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Trying to get a value of type [Short] from column type [ftFloat]");
     }
 
     @Override
     public Long readLong(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Trying to get a value of type [Long] from column type [ftFloat]");
     }
 
     @Override
     public Float readFloat(ByteBuffer buffer, int rowIndex) {
-        return buffer.getFloat(rowIndex * 4);
+        return read(buffer, rowIndex);
     }
 
     @Override
     public Double readDouble(ByteBuffer buffer, int rowIndex) {
-        return (double) buffer.getFloat(rowIndex * 4);
+        return (double) read(buffer, rowIndex);
+    }
+
+    public float read(ByteBuffer buffer, int rowIndex) {
+        return buffer.getFloat(rowIndex * 4);
     }
 }

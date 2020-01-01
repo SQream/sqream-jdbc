@@ -5,22 +5,22 @@ import java.nio.ByteBuffer;
 public class FtDoubleReader implements ByteReader {
     @Override
     public Integer readInt(ByteBuffer buffer, int rowIndex) {
-        throw new IllegalArgumentException("Can't retrieve int from column type ftDouble");
+        throw new UnsupportedOperationException("Trying to get a value of type [Integer] from column type [ftDouble]");
     }
 
     @Override
     public Short readShort(ByteBuffer buffer, int rowIndex) {
-        throw new IllegalArgumentException("Can't retrieve short from column type ftDouble");
+        throw new UnsupportedOperationException("Trying to get a value of type [Short] from column type [ftDouble]");
     }
 
     @Override
     public Long readLong(ByteBuffer buffer, int rowIndex) {
-        throw new IllegalArgumentException("Can't retrieve long from column type ftDouble");
+        throw new UnsupportedOperationException("Trying to get a value of type [Long] from column type [ftDouble]");
     }
 
     @Override
     public Float readFloat(ByteBuffer buffer, int rowIndex) {
-        throw new IllegalArgumentException("Can't retrieve float from column type ftDouble");
+        throw new UnsupportedOperationException("Trying to get a value of type [Float] from column type [ftDouble]");
     }
 
     @Override

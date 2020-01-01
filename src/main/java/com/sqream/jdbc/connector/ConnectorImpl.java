@@ -545,66 +545,86 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public Integer get_int(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-        //*
-        if (tableMetadata.getType(col_num).equals("ftShort"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (int) colStorage.getDataColumns(col_num).getShort(row_counter * 2) : null;
-        else if (tableMetadata.getType(col_num).equals("ftUByte"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (int)(colStorage.getDataColumns(col_num).get(row_counter) & 0xFF) : null;
-        //*/
-        return (_validate_get(col_num, "ftInt")) ? colStorage.getDataColumns(col_num).getInt(row_counter * 4) : null;
-        //return (null_balls[col_num].get() == 0) ? data_columns[col_num].getInt() : null;
+    public Integer get_int(int colNum) throws ConnException {
+        int colIndex = colNum - 1;
+        validator.validateColumnIndex(colIndex);
+        String type = tableMetadata.getType(colIndex);
+        if ("ftShort".equals(type)) {
+            validator.validateGetType(colIndex, "ftShort");
+            return colStorage.getInt(colIndex, rowCounter, "ftShort");
+        } else if ("ftUByte".equals(type)) {
+            validator.validateGetType(colIndex, "ftUByte");
+            return colStorage.getInt(colIndex, rowCounter, "ftUByte");
+        } else {
+            validator.validateGetType(colIndex, "ftInt");
+            return colStorage.getInt(colIndex, rowCounter, "ftInt");
+        }
     }
 
     @Override
-    public Long get_long(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-
-        String type = tableMetadata.getType(col_num);
-        if (type.equals("ftInt"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (long)colStorage.getDataColumns(col_num).getInt(row_counter * 4) : null;
-        else if (type.equals("ftShort"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (long)colStorage.getDataColumns(col_num).getShort(row_counter * 2) : null;
-        else if (type.equals("ftUByte"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (long)(colStorage.getDataColumns(col_num).get(row_counter) & 0xFF) : null;
-
-        return (_validate_get(col_num, "ftLong")) ? colStorage.getDataColumns(col_num).getLong(row_counter * 8) : null;
+    public Long get_long(int colNum) throws ConnException {
+        int colIndex = colNum - 1;
+        validator.validateColumnIndex(colIndex);
+        String type = tableMetadata.getType(colIndex);
+        if ("ftInt".equals(type)) {
+            validator.validateGetType(colIndex, "ftInt");
+            return colStorage.getLong(colIndex, rowCounter, "ftInt");
+        } else if ("ftShort".equals(type)) {
+            validator.validateGetType(colIndex, "ftShort");
+            return colStorage.getLong(colIndex, rowCounter, "ftShort");
+        } else if ("ftUByte".equals(type)) {
+            validator.validateGetType(colIndex, "ftUByte");
+            return colStorage.getLong(colIndex, rowCounter, "ftUByte");
+        } else {
+            validator.validateGetType(colIndex, "ftLong");
+            return colStorage.getLong(colIndex, rowCounter, "ftLong");
+        }
     }
 
     @Override
-    public Float get_float(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-
-        String type = tableMetadata.getType(col_num);
-        if (type.equals("ftInt"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (float)colStorage.getDataColumns(col_num).getInt(row_counter * 4) : null;
-        else if (type.equals("ftShort"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (float)colStorage.getDataColumns(col_num).getShort(row_counter * 2) : null;
-        else if (type.equals("ftUByte"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (float)(colStorage.getDataColumns(col_num).get(row_counter) & 0xFF) : null;
-
-        return (_validate_get(col_num, "ftFloat")) ? colStorage.getDataColumns(col_num).getFloat(row_counter * 4) : null;
+    public Float get_float(int colNum) throws ConnException {
+        int colIndex = colNum - 1;
+        validator.validateColumnIndex(colIndex);
+        String type = tableMetadata.getType(colIndex);
+        if (type.equals("ftInt")) {
+            validator.validateGetType(colIndex, "ftInt");
+            return colStorage.getFloat(colIndex, rowCounter, "ftInt");
+        } else if (type.equals("ftShort")) {
+            validator.validateGetType(colIndex, "ftShort");
+            return colStorage.getFloat(colIndex, rowCounter, "ftShort");
+        } else if (type.equals("ftUByte")) {
+            validator.validateGetType(colIndex, "ftUByte");
+            return colStorage.getFloat(colIndex, rowCounter, "ftUByte");
+        } else {
+            validator.validateGetType(colIndex, "ftFloat");
+            return colStorage.getFloat(colIndex, rowCounter, "ftFloat");
+        }
     }
 
     @Override
-    public Double get_double(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-
-        String type = tableMetadata.getType(col_num);
-        if (type.equals("ftFloat"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (double)colStorage.getDataColumns(col_num).getFloat(row_counter * 4) : null;
-        else if (type.equals("ftLong"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (double)colStorage.getDataColumns(col_num).getLong(row_counter * 8) : null;
-        else if (type.equals("ftInt"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (double)colStorage.getDataColumns(col_num).getInt(row_counter * 4) : null;
-        else if (type.equals("ftShort"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (double)colStorage.getDataColumns(col_num).getShort(row_counter * 2) : null;
-        else if (type.equals("ftUByte"))
-            return colStorage.isValueNotNull(col_num, row_counter) ? (double)(colStorage.getDataColumns(col_num).get(row_counter) & 0xFF) : null;
-
-
-        return (_validate_get(col_num, "ftDouble")) ? colStorage.getDataColumns(col_num).getDouble(row_counter * 8) : null;
+    public Double get_double(int colNum) throws ConnException {
+        int colIndex = colNum - 1;
+        validator.validateColumnIndex(colIndex);
+        String type = tableMetadata.getType(colIndex);
+        if (type.equals("ftFloat")) {
+            validator.validateGetType(colIndex, "ftFloat");
+            return colStorage.getDouble(colIndex, rowCounter,"ftFloat");
+        } else if (type.equals("ftLong")) {
+            validator.validateGetType(colIndex, "ftLong");
+            return colStorage.getDouble(colIndex, rowCounter,"ftLong");
+        } else if (type.equals("ftInt")) {
+            validator.validateGetType(colIndex, "ftInt");
+            return colStorage.getDouble(colIndex, rowCounter,"ftInt");
+        } else if (type.equals("ftShort")) {
+            validator.validateGetType(colIndex, "ftShort");
+            return colStorage.getDouble(colIndex, rowCounter,"ftShort");
+        } else if (type.equals("ftUByte")) {
+            validator.validateGetType(colIndex, "ftUByte");
+            return colStorage.getDouble(colIndex, rowCounter,"ftUByte");
+        } else {
+            validator.validateGetType(colIndex, "ftDouble");
+            return colStorage.getDouble(colIndex, rowCounter,"ftDouble");
+        }
     }
 
     @Override

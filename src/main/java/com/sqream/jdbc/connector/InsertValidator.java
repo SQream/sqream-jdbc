@@ -17,7 +17,7 @@ public class InsertValidator {
         validateType(index, type);
     }
 
-    private void validateColumnIndex(int index) {
+    public void validateColumnIndex(int index) {
         if (index <0 || index >= metadata.getRowLength()) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "Illegal index [{0}] on get/set\nAllowed indices are [0-{1}]",

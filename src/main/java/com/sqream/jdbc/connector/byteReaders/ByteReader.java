@@ -15,4 +15,6 @@ public interface ByteReader {
     Double readDouble(ByteBuffer buffer, int rowIndex);
 
     Boolean readBoolean(ByteBuffer buffer, int rowIndex);
+
+    Byte readUbyte(ByteBuffer buffer, int rowIndex);
 }

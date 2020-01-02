@@ -33,6 +33,11 @@ public class FtUbyteReader implements ByteReader {
         throw new UnsupportedOperationException("Trying to get a value of type [Boolean] from column type [ftUbyte]");
     }
 
+    @Override
+    public Byte readUbyte(ByteBuffer buffer, int rowIndex) {
+        return buffer.get(rowIndex);
+    }
+
     private int read(ByteBuffer buffer, int rowIndex) {
         return buffer.get(rowIndex) & 0xFF;
     }

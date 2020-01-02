@@ -2,7 +2,7 @@ package com.sqream.jdbc.connector.byteReaders;
 
 import java.nio.ByteBuffer;
 
-public class FtUbyteReader implements ByteReader {
+public class FtUbyteReader extends BaseReader {
     @Override
     public Integer readInt(ByteBuffer buffer, int rowIndex) {
         return read(buffer, rowIndex);
@@ -29,23 +29,13 @@ public class FtUbyteReader implements ByteReader {
     }
 
     @Override
-    public Boolean readBoolean(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Boolean] from column type [ftUbyte]");
-    }
-
-    @Override
     public Byte readUbyte(ByteBuffer buffer, int rowIndex) {
         return buffer.get(rowIndex);
     }
 
     @Override
-    public int readDate(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Date] from column type [ftUbyte]");
-    }
-
-    @Override
-    public long readDateTime(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [DateTime] from column type [ftUbyte]");
+    String getColumnType() {
+        return "ftUbyte";
     }
 
     private int read(ByteBuffer buffer, int rowIndex) {

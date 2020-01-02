@@ -86,7 +86,7 @@ public class ConnectorImpl implements Connector {
     private boolean openStatement = false;
 
     // Column Storage
-    private List<BlockDto> queue = new ArrayList<>();
+    private BlockDto currentBlock;
     private List<Integer> rows_per_batch = new ArrayList<>();
     private int rows_in_current_batch;
     private int fetch_limit = 0;
@@ -227,7 +227,7 @@ public class ConnectorImpl implements Connector {
         colStorage.load(fetch_buffers, tableMetadata, ROWS_PER_FLUSH);
 
         // Add buffers to buffer list
-        queue.add(colStorage.getBlock());
+        currentBlock = colStorage.getBlock();
 
         rows_per_batch.add(fetchMeta.getNewRowsFetched());
 
@@ -444,10 +444,10 @@ public class ConnectorImpl implements Connector {
 
                 // Set new active buffer to be reading data from
                 rows_in_current_batch = rows_per_batch.get(0);
-                colStorage.loadBlock(queue.get(0));
+                colStorage.loadBlock(currentBlock);
 
                 // Remove active buffer from list
-                queue.remove(0);
+                currentBlock = null;
                 rows_per_batch.remove(0);
             }
             rowCounter++;

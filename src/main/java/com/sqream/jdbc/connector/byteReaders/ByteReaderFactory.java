@@ -16,6 +16,7 @@ public class ByteReaderFactory {
         readerMap.put("ftFloat", new FtFloatReader());
         readerMap.put("ftDouble", new FtDoubleReader());
         readerMap.put("ftBool", new FtBooleanReader());
+        readerMap.put("ftDate", new FtDateReader());
     }
 
     public static ByteReader getReader(String columnType) {

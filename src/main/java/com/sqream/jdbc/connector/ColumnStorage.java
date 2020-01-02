@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 
+import static com.sqream.jdbc.utils.Utils.intToDate;
+
 public class ColumnStorage {
 
     private ByteBuffer[] dataColumns;
@@ -272,6 +274,18 @@ public class ColumnStorage {
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
                         .readDouble(dataColumns[colIndex], rowIndex) : null;
+    }
+
+    public Date getDate(int colIndex, int rowIndex, ZoneId zoneId) {
+        if (!isNotNull(colIndex, rowIndex)) {
+            return null;
+        }
+
+        int dateAsInt = ByteReaderFactory
+                .getReader(metadata.getType(colIndex))
+                .readDate(dataColumns[colIndex], rowIndex);
+
+        return intToDate(dateAsInt, zoneId);
     }
 
     private void setNullResetter() {

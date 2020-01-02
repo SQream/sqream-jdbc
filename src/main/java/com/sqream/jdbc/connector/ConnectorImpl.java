@@ -596,9 +596,9 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public Timestamp get_datetime(int col_num, ZoneId zone) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-        return (_validate_get(col_num, "ftDateTime")) ? longToDt(colStorage.getDataColumns(col_num).getLong(8* rowCounter), zone) : null;
+    public Timestamp get_datetime(int colNum, ZoneId zone) throws ConnException {
+        validator.validateColumnIndex(colNum - 1);
+        return colStorage.getTimestamp(colNum - 1, rowCounter, zone);
     }
 
     @Override

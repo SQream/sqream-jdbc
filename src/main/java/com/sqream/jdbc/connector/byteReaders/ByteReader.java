@@ -1,6 +1,7 @@
 package com.sqream.jdbc.connector.byteReaders;
 
 import java.nio.ByteBuffer;
+import java.sql.Date;
 
 public interface ByteReader {
 
@@ -17,4 +18,6 @@ public interface ByteReader {
     Boolean readBoolean(ByteBuffer buffer, int rowIndex);
 
     Byte readUbyte(ByteBuffer buffer, int rowIndex);
+
+    int readDate(ByteBuffer buffer, int rowIndex);
 }

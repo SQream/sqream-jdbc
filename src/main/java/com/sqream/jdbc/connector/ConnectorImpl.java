@@ -590,10 +590,9 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public Date get_date(int col_num, ZoneId zone) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-
-        return (_validate_get(col_num, "ftDate")) ? intToDate(colStorage.getDataColumns(col_num).getInt(4* rowCounter), zone) : null;
+    public Date get_date(int colNum, ZoneId zone) throws ConnException {
+        validator.validateColumnIndex(colNum - 1);
+        return colStorage.getDate(colNum - 1, rowCounter, zone);
     }
 
     @Override
@@ -603,15 +602,13 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public Date get_date(int col_num) throws ConnException {
-
-        return get_date(col_num, SYSTEM_TZ); // system_tz, UTC
+    public Date get_date(int colNum) throws ConnException {
+        return get_date(colNum, SYSTEM_TZ); // system_tz, UTC
     }
 
     @Override
-    public Timestamp get_datetime(int col_num) throws ConnException {   // set / get work with starting index 1
-
-        return get_datetime(col_num, SYSTEM_TZ); // system_tz, UTC
+    public Timestamp get_datetime(int colNum) throws ConnException {
+        return get_datetime(colNum, SYSTEM_TZ); // system_tz, UTC
     }
 
     // -o-o-o-o-o  By column name -o-o-o-o-o

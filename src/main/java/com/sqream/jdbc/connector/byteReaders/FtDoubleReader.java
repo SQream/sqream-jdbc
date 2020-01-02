@@ -2,26 +2,7 @@ package com.sqream.jdbc.connector.byteReaders;
 
 import java.nio.ByteBuffer;
 
-public class FtDoubleReader implements ByteReader {
-    @Override
-    public Integer readInt(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Integer] from column type [ftDouble]");
-    }
-
-    @Override
-    public Short readShort(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Short] from column type [ftDouble]");
-    }
-
-    @Override
-    public Long readLong(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Long] from column type [ftDouble]");
-    }
-
-    @Override
-    public Float readFloat(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Float] from column type [ftDouble]");
-    }
+public class FtDoubleReader extends BaseReader {
 
     @Override
     public Double readDouble(ByteBuffer buffer, int rowIndex) {
@@ -29,22 +10,7 @@ public class FtDoubleReader implements ByteReader {
     }
 
     @Override
-    public Boolean readBoolean(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Boolean] from column type [ftDouble]");
-    }
-
-    @Override
-    public Byte readUbyte(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Byte] from column type [ftDouble]");
-    }
-
-    @Override
-    public int readDate(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [Date] from column type [ftDouble]");
-    }
-
-    @Override
-    public long readDateTime(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [DateTime] from column type [ftDouble]");
+    String getColumnType() {
+        return "ftDouble";
     }
 }

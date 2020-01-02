@@ -2,7 +2,7 @@ package com.sqream.jdbc.connector.byteReaders;
 
 import java.nio.ByteBuffer;
 
-public class FtDateTime implements ByteReader {
+public class FtDateTimeReader implements ByteReader {
     @Override
     public Integer readInt(ByteBuffer buffer, int rowIndex) {
         throw new UnsupportedOperationException("Trying to get a value of type [Integer] from column type [ftDateTime]");

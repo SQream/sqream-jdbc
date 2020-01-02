@@ -12,6 +12,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 
 import static com.sqream.jdbc.utils.Utils.intToDate;
+import static com.sqream.jdbc.utils.Utils.longToDt;
 
 public class ColumnStorage {
 
@@ -286,6 +287,18 @@ public class ColumnStorage {
                 .readDate(dataColumns[colIndex], rowIndex);
 
         return intToDate(dateAsInt, zoneId);
+    }
+
+    public Timestamp getTimestamp(int colIndex, int rowIndex, ZoneId zoneId) {
+        if (!isNotNull(colIndex, rowIndex)) {
+            return null;
+        }
+
+        long dateTimeAsLong = ByteReaderFactory
+                .getReader(metadata.getType(colIndex))
+                .readDateTime(dataColumns[colIndex], rowIndex);
+
+        return longToDt(dateTimeAsLong, zoneId);
     }
 
     private void setNullResetter() {

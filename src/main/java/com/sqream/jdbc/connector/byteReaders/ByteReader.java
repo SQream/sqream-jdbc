@@ -20,4 +20,6 @@ public interface ByteReader {
     Byte readUbyte(ByteBuffer buffer, int rowIndex);
 
     int readDate(ByteBuffer buffer, int rowIndex);
+
+    long readDateTime(ByteBuffer buffer, int rowIndex);
 }

@@ -43,6 +43,11 @@ public class FtUbyteReader implements ByteReader {
         throw new UnsupportedOperationException("Trying to get a value of type [Date] from column type [ftUbyte]");
     }
 
+    @Override
+    public long readDateTime(ByteBuffer buffer, int rowIndex) {
+        throw new UnsupportedOperationException("Trying to get a value of type [DateTime] from column type [ftUbyte]");
+    }
+
     private int read(ByteBuffer buffer, int rowIndex) {
         return buffer.get(rowIndex) & 0xFF;
     }

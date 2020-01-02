@@ -42,4 +42,9 @@ public class FtBooleanReader implements ByteReader {
     public int readDate(ByteBuffer buffer, int rowIndex) {
         throw new UnsupportedOperationException("Trying to get a value of type [Date] from column type [ftBool]");
     }
+
+    @Override
+    public long readDateTime(ByteBuffer buffer, int rowIndex) {
+        throw new UnsupportedOperationException("Trying to get a value of type [DateTime] from column type [ftBool]");
+    }
 }

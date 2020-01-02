@@ -15,13 +15,13 @@ public class ByteReaderFactory {
         readerMap.put("ftLong", new FtLongReader());
         readerMap.put("ftFloat", new FtFloatReader());
         readerMap.put("ftDouble", new FtDoubleReader());
-        readerMap.put("ftBoolean", new FtBooleanReader());
+        readerMap.put("ftBool", new FtBooleanReader());
     }
 
     public static ByteReader getReader(String columnType) {
         ByteReader result = readerMap.get(columnType);
         if (result == null) {
-            throw new IllegalArgumentException(MessageFormat.format("Can't read from column type [{0}]", columnType));
+            throw new IllegalArgumentException(MessageFormat.format("Can not read from column type [{0}]", columnType));
         }
         return result;
     }

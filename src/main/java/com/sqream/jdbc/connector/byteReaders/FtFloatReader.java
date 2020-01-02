@@ -34,6 +34,11 @@ public class FtFloatReader implements ByteReader {
         throw new UnsupportedOperationException("Trying to get a value of type [Boolean] from column type [ftFloat]");
     }
 
+    @Override
+    public Byte readUbyte(ByteBuffer buffer, int rowIndex) {
+        throw new UnsupportedOperationException("Trying to get a value of type [Byte] from column type [ftFloat]");
+    }
+
     public float read(ByteBuffer buffer, int rowIndex) {
         return buffer.getFloat(rowIndex * 4);
     }

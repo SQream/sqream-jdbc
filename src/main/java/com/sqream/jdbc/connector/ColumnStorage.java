@@ -233,7 +233,10 @@ public class ColumnStorage {
     }
 
     public Byte getUbyte(int colIndex, int rowIndex) {
-        return isNotNull(colIndex, rowIndex) ? dataColumns[colIndex].get(rowIndex) : null;
+        return isNotNull(colIndex, rowIndex) ?
+                ByteReaderFactory
+                        .getReader(metadata.getType(colIndex))
+                        .readUbyte(dataColumns[colIndex], rowIndex) : null;
     }
 
     public Short getShort(int colIndex, int rowIndex) {

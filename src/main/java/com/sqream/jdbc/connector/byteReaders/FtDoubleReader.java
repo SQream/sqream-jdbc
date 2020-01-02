@@ -32,4 +32,9 @@ public class FtDoubleReader implements ByteReader {
     public Boolean readBoolean(ByteBuffer buffer, int rowIndex) {
         throw new UnsupportedOperationException("Trying to get a value of type [Boolean] from column type [ftDouble]");
     }
+
+    @Override
+    public Byte readUbyte(ByteBuffer buffer, int rowIndex) {
+        throw new UnsupportedOperationException("Trying to get a value of type [Byte] from column type [ftDouble]");
+    }
 }

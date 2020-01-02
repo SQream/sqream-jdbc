@@ -32,4 +32,9 @@ public class FtBooleanReader implements ByteReader {
     public Boolean readBoolean(ByteBuffer buffer, int rowIndex) {
         return buffer.get(rowIndex) != 0;
     }
+
+    @Override
+    public Byte readUbyte(ByteBuffer buffer, int rowIndex) {
+        throw new UnsupportedOperationException("Trying to get a value of type [Byte] from column type [ftBoolean]");
+    }
 }

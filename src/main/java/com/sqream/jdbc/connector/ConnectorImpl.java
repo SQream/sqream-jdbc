@@ -529,7 +529,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public Byte get_ubyte(int colNum) throws ConnException {
-        validator.validateGet(colNum - 1, "ftUByte");
+        validator.validateColumnIndex(colNum - 1);
         return colStorage.getUbyte(colNum - 1, rowCounter);
     }
 

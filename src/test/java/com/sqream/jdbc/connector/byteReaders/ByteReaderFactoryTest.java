@@ -23,19 +23,40 @@ public class ByteReaderFactoryTest {
 
     @Test
     public void readIntFromFtIntTest() {
-        int[] expected = putInts(AMOUNT);
+        int[] expected = new int[AMOUNT];
+        int value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = TEST_INT + i;
+            buffer.putInt(value);
+            expected[i] = value;
+        }
+
         readAndCheckInt(expected, "ftInt");
     }
 
     @Test
     public void readIntFromFtShortTest() {
-        int[] expected = putShorts(AMOUNT);
+        int[] expected = new int[AMOUNT];
+        short value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = (short) (TEST_INT + i);
+            buffer.putShort(value);
+            expected[i] = value;
+        }
+
         readAndCheckInt(expected, "ftShort");
     }
 
     @Test
     public void readIntFromFtUByteTest() {
-        int[] expected = putUBytes(AMOUNT);
+        int[] expected = new int[AMOUNT];
+        byte value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = (byte) i;
+            buffer.put(value);
+            expected[i] = value;
+        }
+
         readAndCheckInt(expected, "ftUByte");
     }
 
@@ -114,6 +135,120 @@ public class ByteReaderFactoryTest {
         }
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void readShortFromFtIntTest() {
+        String expectedMessage = "Trying to get a value of type [Short] from column type [ftInt]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftInt")
+                    .readShort(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test
+    public void readShortFromFtShortTest() {
+        short[] expected = new short[AMOUNT];
+        short value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = (short) (TEST_INT + i);
+            buffer.putShort(value);
+            expected[i] = value;
+        }
+
+        readAndCheckShort(expected, "ftShort");
+    }
+
+    @Test
+    public void readShortFromFtUByteTest() {
+        short[] expected = new short[AMOUNT];
+        for (int i = 0; i < AMOUNT; i++) {
+            buffer.put((byte) i);
+            expected[i] = (short) i;
+        }
+
+        readAndCheckShort(expected, "ftUByte");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readShortFromFtLongTest() {
+        String expectedMessage = "Trying to get a value of type [Short] from column type [ftLong]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftLong")
+                    .readShort(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readShortFromFtFloatTest() {
+        String expectedMessage = "Trying to get a value of type [Short] from column type [ftFloat]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftFloat")
+                    .readShort(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readShortFromFtDoubleTest() {
+        String expectedMessage = "Trying to get a value of type [Short] from column type [ftDouble]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftDouble")
+                    .readShort(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readShortFromFtDateTest() {
+        String expectedMessage = "Trying to get a value of type [Short] from column type [ftDate]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftDate")
+                    .readShort(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readShortFromFtDateTimeTest() {
+        String expectedMessage = "Trying to get a value of type [Short] from column type [ftDateTime]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftDateTime")
+                    .readShort(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void readFromUnsupportedColumnType() {
         ByteReaderFactory.getReader("someUnsupportedColumnType");
@@ -129,47 +264,13 @@ public class ByteReaderFactoryTest {
         }
     }
 
-    private int[] putInts(int amount) {
-        int[] result = new int[amount];
-        int testValue;
-        for (int i = 0; i < amount; i++) {
-            testValue = TEST_INT + i;
-            buffer.putInt(testValue);
-            result[i] = testValue;
-        }
-        return result;
-    }
+    private void readAndCheckShort(short[] expected, String columnType) {
+        for (int i = 0; i < expected.length; i++) {
+            short result = ByteReaderFactory
+                    .getReader(columnType)
+                    .readShort(buffer, i);
 
-    private int[] putUBytes(int amount) {
-        int[] result = new int[amount];
-        byte testValue;
-        for (int i = 0; i < amount; i++) {
-            testValue = (byte) (i);
-            buffer.put(testValue);
-            result[i] = testValue;
+            Assert.assertEquals(expected[i], result);
         }
-        return result;
-    }
-
-    private int[] putLongs(int amount) {
-        int[] result = new int[amount];
-        long testValue;
-        for (int i = 0; i < amount; i++) {
-            testValue = (byte) (i);
-            buffer.putLong(testValue);
-            result[i] = (int) testValue;
-        }
-        return result;
-    }
-
-    private int[] putShorts(int amount) {
-        int[] result = new int[amount];
-        short testValue;
-        for (int i = 0; i < amount; i++) {
-            testValue = (short) (TEST_INT + i);
-            buffer.putShort(testValue);
-            result[i] = testValue;
-        }
-        return result;
     }
 }

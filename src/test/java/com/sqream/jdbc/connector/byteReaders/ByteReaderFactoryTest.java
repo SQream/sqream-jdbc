@@ -249,6 +249,122 @@ public class ByteReaderFactoryTest {
         }
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void readUByteFromFtIntTest() {
+        String expectedMessage = "Trying to get a value of type [Ubyte] from column type [ftInt]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftInt")
+                    .readUbyte(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readUbyteFromFtShortTest() {
+        String expectedMessage = "Trying to get a value of type [Ubyte] from column type [ftShort]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftShort")
+                    .readUbyte(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test
+    public void readUByteFromFtUByteTest() {
+        byte[] expected = new byte[AMOUNT];
+        for (int i = 0; i < AMOUNT; i++) {
+            buffer.put((byte) i);
+            expected[i] = (byte) i;
+        }
+
+        readAndCheckUByte(expected, "ftUByte");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readUByteFromFtLongTest() {
+        String expectedMessage = "Trying to get a value of type [Ubyte] from column type [ftLong]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftLong")
+                    .readUbyte(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readUByteFromFtFloatTest() {
+        String expectedMessage = "Trying to get a value of type [Ubyte] from column type [ftFloat]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftFloat")
+                    .readUbyte(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readUByteFromFtDoubleTest() {
+        String expectedMessage = "Trying to get a value of type [Ubyte] from column type [ftDouble]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftDouble")
+                    .readUbyte(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readUbyteFromFtDateTest() {
+        String expectedMessage = "Trying to get a value of type [Ubyte] from column type [ftDate]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftDate")
+                    .readUbyte(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void readUByteFromFtDateTimeTest() {
+        String expectedMessage = "Trying to get a value of type [Ubyte] from column type [ftDateTime]";
+        try {
+            ByteReaderFactory
+                    .getReader("ftDateTime")
+                    .readUbyte(buffer, 0);
+        } catch (UnsupportedOperationException e) {
+            if (expectedMessage.equals(e.getMessage())) {
+                throw e;
+            }
+            fail("Incorrect exception message");
+        }
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void readFromUnsupportedColumnType() {
         ByteReaderFactory.getReader("someUnsupportedColumnType");
@@ -259,6 +375,16 @@ public class ByteReaderFactoryTest {
             int result = ByteReaderFactory
                     .getReader(columnType)
                     .readInt(buffer, i);
+
+            Assert.assertEquals(expected[i], result);
+        }
+    }
+
+    private void readAndCheckUByte(byte[] expected, String columnType) {
+        for (int i = 0; i < expected.length; i++) {
+            int result = ByteReaderFactory
+                    .getReader(columnType)
+                    .readUbyte(buffer, i);
 
             Assert.assertEquals(expected[i], result);
         }

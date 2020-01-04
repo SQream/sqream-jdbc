@@ -23,7 +23,8 @@ public class ByteReaderFactory {
     public static ByteReader getReader(String columnType) {
         ByteReader result = readerMap.get(columnType);
         if (result == null) {
-            throw new IllegalArgumentException(MessageFormat.format("Can not read from column type [{0}]", columnType));
+            throw new IllegalArgumentException(
+                    MessageFormat.format("Can not read from column type [{0}]", columnType));
         }
         return result;
     }

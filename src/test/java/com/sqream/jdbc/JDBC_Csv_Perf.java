@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.text.MessageFormat;
 
 public class JDBC_Csv_Perf {
 

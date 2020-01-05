@@ -53,7 +53,7 @@ public abstract class BaseReader implements ByteReader {
 
     @Override
     public long readDateTime(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException("Trying to get a value of type [DateTime] from column type [ftBool]");
+        throw new UnsupportedOperationException(String.format("Trying to get a value of type [DateTime] from column type [%s]", getColumnType()));
     }
 
     abstract String getColumnType();

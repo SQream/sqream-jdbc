@@ -1,3 +1,8 @@
+if (params.version_num == "") {
+    error("Please provide the version_num parameter!")
+}
+
+
 pipeline { 
     agent {
             label "x86_64_compilation"

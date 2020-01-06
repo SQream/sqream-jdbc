@@ -27,7 +27,8 @@ pipeline {
                 sh '''
                 cd jdbc-driver
                 sed -i "6s|<version>.*</version>|<version>$version_num</version>|" pom.xml
-                mvn -f pom.xml package -DskipTests
+                l_mvn=`which mvn`
+                $l_mvn -f pom.xml package -DskipTests
                 '''
             }
         }

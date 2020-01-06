@@ -143,8 +143,8 @@ public class Connector {
     // ---------------
         
     // Protocol related
-    byte protocol_version = 7;
-    List<Byte> supported_protocols = new ArrayList<Byte>(Arrays.asList((byte)6, (byte)7));
+    byte protocol_version = 8;
+    List<Byte> supported_protocols = new ArrayList<Byte>(Arrays.asList((byte)6, (byte)7, (byte)8));
     byte is_text;  // Catching the 2nd byte of a response
     long response_length;
     int connection_id = -1;

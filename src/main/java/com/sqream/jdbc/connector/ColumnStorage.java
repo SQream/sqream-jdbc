@@ -23,15 +23,6 @@ public class ColumnStorage {
     private TableMetadata metadata;
     private int blockSize;
 
-    private void init(TableMetadata metadata, int blockSize) {
-        this.metadata = metadata;
-        this.blockSize = blockSize;
-        dataColumns = new ByteBuffer[metadata.getRowLength()];
-        null_columns = new ByteBuffer[metadata.getRowLength()];
-        nvarc_len_columns = new ByteBuffer[metadata.getRowLength()];
-        setNullResetter();
-    }
-
     public void initColumns(TableMetadata metadata, int blockSize) {
         init(metadata, blockSize);
         // Initiate buffers for each column using the metadata
@@ -48,6 +39,15 @@ public class ColumnStorage {
                 nvarc_len_columns[idx] = null;
             }
         }
+    }
+
+    private void init(TableMetadata metadata, int blockSize) {
+        this.metadata = metadata;
+        this.blockSize = blockSize;
+        dataColumns = new ByteBuffer[metadata.getRowLength()];
+        null_columns = new ByteBuffer[metadata.getRowLength()];
+        nvarc_len_columns = new ByteBuffer[metadata.getRowLength()];
+        setNullResetter();
     }
 
     public void load(ByteBuffer[] fetchBuffers, TableMetadata metadata, int blockSize) {

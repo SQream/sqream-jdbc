@@ -41,13 +41,15 @@ import javax.script.ScriptException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 // SSL over SocketChannel abstraction
 
 import static com.sqream.jdbc.connector.enums.StatementType.*;
-import static com.sqream.jdbc.utils.Utils.*;
 
 public class ConnectorImpl implements Connector {
+    private static final Logger LOGGER = Logger.getLogger(ConnectorImpl.class.getName());
 
     private static final String DEFAULT_CHARACTER_CODES = "ascii";
     private static final String DEFAULT_SERVICE = "sqream";
@@ -103,6 +105,7 @@ public class ConnectorImpl implements Connector {
     private AtomicBoolean IsCancelStatement = new AtomicBoolean(false);
 
     private InsertValidator validator;
+    private FlushService flushService;
 
     public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         /* JSON parsing engine setup, initial socket connection */
@@ -118,6 +121,7 @@ public class ConnectorImpl implements Connector {
         this.colStorage = new ColumnStorage();
         this.jsonParser = new JsonParser();
         this.validator = new InsertValidator(tableMetadata);
+        this.flushService = new FlushService(socket, messenger);
     }
 
     private void reconnectToNode() throws NoSuchAlgorithmException, IOException, KeyManagementException {
@@ -270,39 +274,21 @@ public class ConnectorImpl implements Connector {
 
 
 
-    private int _flush(int row_counter) throws IOException, ConnException {
+    private int _flush(int row_counter, boolean asyncFlush) throws IOException, ConnException {
         /* Send columnar data buffers to SQream. Called by next() and close() */
 
         if (!statement_type.equals(INSERT) || row_counter == 0) {  // Not an insert statement
             return 0;
         }
 
-        // Send put message
-        messenger.put(row_counter);
+        flushService.process(row_length,
+                rowCounter,
+                tableMetadata,
+                colStorage.getBlock(),
+                colStorage.getTotalLengthForHeader(row_length, row_counter),
+                asyncFlush);
 
-        // Get total column length for the header
-        int total_bytes = colStorage.getTotalLengthForHeader(row_length, row_counter);
-
-        // Send header with total binary insert
-        ByteBuffer header_buffer = socket.generateHeaderedBuffer(total_bytes, false);
-        socket.sendData(header_buffer, false);
-
-        // Send available columns
-        sendDataToSocket();
-        messenger.isPutted();
         return row_counter;  // counter nullified by next()
-    }
-
-    private void sendDataToSocket() throws IOException, ConnException {
-        for(int idx=0; idx < row_length; idx++) {
-            if(tableMetadata.isNullable(idx)) {
-                socket.sendData((ByteBuffer) colStorage.getNullColumn(idx).position(rowCounter), false);
-            }
-            if(tableMetadata.isTruVarchar(idx)) {
-                socket.sendData(colStorage.getNvarcLenColumn(idx), false);
-            }
-            socket.sendData(colStorage.getDataColumns(idx), false);
-        }
     }
 
     // User API Functions
@@ -424,7 +410,7 @@ public class ConnectorImpl implements Connector {
 
             // Flush and clean if needed
             if (rowCounter == rows_per_flush) {
-                _flush(rowCounter);
+                _flush(rowCounter, true);
 
                 // After flush, clear row counter and all buffers
                 rowCounter = 0;
@@ -469,9 +455,9 @@ public class ConnectorImpl implements Connector {
 
     	if (isOpen()) {
     		if (openStatement) {
-
+                flushService.awaitTermination();
     			if (statement_type!= null && statement_type.equals(INSERT)) {
-    	            _flush(rowCounter);
+    	            _flush(rowCounter, false);
     	        }
     	            // Statement is finished so no need to reset row_counter etc
 

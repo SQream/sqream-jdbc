@@ -23,35 +23,43 @@ public class FlushService {
         this.copier = new ByteBufferCopier();
     }
 
-    public void process(int rowLength, int rowCounter, TableMetadata metadata,
-                        BlockDto block, int totalLengthForHeader, boolean async) {
+    public BlockDto process(int rowLength, int rowCounter, TableMetadata metadata,
+                        BlockDto block, int totalLengthForHeader, ByteBufferPool byteBufferPool, boolean async) {
         if (async) {
-            long t0 = System.currentTimeMillis();
-            BlockDto copyBlock = copier.copyBlock(block);
-            long t1 = System.currentTimeMillis();
-            System.out.println("Copy block " + (t1 - t0));
-
             if (executorService.isShutdown()) {
                 executorService = Executors.newSingleThreadExecutor();
             }
 
+            BlockDto blockForFlush = new BlockDto(block.getDataBuffers(), block.getNullBuffers(), block.getNvarcLenBuffers());
+
+            BlockDto blockFromPool = null;
+            try {
+                blockFromPool = byteBufferPool.getBlock();
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Interrupted when getting block from byteBuffer pool", e);
+            }
+
             executorService.submit(() -> {
                 try {
-                    flush(rowLength, rowCounter, metadata, copyBlock, totalLengthForHeader);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ConnException e) {
-                    e.printStackTrace();
+                    flush(rowLength,
+                            rowCounter,
+                            metadata,
+                            blockForFlush,
+                            totalLengthForHeader);
+
+                    byteBufferPool.releaseBlock(blockForFlush);
+                } catch (Exception e) {
+                    throw new RuntimeException("Exception when flush data", e);
                 }
             });
+            return blockFromPool;
         } else {
             try {
                 flush(rowLength, rowCounter, metadata, block, totalLengthForHeader);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ConnException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
+            return block;
         }
     }
 

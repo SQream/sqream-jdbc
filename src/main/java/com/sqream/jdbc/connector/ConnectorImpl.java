@@ -106,6 +106,7 @@ public class ConnectorImpl implements Connector {
 
     private InsertValidator validator;
     private FlushService flushService;
+    private ByteBufferPool byteBufferPool;
 
     public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         /* JSON parsing engine setup, initial socket connection */
@@ -195,6 +196,7 @@ public class ConnectorImpl implements Connector {
 
             // Initiate buffers for each column using the metadata
             colStorage.initColumns(tableMetadata, ROWS_PER_FLUSH);
+            byteBufferPool = new ByteBufferPool(3, ROWS_PER_FLUSH, tableMetadata);
         }
         if (statement_type.equals(SELECT)) {
 
@@ -274,19 +276,22 @@ public class ConnectorImpl implements Connector {
 
 
 
-    private int _flush(int row_counter, boolean asyncFlush) throws IOException, ConnException {
+    private int _flush(int row_counter, boolean isAsyncFlush) throws IOException, ConnException {
         /* Send columnar data buffers to SQream. Called by next() and close() */
 
         if (!statement_type.equals(INSERT) || row_counter == 0) {  // Not an insert statement
             return 0;
         }
 
-        flushService.process(row_length,
+        BlockDto blockAfterFlush = flushService.process(row_length,
                 rowCounter,
                 tableMetadata,
                 colStorage.getBlock(),
                 colStorage.getTotalLengthForHeader(row_length, row_counter),
-                asyncFlush);
+                byteBufferPool,
+                isAsyncFlush);
+
+        colStorage.setBlock(blockAfterFlush);
 
         return row_counter;  // counter nullified by next()
     }

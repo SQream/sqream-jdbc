@@ -39,21 +39,21 @@ public class JDBCPerf {
 
     @Before
     public void setup() throws SQLException {
-        Connection conn = createConenction();
+        Connection conn = createConnection();
         Statement statement = conn.createStatement();
         statement.execute(SQL_CREATE_TABLE);
         statement.close();
         conn.close();
     }
 
-    private Connection createConenction() throws SQLException {
+    private Connection createConnection() throws SQLException {
         return DriverManager.getConnection(URI, USER, PASSWORD);
     }
 
     @Test
     public void test() throws SQLException {
 
-        Connection conn = createConenction();
+        Connection conn = createConnection();
         PreparedStatement ps = conn.prepareStatement(SQL_INSERT);
 
         long t0 = System.nanoTime();

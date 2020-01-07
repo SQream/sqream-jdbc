@@ -2,8 +2,12 @@ package com.sqream.jdbc.connector;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class Messenger {
+    private static final Logger LOGGER = Logger.getLogger(Messenger.class.getName());
+
     private static final String CONNECT_DATABASE_TEMPLATE = "'{'\"connectDatabase\":\"{0}\", \"username\":\"{1}\", \"password\":\"{2}\", \"service\":\"{3}\"'}'";
     private static final String PREPARE_STATEMENT_TEMPLATE = "'{'\"prepareStatement\":\"{0}\", \"chunkSize\":{1}'}'";
     private static final String RECONNECT_DATABASE_TEMPLATE = "'{'\"reconnectDatabase\":\"{0}\", \"username\":\"{1}\", \"password\":\"{2}\", \"service\":\"{3}\", \"connectionId\":{4, number, #}, \"listenerId\":{5, number, #}'}'";
@@ -34,26 +38,38 @@ class Messenger {
     String connect(String database, String user, String password, String service)
             throws IOException, ConnException {
         String connStr = MessageFormat.format(CONNECT_DATABASE_TEMPLATE, database, user, password, service);
-        return socket.sendMessage(connStr, true);
+        String response = socket.sendMessage(connStr, true);
+        LOGGER.log(Level.FINE, MessageFormat.format("Request: [{0}], Response: [{1}]", connStr, response));
+        return response;
     }
 
     void reconnect(String database, String user, String password, String service, int connection_id, int listener_id)
             throws IOException, ConnException {
         String reconnectStr = MessageFormat.format(RECONNECT_DATABASE_TEMPLATE,
                 database, user, password, service, connection_id, listener_id);
-        socket.sendMessage(reconnectStr, true);
+        String response = socket.sendMessage(reconnectStr, true);
+        LOGGER.log(Level.FINE, MessageFormat.format("Request: [{0}], Response: [{1}]", reconnectStr, response));
     }
 
     void closeConnection() throws IOException, ConnException {
-        validateResponse(socket.sendMessage(COMMAND_CLOSE_CONNECTION, true), EVENT_CONNECTION_CLOSED);
+        String response = socket.sendMessage(COMMAND_CLOSE_CONNECTION, true);
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Request: [{0}], Response: [{1}]", COMMAND_CLOSE_CONNECTION, response));
+        validateResponse(response, EVENT_CONNECTION_CLOSED);
     }
 
     String closeStatement() throws IOException, ConnException {
-        return validateResponse(socket.sendMessage(COMMAND_CLOSE_STATEMENT, true), EVENT_STATEMENT_CLOSED);
+        String response = socket.sendMessage(COMMAND_CLOSE_STATEMENT, true);
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Request: [{0}], Response: [{1}]", COMMAND_CLOSE_STATEMENT, response));
+        return validateResponse(response, EVENT_STATEMENT_CLOSED);
     }
 
     String fetch() throws IOException, ConnException {
-        return socket.sendMessage(COMMAND_FETCH, true);
+        String response = socket.sendMessage(COMMAND_FETCH, true);
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Request: [{0}], Response: [{1}]", COMMAND_FETCH, response));
+        return response;
     }
 
     void isStatementReconstructed(int statementId) throws IOException, ConnException {
@@ -62,27 +78,42 @@ class Messenger {
     }
 
     String getStatementId() throws IOException, ConnException {
-        return socket.sendMessage(COMMAND_GET_STATEMENT_ID, true);
+        String response = socket.sendMessage(COMMAND_GET_STATEMENT_ID, true);
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Request: [{0}], Response: [{1}]", COMMAND_GET_STATEMENT_ID, response));
+        return response;
     }
 
     void execute() throws IOException, ConnException {
-        validateResponse(socket.sendMessage(COMMAND_EXECUTE, true), EVENT_EXECUTED);
+        String response = socket.sendMessage(COMMAND_EXECUTE, true);
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Request: [{0}], Response: [{1}]", COMMAND_EXECUTE, response));
+        validateResponse(response, EVENT_EXECUTED);
     }
 
     void isPutted() throws IOException, ConnException {
-        validateResponse(socket.sendData(null, true), EVENT_PUTTED);
+        String response = socket.sendData(null, true);
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Request: [{0}], Response: [{1}]", null, response));
+        validateResponse(response, EVENT_PUTTED);
     }
 
     void put(int row_counter) throws IOException, ConnException {
-        socket.sendMessage(MessageFormat.format(PUT_TEMPLATE, row_counter), false);
+        String message = MessageFormat.format(PUT_TEMPLATE, row_counter);
+        socket.sendMessage(message, false);
+        LOGGER.log(Level.FINE, message);
     }
 
     String queryTypeInput() throws IOException, ConnException {
-        return socket.sendMessage(QUERY_TYPE_IN, true);
+        String response = socket.sendMessage(QUERY_TYPE_IN, true);
+        LOGGER.log(Level.FINE, MessageFormat.format("Request: [{0}], Response: [{1}]", QUERY_TYPE_IN, response));
+        return response;
     }
 
     String queryTypeOut() throws IOException, ConnException {
-        return socket.sendMessage(QUERY_TYPE_OUT, true);
+        String response = socket.sendMessage(QUERY_TYPE_OUT, true);
+        LOGGER.log(Level.FINE, MessageFormat.format("Request: [{0}], Response: [{1}]", QUERY_TYPE_OUT, response));
+        return response;
     }
 
     private String validateResponse(String response, String expected) throws ConnException {

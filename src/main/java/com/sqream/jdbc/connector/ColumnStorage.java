@@ -100,6 +100,12 @@ public class ColumnStorage {
         return total_bytes;
     }
 
+    public void setBlock(BlockDto block) {
+        dataColumns = block.getDataBuffers();
+        null_columns = block.getNullBuffers();
+        nvarc_len_columns = block.getNvarcLenBuffers();
+    }
+
     public BlockDto getBlock() {
         return new BlockDto(dataColumns, null_columns, nvarc_len_columns);
     }

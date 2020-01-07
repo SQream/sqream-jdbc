@@ -71,10 +71,10 @@ public class JDBCPerf {
             ps.setTimestamp(11, datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45));
             ps.addBatch();
         }
-        long t1 = System.nanoTime();
-
-        log.info(MessageFormat.format("Insert for {0} took: {1} ms\n", AMOUNT, (t1-t0)/1_000_000));
         ps.close();
+
+        long t1 = System.nanoTime();
+        log.info(MessageFormat.format("Insert for {0} took: {1} ms\n", AMOUNT, (t1-t0)/1_000_000));
 
         checkResult(conn);
         conn.close();

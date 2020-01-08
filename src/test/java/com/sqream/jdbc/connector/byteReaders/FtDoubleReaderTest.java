@@ -51,7 +51,7 @@ public class FtDoubleReaderTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void readIntTest() {
-        checkExceptionMessage(reader::readUbyte, "Integer");
+        checkExceptionMessage(reader::readInt, "Integer");
     }
 
     @Test(expected = UnsupportedOperationException.class)

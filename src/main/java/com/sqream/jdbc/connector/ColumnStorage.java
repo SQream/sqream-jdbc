@@ -11,8 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 
-import static com.sqream.jdbc.utils.Utils.intToDate;
-import static com.sqream.jdbc.utils.Utils.longToDt;
+import static com.sqream.jdbc.utils.Utils.*;
 
 public class ColumnStorage {
 
@@ -332,25 +331,6 @@ public class ColumnStorage {
                 .order(ByteOrder.LITTLE_ENDIAN);
         new_text_buf.put(dataColumns[index]);
         dataColumns[index] = new_text_buf;
-    }
-
-    //FIXME: Alex K 29.12.19 Check why ZoneId is not used. Cover with tests or remove if it's not necessary.
-    private static int dateToInt(Date d ,ZoneId zone) {
-
-        // Consider a different implementation here
-        if (d == null) {
-            return 0;
-        }
-
-        LocalDate date = d.toLocalDate();
-        int year = date.getYear();
-        int month = date.getMonthValue();
-        int day   = date.getDayOfMonth();
-
-        month = (month + 9) % 12;
-        year = year - month / 10;
-
-        return (365 * year + year / 4 - year / 100 + year / 400 + (month * 306 + 5) / 10 + (day - 1));
     }
 
     private static long dtToLong(Timestamp ts, ZoneId zone) {  // ZonedDateTime

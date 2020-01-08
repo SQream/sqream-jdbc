@@ -13,6 +13,25 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Utils {
 
+    //FIXME: Alex K 29.12.19 Check why ZoneId is not used. Cover with tests or remove if it's not necessary.
+    public static int dateToInt(Date d ,ZoneId zone) {
+
+        // Consider a different implementation here
+        if (d == null) {
+            return 0;
+        }
+
+        LocalDate date = d.toLocalDate();
+        int year = date.getYear();
+        int month = date.getMonthValue();
+        int day   = date.getDayOfMonth();
+
+        month = (month + 9) % 12;
+        year = year - month / 10;
+
+        return (365 * year + year / 4 - year / 100 + year / 400 + (month * 306 + 5) / 10 + (day - 1));
+    }
+
     public static LocalDate intToLocalDate(int date_as_int) {
 
         long yy = ((long)10000*date_as_int + 14780)/3652425;

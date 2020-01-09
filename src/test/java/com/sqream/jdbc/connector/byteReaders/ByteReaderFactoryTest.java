@@ -20,4 +20,9 @@ public class ByteReaderFactoryTest {
                     "ByteReaderFactory does not have implementation for [{0}] column type", checkedType), e);
         }
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getReaderForIncorrectColumnTypeTest() {
+        ByteReaderFactory.getReader("SomeUnsupportedColumnType");
+    }
 }

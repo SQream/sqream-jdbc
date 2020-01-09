@@ -1,4 +1,4 @@
-package com.sqream.jdbc.connector;
+package com.sqream.jdbc.connector.enums;
 
 public enum ColumnTypes {
 

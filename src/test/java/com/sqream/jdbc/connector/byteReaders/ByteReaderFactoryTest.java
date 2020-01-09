@@ -1,6 +1,6 @@
 package com.sqream.jdbc.connector.byteReaders;
 
-import com.sqream.jdbc.connector.ColumnTypes;
+import com.sqream.jdbc.connector.enums.ColumnTypes;
 import org.junit.Test;
 
 import java.text.MessageFormat;

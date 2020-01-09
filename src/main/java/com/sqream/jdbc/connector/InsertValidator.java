@@ -16,11 +16,6 @@ public class InsertValidator {
         validateSetType(index, type);
     }
 
-    public void validateGet(int index, String type) {
-        validateColumnIndex(index);
-        validateGetType(index, type);
-    }
-
     public void validateColumnIndex(int index) {
         if (index <0 || index >= metadata.getRowLength()) {
             throw new IllegalArgumentException(MessageFormat.format(

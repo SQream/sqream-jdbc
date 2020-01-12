@@ -1,5 +1,9 @@
 package com.sqream.jdbc.connector.messenger;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.WriterConfig;
 import com.sqream.jdbc.connector.*;
 
 import java.io.IOException;
@@ -29,7 +33,7 @@ public class MessengerImpl implements Messenger {
     }
 
     @Override
-    public int prepareStatement() throws IOException, ConnException {
+    public int openStatement() throws IOException, ConnException {
         return jsonParser.toStatementId(messageSender.getStatementId());
     }
 
@@ -76,5 +80,20 @@ public class MessengerImpl implements Messenger {
     @Override
     public void reconnect(String database, String user, String password, String service, int connectionId, int listenerId) throws IOException, ConnException {
         messageSender.reconnect(database, user, password, service, connectionId, listenerId);
+    }
+
+    @Override
+    public StatementStateDto prepareStatement(String statement, int chunkSize) throws ConnException, IOException {
+        JsonObject prepare_jsonify;
+        try {
+            prepare_jsonify = Json.object()
+                    .add("prepareStatement", statement)
+                    .add("chunkSize", chunkSize);
+        } catch(ParseException e) {
+            throw new ConnException ("Could not parse the statement for PrepareStatement");
+        }
+        String prepareStr = prepare_jsonify.toString(WriterConfig.MINIMAL);
+
+        return jsonParser.toStatementState(socket.sendMessage(prepareStr, true));
     }
 }

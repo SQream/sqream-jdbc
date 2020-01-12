@@ -43,7 +43,6 @@ import javax.script.ScriptException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // SSL over SocketChannel abstraction
@@ -85,7 +84,6 @@ public class ConnectorImpl implements Connector {
 
     private TableMetadata tableMetadata;
     private ColumnStorage colStorage;
-    private JsonParser jsonParser;
 
     private boolean openStatement = false;
 
@@ -122,7 +120,6 @@ public class ConnectorImpl implements Connector {
         this.messenger = new MessengerImpl(socket);
         this.tableMetadata = new TableMetadata();
         this.colStorage = new ColumnStorage();
-        this.jsonParser = new JsonParser();
         this.validator = new InsertValidator(tableMetadata);
         this.flushService = new FlushService(socket, messenger);
     }
@@ -343,26 +340,10 @@ public class ConnectorImpl implements Connector {
         }
         openStatement = true;
         // Get statement ID, send prepareStatement and get response parameters
-        statementId = messenger.prepareStatement();
+        statementId = messenger.openStatement();
 
-        // Generating a valid json string via external library
-        JsonObject prepare_jsonify;
-        try
-        {
-            prepare_jsonify = Json.object()
-                    .add("prepareStatement", statement)
-                    .add("chunkSize", chunkSize);
-        }
-        catch(ParseException e)
-        {
-            throw new ConnException ("Could not parse the statement for PrepareStatement");
-        }
-        // Jsonifying via standard library - verify with test
-        //engine_bindings.put("statement", statement);
-        //String prepareStr = (String) engine.eval("JSON.stringify({prepareStatement: statement, chunkSize: 0})");
-        String prepareStr = prepare_jsonify.toString(WriterConfig.MINIMAL);
+        StatementStateDto statementState = messenger.prepareStatement(statement, chunkSize);
 
-        StatementStateDto statementState = jsonParser.toStatementState(socket.sendMessage(prepareStr, true));
 
         int port = useSsl ? statementState.getPortSsl() : statementState.getPort();
         // Reconnect and reestablish statement if redirected by load balancer

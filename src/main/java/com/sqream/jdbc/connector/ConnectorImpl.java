@@ -14,6 +14,8 @@ import com.eclipsesource.json.WriterConfig;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.sqream.jdbc.connector.enums.StatementType;
+import com.sqream.jdbc.connector.messenger.Messenger;
+import com.sqream.jdbc.connector.messenger.MessengerImpl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
@@ -41,7 +43,6 @@ import javax.script.ScriptException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // SSL over SocketChannel abstraction
@@ -83,7 +84,6 @@ public class ConnectorImpl implements Connector {
 
     private TableMetadata tableMetadata;
     private ColumnStorage colStorage;
-    private JsonParser jsonParser;
 
     private boolean openStatement = false;
 
@@ -117,10 +117,9 @@ public class ConnectorImpl implements Connector {
         if (cluster) {
             reconnectToNode();
         }
-        this.messenger = new Messenger(socket);
+        this.messenger = new MessengerImpl(socket);
         this.tableMetadata = new TableMetadata();
         this.colStorage = new ColumnStorage();
-        this.jsonParser = new JsonParser();
         this.validator = new InsertValidator(tableMetadata);
         this.flushService = new FlushService(socket, messenger);
     }
@@ -215,7 +214,7 @@ public class ConnectorImpl implements Connector {
 
         // Send fetch request and get metadata on data to be received
 
-        FetchMetadataDto fetchMeta = jsonParser.toFetchMetadata(messenger.fetch());
+        FetchMetadataDto fetchMeta = messenger.fetch();
 
         if (fetchMeta.getNewRowsFetched() == 0) {
             close();  // Auto closing statement if done fetching
@@ -310,7 +309,7 @@ public class ConnectorImpl implements Connector {
         password = _password;
         service = _service;
 
-        ConnectionStateDto connState = jsonParser.toConnectionState(messenger.connect(database, user, password, service));
+        ConnectionStateDto connState = messenger.connect(database, user, password, service);
         connection_id = connState.getConnectionId();
         varchar_encoding = connState.getVarcharEncoding();
 
@@ -341,26 +340,10 @@ public class ConnectorImpl implements Connector {
         }
         openStatement = true;
         // Get statement ID, send prepareStatement and get response parameters
-        statementId = jsonParser.toStatementId(messenger.getStatementId());
+        statementId = messenger.openStatement();
 
-        // Generating a valid json string via external library
-        JsonObject prepare_jsonify;
-        try
-        {
-            prepare_jsonify = Json.object()
-                    .add("prepareStatement", statement)
-                    .add("chunkSize", chunkSize);
-        }
-        catch(ParseException e)
-        {
-            throw new ConnException ("Could not parse the statement for PrepareStatement");
-        }
-        // Jsonifying via standard library - verify with test
-        //engine_bindings.put("statement", statement);
-        //String prepareStr = (String) engine.eval("JSON.stringify({prepareStatement: statement, chunkSize: 0})");
-        String prepareStr = prepare_jsonify.toString(WriterConfig.MINIMAL);
+        StatementStateDto statementState = messenger.prepareStatement(statement, chunkSize);
 
-        StatementStateDto statementState = jsonParser.toStatementState(socket.sendMessage(prepareStr, true));
 
         int port = useSsl ? statementState.getPortSsl() : statementState.getPort();
         // Reconnect and reestablish statement if redirected by load balancer
@@ -374,10 +357,10 @@ public class ConnectorImpl implements Connector {
 
         // Getting query type manouver and setting the type of query
         messenger.execute();
-        List<ColumnMetadataDto> queryType = jsonParser.toQueryTypeInput(messenger.queryTypeInput());
+        List<ColumnMetadataDto> queryType = messenger.queryTypeInput();
 
         if (queryType.isEmpty()) {
-            queryType = jsonParser.toQueryTypeOut(messenger.queryTypeOut());
+            queryType = messenger.queryTypeOut();
             statement_type = queryType.isEmpty() ? DML : SELECT;
         }
         else {
@@ -455,9 +438,6 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public Boolean close() throws IOException, ConnException {
-
-    	String res = "";
-
     	if (isOpen()) {
     		if (openStatement) {
                 flushService.awaitTermination();
@@ -465,16 +445,15 @@ public class ConnectorImpl implements Connector {
     	            _flush(rowCounter, false);
     	        }
     	            // Statement is finished so no need to reset row_counter etc
-
-                res = messenger.closeStatement();
+                messenger.closeStatement();
                 openStatement = false;  // set to true in execute()
             }
-            else
-                return false;  //res =  "statement " + statement_id + " already closed";
+            else {
+                return false;
+            }
+        } else {
+            return false;
         }
-        else
-            return false;  //res =  "connection already closed";
-
         return true;
     }
 

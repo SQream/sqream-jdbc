@@ -1,12 +1,15 @@
-package com.sqream.jdbc.connector;
+package com.sqream.jdbc.connector.messenger;
+
+import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.connector.SQSocketConnector;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class Messenger {
-    private static final Logger LOGGER = Logger.getLogger(Messenger.class.getName());
+class MessageSender {
+    private static final Logger LOGGER = Logger.getLogger(MessageSender.class.getName());
 
     private static final String CONNECT_DATABASE_TEMPLATE = "'{'\"connectDatabase\":\"{0}\", \"username\":\"{1}\", \"password\":\"{2}\", \"service\":\"{3}\"'}'";
     private static final String PREPARE_STATEMENT_TEMPLATE = "'{'\"prepareStatement\":\"{0}\", \"chunkSize\":{1}'}'";
@@ -31,7 +34,7 @@ class Messenger {
 
     private final SQSocketConnector socket;
 
-    Messenger(SQSocketConnector socket) {
+    MessageSender(SQSocketConnector socket) {
         this.socket = socket;
     }
 

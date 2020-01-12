@@ -1,5 +1,7 @@
 package com.sqream.jdbc.connector;
 
+import com.sqream.jdbc.connector.messenger.Messenger;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.MessageFormat;

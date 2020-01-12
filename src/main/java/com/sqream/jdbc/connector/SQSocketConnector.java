@@ -11,7 +11,7 @@ import java.util.StringJoiner;
 
 import static com.sqream.jdbc.utils.Utils.decode;
 
-class SQSocketConnector extends SQSocket {
+public class SQSocketConnector extends SQSocket {
 
     private static final byte PROTOCOL_VERSION = 8;
     private static final int HEADER_SIZE = 10;
@@ -51,7 +51,7 @@ class SQSocketConnector extends SQSocket {
     }
 
     // (4) /* Manage actual sending and receiving of ByteBuffers over exising socket  */
-    String sendData(ByteBuffer data, boolean get_response) throws IOException, ConnException {
+    public String sendData(ByteBuffer data, boolean get_response) throws IOException, ConnException {
 
         if (data != null ) {
             data.flip();
@@ -74,7 +74,7 @@ class SQSocketConnector extends SQSocket {
     }
 
     // (5)   /* Send a JSON string to SQream over socket  */
-    String sendMessage(String message, boolean getResponse) throws IOException, ConnException {
+    public String sendMessage(String message, boolean getResponse) throws IOException, ConnException {
 
         byte[] messageBytes = message.getBytes();
         ByteBuffer messageBuffer = generateHeaderedBuffer(messageBytes.length, true);

@@ -1,8 +1,10 @@
-package com.sqream.jdbc.connector;
+package com.sqream.jdbc.connector.storage;
+
+import com.sqream.jdbc.connector.TableMetadata;
 
 import java.nio.ByteBuffer;
 
-public class ColumnStorageBuilder implements WithMetadata, WithBlockSize, StorageCreator {
+public class ColumnStorageBuilder implements BuilderWithMetadata, BuilderWithBlockSize, StorageCreator {
 
     private TableMetadata metadata;
     private int blockSize;
@@ -10,7 +12,7 @@ public class ColumnStorageBuilder implements WithMetadata, WithBlockSize, Storag
 
     ColumnStorageBuilder() { }
 
-    public WithBlockSize withMetadata(TableMetadata metadata) {
+    public BuilderWithBlockSize withMetadata(TableMetadata metadata) {
         this.metadata = metadata;
         return this;
     }
@@ -36,18 +38,5 @@ public class ColumnStorageBuilder implements WithMetadata, WithBlockSize, Storag
         return result;
     }
 
-}
-
-interface WithMetadata {
-    WithBlockSize withMetadata(TableMetadata metadata);
-}
-
-interface WithBlockSize {
-    StorageCreator withBlockSize(int blockSize);
-}
-
-interface StorageCreator {
-    StorageCreator fromFetchBuffers(ByteBuffer[] fetchBuffers);
-    ColumnStorage build();
 }
 

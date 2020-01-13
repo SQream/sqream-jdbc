@@ -1,5 +1,7 @@
-package com.sqream.jdbc.connector;
+package com.sqream.jdbc.connector.storage;
 
+import com.sqream.jdbc.connector.BlockDto;
+import com.sqream.jdbc.connector.TableMetadata;
 import com.sqream.jdbc.connector.byteReaders.ByteReaderFactory;
 
 import java.nio.ByteBuffer;
@@ -22,7 +24,7 @@ public class ColumnStorage {
 
     ColumnStorage() { }
 
-    public static WithMetadata builder() {
+    public static BuilderWithMetadata builder() {
         return new ColumnStorageBuilder();
     }
 

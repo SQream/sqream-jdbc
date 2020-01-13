@@ -14,6 +14,7 @@ import com.eclipsesource.json.JsonObject;
 import com.sqream.jdbc.connector.enums.StatementType;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
+import com.sqream.jdbc.connector.storage.ColumnStorage;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;

@@ -52,23 +52,23 @@ public class TableMetadata {
         return colNames[index];
     }
 
-    int getRowLength() {
+    public int getRowLength() {
         return rowLength;
     }
 
-    String getType(int index) {
+    public String getType(int index) {
         return colTypes[index];
     }
 
-    int getSize(int index) {
+    public int getSize(int index) {
         return colSizes[index];
     }
 
-    boolean isNullable(int index) {
+    public boolean isNullable(int index) {
         return colNullable.get(index);
     }
 
-    boolean isTruVarchar(int index) {
+    public boolean isTruVarchar(int index) {
         return colTvc.get(index);
     }
 

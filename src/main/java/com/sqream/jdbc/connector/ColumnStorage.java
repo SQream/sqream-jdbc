@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -18,12 +17,17 @@ public class ColumnStorage {
     private ByteBuffer[] dataColumns;
     private ByteBuffer[] null_columns;
     private ByteBuffer[] nvarc_len_columns;
-    private ByteBuffer null_resetter;
     private TableMetadata metadata;
     private int blockSize;
 
-    public void initColumns(TableMetadata metadata, int blockSize) {
-        init(metadata, blockSize);
+    ColumnStorage() { }
+
+    public static WithMetadata builder() {
+        return new ColumnStorageBuilder();
+    }
+
+    void init(TableMetadata metadata, int blockSize) {
+        initArrays(metadata, blockSize);
         // Initiate buffers for each column using the metadata
         for (int idx = 0; idx < metadata.getRowLength(); idx++) {
             initDataColumns(idx, metadata.getSize(idx) * blockSize);
@@ -40,17 +44,8 @@ public class ColumnStorage {
         }
     }
 
-    private void init(TableMetadata metadata, int blockSize) {
-        this.metadata = metadata;
-        this.blockSize = blockSize;
-        dataColumns = new ByteBuffer[metadata.getRowLength()];
-        null_columns = new ByteBuffer[metadata.getRowLength()];
-        nvarc_len_columns = new ByteBuffer[metadata.getRowLength()];
-        setNullResetter();
-    }
-
-    public void load(ByteBuffer[] fetchBuffers, TableMetadata metadata, int blockSize) {
-        init(metadata, blockSize);
+    void initFromFetch(ByteBuffer[] fetchBuffers, TableMetadata metadata, int blockSize) {
+        initArrays(metadata, blockSize);
         // Sort buffers to appropriate arrays (row_length determied during _query_type())
         for (int idx=0, buf_idx = 0; idx < metadata.getRowLength(); idx++, buf_idx++) {
             if(metadata.isNullable(idx)) {
@@ -69,6 +64,14 @@ public class ColumnStorage {
         }
     }
 
+    private void initArrays(TableMetadata metadata, int blockSize) {
+        this.metadata = metadata;
+        this.blockSize = blockSize;
+        dataColumns = new ByteBuffer[metadata.getRowLength()];
+        null_columns = new ByteBuffer[metadata.getRowLength()];
+        nvarc_len_columns = new ByteBuffer[metadata.getRowLength()];
+    }
+
     public void loadBlock(BlockDto block) {
         this.dataColumns = block.getDataBuffers();
         this.null_columns = block.getNullBuffers();
@@ -80,7 +83,8 @@ public class ColumnStorage {
             if (null_columns[idx] != null) {
                 // Clear doesn't actually nullify/reset the data
                 null_columns[idx].clear();
-                null_columns[idx].put(null_resetter);
+                //TODO: Alex K 13.01.2020 Check why previously allocated DirectByteBuffer and reset with HeapByteBuffer
+                null_columns[idx].put(ByteBuffer.allocate(blockSize));
                 null_columns[idx].clear();
             }
             if(nvarc_len_columns[idx] != null)
@@ -304,10 +308,6 @@ public class ColumnStorage {
                 .readDateTime(dataColumns[colIndex], rowIndex);
 
         return longToDt(dateTimeAsLong, zoneId);
-    }
-
-    private void setNullResetter() {
-        null_resetter = ByteBuffer.allocate(blockSize);
     }
 
     private void initDataColumns(int index, int size) {

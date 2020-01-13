@@ -9,8 +9,6 @@ import java.nio.ByteOrder;
 // More SSL shite
 
 // JSON parsing library
-import com.eclipsesource.json.ParseException;
-import com.eclipsesource.json.WriterConfig;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.sqream.jdbc.connector.enums.StatementType;
@@ -119,7 +117,6 @@ public class ConnectorImpl implements Connector {
         }
         this.messenger = new MessengerImpl(socket);
         this.tableMetadata = new TableMetadata();
-        this.colStorage = new ColumnStorage();
         this.validator = new InsertValidator(tableMetadata);
         this.flushService = new FlushService(socket, messenger);
     }
@@ -194,7 +191,11 @@ public class ConnectorImpl implements Connector {
             columns_set = new BitSet(row_length); // defaults to false
 
             // Initiate buffers for each column using the metadata
-            colStorage.initColumns(tableMetadata, ROWS_PER_FLUSH);
+            colStorage = ColumnStorage.builder()
+                    .withMetadata(tableMetadata)
+                    .withBlockSize(ROWS_PER_FLUSH)
+                    .build();
+
             byteBufferPool = new ByteBufferPool(3, ROWS_PER_FLUSH, tableMetadata);
         }
         if (statement_type.equals(SELECT)) {
@@ -222,17 +223,11 @@ public class ConnectorImpl implements Connector {
         }
         // Initiate storage columns using the "colSzs" returned by SQream
         // All buffers in a single array to use SocketChannel's read(ByteBuffer[] dsts)
-        int col_buf_size;
         ByteBuffer[] fetch_buffers = new ByteBuffer[fetchMeta.colAmount()];
 
         for (int i=0; i < fetchMeta.colAmount(); i++) {
             fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);
         }
-        // Sort buffers to appropriate arrays (row_length determied during _query_type())
-        colStorage.load(fetch_buffers, tableMetadata, ROWS_PER_FLUSH);
-
-        // Add buffers to buffer list
-        queue.add(colStorage.getBlock());
 
         rows_per_batch.add(fetchMeta.getNewRowsFetched());
 
@@ -242,6 +237,16 @@ public class ConnectorImpl implements Connector {
             socket.readData(fetched, fetched.capacity());
             //Arrays.stream(fetch_buffers).forEach(fetched -> fetched.flip());
         }
+
+        // Sort buffers to appropriate arrays (row_length determied during _query_type())
+        colStorage = ColumnStorage.builder()
+                .withMetadata(tableMetadata)
+                .withBlockSize(ROWS_PER_FLUSH)
+                .fromFetchBuffers(fetch_buffers)
+                .build();
+
+        // Add buffers to buffer list
+        queue.add(colStorage.getBlock());
 
         return fetchMeta.getNewRowsFetched();  // counter nullified by next()
     }

@@ -12,12 +12,12 @@ public class ColumnStorageBuilder implements BuilderWithMetadata, BuilderWithBlo
 
     ColumnStorageBuilder() { }
 
-    public BuilderWithBlockSize withMetadata(TableMetadata metadata) {
+    public BuilderWithBlockSize metadata(TableMetadata metadata) {
         this.metadata = metadata;
         return this;
     }
 
-    public StorageCreator withBlockSize(int blockSize) {
+    public StorageCreator blockSize(int blockSize) {
         this.blockSize = blockSize;
         return this;
     }

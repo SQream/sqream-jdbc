@@ -193,8 +193,8 @@ public class ConnectorImpl implements Connector {
 
             // Initiate buffers for each column using the metadata
             colStorage = ColumnStorage.builder()
-                    .withMetadata(tableMetadata)
-                    .withBlockSize(ROWS_PER_FLUSH)
+                    .metadata(tableMetadata)
+                    .blockSize(ROWS_PER_FLUSH)
                     .build();
 
             byteBufferPool = new ByteBufferPool(3, ROWS_PER_FLUSH, tableMetadata);
@@ -241,8 +241,8 @@ public class ConnectorImpl implements Connector {
 
         // Sort buffers to appropriate arrays (row_length determied during _query_type())
         colStorage = ColumnStorage.builder()
-                .withMetadata(tableMetadata)
-                .withBlockSize(ROWS_PER_FLUSH)
+                .metadata(tableMetadata)
+                .blockSize(ROWS_PER_FLUSH)
                 .fromFetchBuffers(fetch_buffers)
                 .build();
 
@@ -288,7 +288,8 @@ public class ConnectorImpl implements Connector {
             return 0;
         }
 
-        BlockDto blockAfterFlush = flushService.process(row_length,
+        BlockDto blockAfterFlush = flushService.process(
+                row_length,
                 rowCounter,
                 tableMetadata,
                 colStorage.getBlock(),

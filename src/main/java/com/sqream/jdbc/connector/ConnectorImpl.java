@@ -117,8 +117,6 @@ public class ConnectorImpl implements Connector {
             reconnectToNode();
         }
         this.messenger = new MessengerImpl(socket);
-        this.tableMetadata = new TableMetadata();
-        this.validator = new InsertValidator(tableMetadata);
         this.flushService = new FlushService(socket, messenger);
     }
 
@@ -173,13 +171,16 @@ public class ConnectorImpl implements Connector {
         if(row_length ==0) {
             return;
         }
-        // Set metadata arrays given the amount of columns
-        tableMetadata.init(row_length);
+
+        tableMetadata = TableMetadata.builder()
+                .rowLength(row_length)
+                .fromColumnsMetadata(columnsMetadata)
+                .statementType(statement_type)
+                .build();
+
+        validator = new InsertValidator(tableMetadata);
 
         col_calls = new int[row_length];
-        // Parse the queryType json to get metadata for every column
-        // An internal item looks like: {"isTrueVarChar":false,"nullable":true,"type":["ftInt",4,0]}
-        tableMetadata.set(columnsMetadata, statement_type);
 
         // Create Storage for insert / select operations
         if (statement_type.equals(INSERT)) {

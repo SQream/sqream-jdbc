@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector;
 
+import com.sqream.jdbc.connector.enums.StatementType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,7 +10,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
-public class ColumnsMetadataTest {
+public class TableMetadataTest {
 
     private TableMetadata metaData;
     private static final int ROW_LENGTH = 5;
@@ -23,7 +24,10 @@ public class ColumnsMetadataTest {
 
     @Before
     public void setUp() {
-        metaData = new TableMetadata();
+        setupTestEnv(StatementType.SELECT);
+    }
+
+    private void setupTestEnv (StatementType statementType) {
         EXPECTED_ALL_NAMES = new ArrayList<>(ROW_LENGTH);
         EXPECTED_ALL_TYPES = new ArrayList<>(ROW_LENGTH);
         EXPECTED_ALL_SIZES = new ArrayList<>(ROW_LENGTH);
@@ -31,14 +35,14 @@ public class ColumnsMetadataTest {
         EXPECTED_TRU_VARCHAR = new ArrayList<>(ROW_LENGTH);
         EXPECTED_SIZE_SUM = 0;
 
-        metaData.init(ROW_LENGTH);
+        List<ColumnMetadataDto> columnMetadataList = new ArrayList<>(ROW_LENGTH);
         for (int i = 0; i < ROW_LENGTH; i++) {
             String testName = String.format("COL_%s_TEST_NAME", i + 1);
             String testType = String.format("COL_%s_TEST_TYPE", i + 1);
             int curSize = 10 + i;
             boolean isNullable = i % 2 == 0;
             boolean isTruVarchar = i % 2 == 0;
-            metaData.setByIndex(i, new ColumnMetadataDto(isTruVarchar, testName, isNullable, testType, curSize));
+            columnMetadataList.add(new ColumnMetadataDto(isTruVarchar, testName, isNullable, testType, curSize));
 
             EXPECTED_ALL_NAMES.add(testName);
             EXPECTED_ALL_TYPES.add(testType);
@@ -48,6 +52,12 @@ public class ColumnsMetadataTest {
             EXPECTED_SIZE_SUM += curSize;
             saveMaxSize(curSize);
         }
+
+        metaData = TableMetadata.builder()
+                .rowLength(ROW_LENGTH)
+                .fromColumnsMetadata(columnMetadataList)
+                .statementType(statementType)
+                .build();
     }
 
     private void saveMaxSize(int size) {
@@ -109,6 +119,44 @@ public class ColumnsMetadataTest {
         for (int i = 0; i < EXPECTED_ALL_NAMES.size(); i++) {
             assertEquals(EXPECTED_ALL_NAMES.get(i), metaData.getName(i));
         }
+    }
+
+    @Test
+    public void getNameInsertStatementTest() {
+        setupTestEnv(StatementType.INSERT);
+        String expectedDefaultName = "denied";
+
+        assertTrue(EXPECTED_ALL_NAMES.size() > 0);
+        for (int i = 0; i < EXPECTED_ALL_NAMES.size(); i++) {
+            assertEquals(expectedDefaultName, metaData.getName(i));
+            assertTrue(metaData.getAllNames().contains(expectedDefaultName));
+        }
+    }
+
+    @Test
+    public void getNameDMLStatementTest() {
+        setupTestEnv(StatementType.DML);
+        String expectedDefaultName = "denied";
+
+        assertTrue(EXPECTED_ALL_NAMES.size() > 0);
+        for (int i = 0; i < EXPECTED_ALL_NAMES.size(); i++) {
+            assertEquals(expectedDefaultName, metaData.getName(i));
+            assertTrue(metaData.getAllNames().contains(expectedDefaultName));
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void whenStatementTypeIsNullgetNameThrowExceptionTest() {
+        setupTestEnv(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void whenColumnMetadataListIsNullgetNameThrowExceptionTest() {
+        TableMetadata.builder()
+                .rowLength(ROW_LENGTH)
+                .fromColumnsMetadata(null)
+                .statementType(StatementType.INSERT)
+                .build();
     }
 
     @Test

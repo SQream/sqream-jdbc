@@ -2,6 +2,7 @@ package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.enums.StatementType;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -19,7 +20,7 @@ public class TableMetadata {
     private HashMap<String, Integer> colNamesMap;
     private int rowLength;
 
-    public void init(int rowLength) {
+    private TableMetadata(int rowLength) {
         this.rowLength = rowLength;
         colNames = new String[rowLength];
         colTypes = new String[rowLength];
@@ -29,7 +30,11 @@ public class TableMetadata {
         colNamesMap = new HashMap<>();
     }
 
-    public void setByIndex(int index, ColumnMetadataDto colMetadata) {
+    public static WithRowLength builder () {
+        return new TableMetadataBuilder();
+    }
+
+    private void setByIndex(int index, ColumnMetadataDto colMetadata) {
         colNullable.set(index, colMetadata.isNullable());
         colTvc.set(index, colMetadata.isTruVarchar());
         colNames[index] = colMetadata.getName();
@@ -38,7 +43,13 @@ public class TableMetadata {
         colNamesMap.put(colNames[index].toLowerCase(), index + 1);
     }
 
-    public void set(List<ColumnMetadataDto> metadataDtos, StatementType statementType) {
+    private void init(List<ColumnMetadataDto> metadataDtos, StatementType statementType) {
+        if (metadataDtos == null || statementType == null) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "ColumnMetadataList or statementType can not be null: metadataDtos=[{0}], statementType=[{1}]",
+                    metadataDtos, statementType));
+        }
+
         for(int i=0; i < metadataDtos.size(); i++) {
             ColumnMetadataDto colMetaDataDto = metadataDtos.get(i);
             if (!statementType.equals(SELECT)) {
@@ -90,5 +101,54 @@ public class TableMetadata {
 
     Set<String> getAllNames() {
         return colNamesMap.keySet();
+    }
+
+    private static class TableMetadataBuilder implements WithRowLength, WithColumnMetadataList, WithStatementType, TableMetadataCreator {
+
+        private int rowLength;
+        private StatementType statementType;
+        private List<ColumnMetadataDto> metadataDtos;
+
+        @Override
+        public WithColumnMetadataList rowLength(int rowLength) {
+            this.rowLength = rowLength;
+            return this;
+        }
+
+        @Override
+        public WithStatementType fromColumnsMetadata(List<ColumnMetadataDto> metadataDtos) {
+            this.metadataDtos = metadataDtos;
+            return this;
+        }
+
+        @Override
+        public TableMetadataBuilder statementType(StatementType statementType) {
+            this.statementType = statementType;
+            return this;
+        }
+
+        @Override
+        public TableMetadata build() {
+            TableMetadata result = new TableMetadata(rowLength);
+            result.init(metadataDtos, statementType);
+            return result;
+        }
+    }
+
+    interface WithRowLength {
+        WithColumnMetadataList rowLength(int rowLength);
+    }
+
+    interface WithColumnMetadataList {
+
+        WithStatementType fromColumnsMetadata(List<ColumnMetadataDto> metadataDtos);
+    }
+
+    interface WithStatementType {
+        TableMetadataCreator statementType(StatementType statementType);
+    }
+
+    interface TableMetadataCreator {
+        TableMetadata build();
     }
 }

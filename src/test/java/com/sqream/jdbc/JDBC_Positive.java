@@ -733,6 +733,34 @@ public class JDBC_Positive {
         }
     }
 
+    @Test
+    public void stores_supports_functions() throws SQLException {
+	    try (Connection conn = DriverManager.getConnection(url,"sqream","sqream")) {
+            DatabaseMetaData dbmeta = conn.getMetaData();
+
+            assertTrue(dbmeta.storesLowerCaseIdentifiers());
+            assertTrue(dbmeta.storesMixedCaseQuotedIdentifiers());
+            assertTrue(dbmeta.supportsMixedCaseQuotedIdentifiers());
+        }
+    }
+
+    @Test
+    public void get_x_functions() throws SQLException {
+        String expectedTimeDateFunctions = "curdate, curtime, dayname, dayofmonth, dayofweek, dayofyear, hour, minute, month, monthname, now, quarter, timestampadd, timestampdiff, second, week, year";
+	    String expectedStringFunctions = "CHAR_LENGTH, CHARINDEX, ||, ISPREFIXOF, LEFT, LEN, LIKE, LOWER, LTRIM, OCTET_LENGTH, PATINDEX, REGEXP_COUNT, REGEXP_INSTR, REGEXP_SUBSTR, REPLACE, REVERSE, RIGHT, RLIKE, RTRIM, SUBSTRING, TRIM, LOWER";
+        String expectedSystemFunctions = "explain, show_connections, show_locks, show_node_info, show_server_status, show_version, stop_statement";
+        String expectedNumericFunctions = "ABS, ACOS, ASIN, ATAN, ATN2, CEILING, CEIL, COS, COT, CRC64, DEGREES, EXP, FLOOR, LOG, LOG10, MOD, %, PI, POWER, RADIANS, ROUND, SIN, SQRT, SQUARE, TAN, TRUNC";
+
+        try (Connection conn = DriverManager.getConnection(url,"sqream","sqream")) {
+            DatabaseMetaData dbmeta = conn.getMetaData();
+
+            assertEquals(expectedTimeDateFunctions, dbmeta.getTimeDateFunctions());
+            assertEquals(expectedStringFunctions, dbmeta.getStringFunctions());
+            assertEquals(expectedSystemFunctions, dbmeta.getSystemFunctions());
+            assertEquals(expectedNumericFunctions, dbmeta.getNumericFunctions());
+        }
+    }
+
 
     private boolean insert(String table_type) throws IOException, SQLException, KeyManagementException, NoSuchAlgorithmException{
         

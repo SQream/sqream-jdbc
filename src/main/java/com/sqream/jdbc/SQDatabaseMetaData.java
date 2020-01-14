@@ -193,14 +193,14 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		// Retrieves a comma-separated list of string functions available with this database. 
 		// These are the Open Group CLI string function names used in the JDBC function escape clause.
 	
-		return "";
+		return "CHAR_LENGTH, CHARINDEX, ||, ISPREFIXOF, LEFT, LEN, LIKE, LOWER, LTRIM, OCTET_LENGTH, PATINDEX, REGEXP_COUNT, REGEXP_INSTR, REGEXP_SUBSTR, REPLACE, REVERSE, RIGHT, RLIKE, RTRIM, SUBSTRING, TRIM, LOWER";
 	}
 	
 
 	@Override
 	public String getSystemFunctions() throws SQLException {
 		// Retrieves a comma-separated list of system functions available with this database
-		return "";
+		return "explain, show_connections, show_locks, show_node_info, show_server_status, show_version, stop_statement";
 	}
 	
 	
@@ -208,7 +208,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public String getNumericFunctions() throws SQLException {
 		//Retrieves a comma-separated list of math functions available with this database.
 		
-		return "";
+		return "ABS, ACOS, ASIN, ATAN, ATN2, CEILING, CEIL, COS, COT, CRC64, DEGREES, EXP, FLOOR, LOG, LOG10, MOD, %, PI, POWER, RADIANS, ROUND, SIN, SQRT, SQUARE, TAN, TRUNC";
 	}
 	
 	
@@ -799,7 +799,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public boolean storesLowerCaseIdentifiers() throws SQLException {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -814,7 +814,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public boolean storesMixedCaseQuotedIdentifiers() throws SQLException {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -984,7 +984,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public boolean supportsMixedCaseQuotedIdentifiers() throws SQLException {
-		return false;
+		return true;
 	}
 
 	@Override

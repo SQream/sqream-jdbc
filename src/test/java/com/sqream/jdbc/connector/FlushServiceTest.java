@@ -32,7 +32,7 @@ public class FlushServiceTest {
         BlockDto block = storage.getBlock();
         SQSocketConnector socketConnector = Mockito.mock(SQSocketConnector.class);
         ByteBufferPool bufferPool = new ByteBufferPool(1, rowCounter, metadata);
-        FlushService flushService = new FlushService(socketConnector, new MessengerImpl(socketConnector));
+        FlushService flushService = FlushService.getInstance(socketConnector, MessengerImpl.getInstance(socketConnector));
         BlockDto returnedBlock = flushService.process(rowLength, rowCounter, metadata, block,
                 storage.getTotalLengthForHeader(rowLength, rowCounter), bufferPool, true);
 

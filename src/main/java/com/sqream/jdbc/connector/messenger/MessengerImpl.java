@@ -15,10 +15,14 @@ public class MessengerImpl implements Messenger {
     private JsonParser jsonParser;
     private MessageSender messageSender;
 
-    public MessengerImpl(SQSocketConnector socket) {
+    private MessengerImpl(SQSocketConnector socket) {
         this.socket = socket;
         this.jsonParser = new JsonParser();
         this.messageSender = new MessageSender(socket);
+    }
+
+    public static Messenger getInstance(SQSocketConnector socket) {
+        return new MessengerImpl(socket);
     }
 
     @Override

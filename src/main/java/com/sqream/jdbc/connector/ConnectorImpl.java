@@ -110,14 +110,13 @@ public class ConnectorImpl implements Connector {
     public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         /* JSON parsing engine setup, initial socket connection */
         useSsl = ssl;
-        socket = new SQSocketConnector(ip, port);
-        socket.connect(useSsl);
+        socket = SQSocketConnector.connect(ip, port, useSsl);
         // Clustered connection - reconnect to actual ip and port
         if (cluster) {
             reconnectToNode();
         }
-        this.messenger = new MessengerImpl(socket);
-        this.flushService = new FlushService(socket, messenger);
+        this.messenger = MessengerImpl.getInstance(socket);
+        this.flushService = FlushService.getInstance(socket, messenger);
     }
 
     private void reconnectToNode() throws NoSuchAlgorithmException, IOException, KeyManagementException {

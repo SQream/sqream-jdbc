@@ -5,8 +5,10 @@ import com.sqream.jdbc.connector.storage.ColumnStorage;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import static com.sqream.jdbc.connector.JsonParser.TEXT_ITEM_SIZE;
 import static org.junit.Assert.*;
 
 public class ColumnStorageTest {
@@ -42,5 +44,27 @@ public class ColumnStorageTest {
         int actualTotalLength = storage.getTotalLengthForHeader(rowLength, rowsPerFlush);
 
         assertEquals(expectedTotalLength, actualTotalLength);
+    }
+
+    @Test
+    public void increaseBufferTextBufferTest() {
+        int rowLength = 1;
+        int blockSize = 1;
+        List<ColumnMetadataDto> columnMetadataDtos =  Collections.singletonList(
+                new ColumnMetadataDto(true, "testName", false, "Nvarchar", 0));
+        TableMetadata metadata = TableMetadata.builder()
+                .rowLength(rowLength)
+                .fromColumnsMetadata(columnMetadataDtos)
+                .statementType(StatementType.INSERT)
+                .build();
+        ColumnStorage storage = ColumnStorage.builder()
+                .metadata(metadata)
+                .blockSize(blockSize)
+                .build();
+
+        String sampleText = "1";
+        String testString = String.join("", Collections.nCopies(TEXT_ITEM_SIZE * 3, sampleText));
+
+        storage.setNvarchar(0, testString.getBytes(), testString);
     }
 }

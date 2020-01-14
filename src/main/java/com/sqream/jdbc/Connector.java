@@ -169,6 +169,7 @@ public class Connector {
     int listener_id;
     int port_ssl;
     boolean reconnect;
+    String err;
     
     // JSON parsing related
     ScriptEngine engine;
@@ -1013,7 +1014,10 @@ public class Connector {
         String prepareStr = prepare_jsonify.toString(WriterConfig.MINIMAL);
         
         response_json =  _parse_sqream_json(_send_message(prepareStr, true));
-        
+        err =    response_json.getString("error", "no error");
+        if (!err.equals("no error"))
+    		throw new ConnException("\n\nError from SQream:\n\n" + err);
+
         // Parse response parameters
         listener_id =    response_json.get("listener_id").asInt();
         port =           response_json.get("port").asInt();

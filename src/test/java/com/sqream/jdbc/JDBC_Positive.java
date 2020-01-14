@@ -120,6 +120,27 @@ public class JDBC_Positive {
 	}
 	
 	
+     public boolean bad_message() throws SQLException, IOException {
+        
+    	boolean a_ok = false;
+    	 
+    	conn = DriverManager.getConnection(url,"sqream","sqream");
+        String sql = "select momo";
+		
+        stmt = conn.createStatement();
+        
+        try {
+        	rs = stmt.executeQuery(sql);
+        } catch (Exception e) {
+        	if (e.getMessage().contains("Error from SQream"))
+        		a_ok = true;
+        }
+       		
+        return a_ok;
+       
+    }     
+	
+	
 	public boolean hundred_mil_fetch() throws SQLException {
 		
 		boolean a_ok = true;  // The test is visual, pass if ends
@@ -1141,6 +1162,7 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        print ("Bad message test - " + (pos_tests.bad_message() ? "OK" : "Fail"));
         print ("Display size test - " + (pos_tests.display_size() ? "OK" : "Fail"));
         print ("parameter metadata test: " + (pos_tests.parameter_metadata() ? "OK" : "Fail"));
         print ("Hundred Million fetch test -  - " + (pos_tests.hundred_mil_fetch() ? "OK" : "Fail"));

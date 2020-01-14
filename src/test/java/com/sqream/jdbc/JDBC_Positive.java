@@ -716,6 +716,24 @@ public class JDBC_Positive {
         }
     }
 
+
+    @Test(expected = SQLException.class)
+    public void bad_message() throws SQLException {
+        String sql = "select momo";
+
+	    try (Connection conn = DriverManager.getConnection(url,"sqream","sqream");
+             Statement stmt = conn.createStatement()) {
+            stmt.executeQuery(sql);
+        } catch (SQLException e) {
+	        if (e.getMessage().contains("Error from SQream")) {
+	            throw e;
+            } else {
+                throw new RuntimeException("Wrong exception message");
+            }
+        }
+    }
+
+
     private boolean insert(String table_type) throws IOException, SQLException, KeyManagementException, NoSuchAlgorithmException{
         
         boolean a_ok = false;

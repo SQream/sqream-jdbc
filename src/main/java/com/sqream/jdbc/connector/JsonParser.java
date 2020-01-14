@@ -69,7 +69,7 @@ public class JsonParser {
         JsonObject jsonObj = parseJson(body);
 
         if(jsonObj.get("error") != null) {
-            throw new ConnException(jsonObj.get("error").asString());
+            throw new ConnException(String.format("\n\nError from SQream:\n\n%s",jsonObj.get("error").asString()));
         }
 
         int listenerId = jsonObj.get("listener_id").asInt();

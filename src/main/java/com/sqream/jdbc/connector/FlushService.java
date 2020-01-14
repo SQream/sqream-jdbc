@@ -18,9 +18,13 @@ public class FlushService {
     private Messenger messenger;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    public FlushService(SQSocketConnector socket, Messenger messenger) {
+    private FlushService(SQSocketConnector socket, Messenger messenger) {
         this.socket = socket;
         this.messenger = messenger;
+    }
+
+    public static FlushService getInstance(SQSocketConnector socket, Messenger messenger) {
+        return  new FlushService(socket, messenger);
     }
 
     public BlockDto process(int rowLength, int rowCounter, TableMetadata metadata,

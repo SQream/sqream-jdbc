@@ -22,7 +22,7 @@ public class MessengerImplTest {
     @Before
     public void setUp() {
         this.socket = Mockito.mock(SQSocketConnector.class);
-        this.messenger = new MessengerImpl(socket);
+        this.messenger = MessengerImpl.getInstance(socket);
     }
 
     @Test

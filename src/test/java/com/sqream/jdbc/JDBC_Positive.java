@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static java.sql.Types.*;
 import static org.junit.Assert.*;
 
 @RunWith(JUnit4.class)
@@ -383,7 +384,7 @@ public class JDBC_Positive {
         	a_ok = false;
     	}
     	
-    	if (params.getParameterType(1) != Types.BOOLEAN || params.getParameterType(2) != Types.TINYINT || 
+    	if (params.getParameterType(1) != Types.BOOLEAN || params.getParameterType(2) != TINYINT ||
 			params.getParameterType(3) != Types.SMALLINT || params.getParameterType(4) != Types.INTEGER || 
 			params.getParameterType(5) != Types.BIGINT || params.getParameterType(6) != Types.REAL || 
 			params.getParameterType(7) != Types.DOUBLE || params.getParameterType(8) != Types.DATE || 
@@ -667,6 +668,54 @@ public class JDBC_Positive {
         }
     }
 
+    @Test
+    public void setValuesAsNullTest() throws SQLException {
+        String createSql = "create or replace table test_null_values " +
+                "(bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, " +
+                "strings varchar(10), strangs nvarchar(10), dates date, dts datetime)";
+        String insertSql = "insert into test_null_values values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        try (Connection conn = DriverManager.getConnection(url, "sqream", "sqream");
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(createSql);
+        }
+
+        try (Connection conn = DriverManager.getConnection(url, "sqream", "sqream");
+             PreparedStatement ps = conn.prepareStatement(insertSql)) {
+            ps.setNull(1, BOOLEAN);
+            ps.setNull(2, TINYINT);
+            ps.setNull(3,SMALLINT);
+            ps.setNull(4,INTEGER);
+            ps.setNull(5,BIGINT);
+            ps.setNull(6,REAL);
+            ps.setNull(7,DOUBLE);
+            ps.setString(8,null);
+            ps.setString(9, null);
+            ps.setDate(10, null);
+            ps.setTimestamp(11, null);
+            ps.addBatch();
+        }
+
+        String selectSql = "select * from test_null_values";
+        try (Connection conn = DriverManager.getConnection(url, "sqream", "sqream");
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(selectSql);
+            ResultSet rs = stmt.getResultSet();
+
+            assertTrue(rs.next());
+            assertNull(rs.getObject(1));
+            assertNull(rs.getObject(2));
+            assertNull(rs.getObject(3));
+            assertNull(rs.getObject(4));
+            assertNull(rs.getObject(5));
+            assertNull(rs.getObject(6));
+            assertNull(rs.getObject(7));
+            assertNull(rs.getString(8));
+            assertNull(rs.getString(9));
+            assertNull(rs.getDate(10));
+            assertNull(rs.getTimestamp(11));
+        }
+    }
+
     private boolean insert(String table_type) throws IOException, SQLException, KeyManagementException, NoSuchAlgorithmException{
         
         boolean a_ok = false;
@@ -912,53 +961,6 @@ public class JDBC_Positive {
         boolean use_junit = false;
 
         boolean res = false;
-        //assertEquals(test_int, res_int);
-        /*
-        if (use_junit) {
-            if (table_type == "bool") {
-                Assert.assertEquals(test_bool, res_bool);
-    //          log.info();("Results not identical on table type " + table_type + " " + test_bool + " " + res_bool);
-            }else if (table_type == "tinyint") {
-                Assert.assertEquals(test_ubyte, res_ubyte);
-    //          log.info();("Results not identical on table type " + table_type + " " + test_ubyte + " " + res_ubyte);
-            }else if (table_type == "smallint") {
-                Assert.assertEquals(test_short, res_short) ;
-    //          log.info();("Results not identical on table type " + table_type + " " + test_short + " " + res_short);
-            }else if (table_type == "int") {
-                Assert.assertEquals(test_int, res_int); 
-    //          log.info();("Results not identical on table type " + table_type + " " + test_int + " " + res_int);
-            }else if (table_type == "bigint") {
-                Assert.assertEquals(test_long, res_long) ;
-    //          log.info();("Results not identical on table type " + table_type + " " + test_long + " " + res_long);
-            }else if (table_type == "real") {
-                Assert.assertEquals(test_real, res_real, 0.0) ;
-    //          log.info();("Results not identical on table type " + table_type + " " + test_real + " " + res_real);
-            }else if (table_type == "double") {
-                Assert.assertEquals(test_double, res_double, 0.0) ;
-    //          log.info();("Results not identical on table type " + table_type + " " + test_double + " " + res_double);
-            }else if (table_type == "varchar(100)") {
-                Assert.assertTrue(test_varchar.equals(res_varchar.trim())) ;
-    //                  {
-    //          log.info();("Results not identical on table type " + table_type + " " + test_varchar + " " + res_varchar);
-    //          log.info();(test_varchar.compareTo(res_varchar) + "a"+ test_varchar.length() + "b" + res_varchar.length());}
-            }else if (table_type == "date") {
-                    Assert.assertEquals(1, Math.abs(test_date.compareTo(res_date))) ;
-    //      {
-    //      //else if (table_type == "date" && !test_date.equals(res_date))  {  
-    //          log.info();("Results not identical on table type " + table_type + " " + test_date + " " + test_date.getTime() + " " + res_date + " " + res_date.getTime());
-    //          log.info();(test_date.compareTo(res_date));}
-            }else if (table_type == "datetime") {
-                Assert.assertTrue(test_datetime.equals(res_datetime));
-            //else if (table_type == "datetime" && Math.abs(test_datetime.compareTo(res_datetime)) > 1) 
-    
-    //          log.info();("Results not identical on table type " + table_type + " " + test_datetime + " " + test_datetime.getTime() + " " + res_datetime + " " + res_datetime.getTime());
-            
-            }else {
-    //          log.info();(" Results identical");
-                res = true;}
-            }
-        else { //*/
-            //assertEquals(testInt, resInt);
             
             if (table_type == "bool" && test_bool != res_bool)
                 log.info("Results not identical on table type " + table_type + " " + test_bool + " " + res_bool);
@@ -998,47 +1000,6 @@ public class JDBC_Positive {
         
     }
     
-    /*
-    public boolean autoflush(int total_inserts, int insert_every) throws  IOException, SQLException, KeyManagementException, NoSuchAlgorithmException{
-    
-        boolean a_ok = false;
-//      ConnectionHandle Client = new ConnectionHandle ("31.154.184.250", 5000, "sqream", "sqream", "master", false);
-        ConnectionHandle Client = new ConnectionHandle (ConnectorTest.Host, ConnectorTest.Port, ConnectorTest.Usr, ConnectorTest.Pswd, ConnectorTest.DbName, ConnectorTest.Ssl, insert_every);
-
-        
-        Client = Client.connect();  
-        // Client.setBulkRows(insert_every);
-        //log.info();("bulk size: " + Client.bulkinsert);
-
-        // Prepare Table
-        String table_type = "int";
-        
-        int multi_row_value = 8;
-        //int row_num = 100000000;
-        //log.info();(" - Create Table t_" + table_type);
-        String sql = MessageFormat.format("create or replace table t_{0} (x {0})", table_type);
-        StatementHandle stmt = new StatementHandle(Client, sql); 
-        stmt.prepare();     
-        stmt.execute();
-        stmt.close();
-        
-        //log.info();(" - Insert " + table_type + " " + total_inserts + " times");
-        sql = MessageFormat.format("insert into t_{0} values (?)", table_type);
-        stmt = new StatementHandle(Client, sql); 
-        stmt.prepare();
-        stmt.execute(); 
-        //* Insert a bunch of rows
-        for(int i =0 ; i< total_inserts; i++) {   
-          stmt.setInt(1,  multi_row_value);
-          stmt.nextRow();  //  if ((i)%commitEvery==0)  
-    
-        }          
-        stmt.close();
-
-        return a_ok;
-    }
-    //*/ 
-    
     public boolean get_tables_test() throws SQLException {
         conn = DriverManager.getConnection(url,"sqream","sqream");
         dbmeta = conn.getMetaData();
@@ -1053,80 +1014,4 @@ public class JDBC_Positive {
         //conn.close();
         return true;
     }
-    
-/*
-    public boolean check_nulls() throws SQLException {
-        boolean a_ok = false;
-        String table_name = "test_nulls"; 
-        String sql = "create or replace table test_nulls (x tinyint)";
-
-        conn = DriverManager.getConnection(url,"sqream","sqream");
-        stmt = conn.createStatement();
-        //sql = MessageFormat.format("create or replace table t_{0} (x {1})", table_name, table_type);
-        stmt.execute(sql);
-        stmt.close();
-
-        
-        // Insert value
-//      
-        sql = "insert into test_nulls values (?)";
-        ps = conn.prepareStatement(sql);
-        ps.setNull(1);
-        ps.setBoolean(1, test_bool); 
-        ps.addBatch();
-        ps.executeBatch();
-        ps.close();
-        */      
-    
-    /*
-    @Test
-    public void insertBool() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("bool");
-    }
-    @Test
-    public void insertTinyint() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("tinyint");
-    }
-    @Test
-    public void insertSmallint() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("smallint");
-    }
-    @Test
-    public void insertInt() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("int");
-    }
-    @Test
-    public void insertBigint() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("bigint");
-    }
-    @Test
-    public void insertReal() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("real");
-    }
-    @Test
-    public void insertDouble() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("double");
-    }
-    @Test
-    public void insertDatetime() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("datetime");
-    }
-    @Test
-    public void insertDate() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("date");
-    }
-    @Test
-    public void insertVarchar100() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("varchar(100)");
-    }
-    @Test
-    public void insertnVarchar100() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-        new JDBC_Positive().insert("nvarchar(100)");
-    }
-    /*
-     @Test
-     public void autoFlush() throws KeyManagementException, NoSuchAlgorithmException,  IOException, SQLException{
-         new JDBC_Positive().autoflush(10000, 100);
-     }  
-     */
 }

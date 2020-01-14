@@ -16,13 +16,11 @@ public class FlushService {
 
     private SQSocketConnector socket;
     private Messenger messenger;
-    private ByteBufferCopier copier;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     public FlushService(SQSocketConnector socket, Messenger messenger) {
         this.socket = socket;
         this.messenger = messenger;
-        this.copier = new ByteBufferCopier();
     }
 
     public BlockDto process(int rowLength, int rowCounter, TableMetadata metadata,
@@ -65,6 +63,19 @@ public class FlushService {
         }
     }
 
+    public void awaitTermination() {
+        if (!executorService.isTerminated()) {
+            LOGGER.log(Level.FINE, "Await async flush");
+            executorService.shutdown();
+            try {
+                executorService.awaitTermination(5, TimeUnit.SECONDS);
+                LOGGER.log(Level.FINE, "Async flush successfully completed");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void flush(int rowLength, int rowCounter, TableMetadata metadata,
                        BlockDto block, int totalLengthForHeader) throws IOException, ConnException {
 
@@ -94,19 +105,6 @@ public class FlushService {
                 socket.sendData(block.getNvarcLenBuffers()[idx], false);
             }
             socket.sendData(block.getDataBuffers()[idx], false);
-        }
-    }
-
-    public void awaitTermination() {
-        if (!executorService.isTerminated()) {
-            LOGGER.log(Level.FINE, "Await async flush");
-            executorService.shutdown();
-            try {
-                executorService.awaitTermination(5, TimeUnit.SECONDS);
-                LOGGER.log(Level.FINE, "Async flush successfully completed");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

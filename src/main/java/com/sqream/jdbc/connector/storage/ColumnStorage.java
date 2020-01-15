@@ -8,13 +8,17 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.sqream.jdbc.utils.Utils.*;
 
 public class ColumnStorage {
+    private static final Logger LOGGER = Logger.getLogger(ColumnStorage.class.getName());
 
     private ByteBuffer[] dataColumns;
     private ByteBuffer[] null_columns;
@@ -29,6 +33,8 @@ public class ColumnStorage {
     }
 
     void init(TableMetadata metadata, int blockSize) {
+        LOGGER.log(Level.FINE, MessageFormat.format("Start to init storage for block size = [{0}}", blockSize));
+
         initArrays(metadata, blockSize);
         // Initiate buffers for each column using the metadata
         for (int idx = 0; idx < metadata.getRowLength(); idx++) {
@@ -44,6 +50,8 @@ public class ColumnStorage {
                 nvarc_len_columns[idx] = null;
             }
         }
+
+        LOGGER.log(Level.FINE, "Initialized block");
     }
 
     void initFromFetch(ByteBuffer[] fetchBuffers, TableMetadata metadata, int blockSize) {

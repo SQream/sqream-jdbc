@@ -29,7 +29,8 @@ public class ByteBufferPool {
     }
 
     private void initByteBuffers(TableMetadata metadata, int blockSize, int queueSize) {
-        LOGGER.log(Level.FINE, "Init byteBuffer pool.");
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Start to init byteBuffer pool. Params: blockSize=[{0}], queueSize=[{1}]", blockSize, queueSize));
         for (int i = 0; i < queueSize; i++) {
             try {
                 queue.put(createBlock(metadata, blockSize));
@@ -37,7 +38,7 @@ public class ByteBufferPool {
                 throw new RuntimeException("Interrupted when add new block in queue", e);
             }
         }
-        LOGGER.log(Level.FINE, MessageFormat.format("Pool size = [{0}], Blocks in pool = [{1}]", queueSize, queue.size()));
+        LOGGER.log(Level.FINE, MessageFormat.format("Initialized pool size = [{0}], Blocks in pool = [{1}]", queueSize, queue.size()));
     }
 
     private BlockDto createBlock(TableMetadata metadata, int blockSize) {

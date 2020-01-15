@@ -9,8 +9,6 @@ import java.nio.ByteOrder;
 // More SSL shite
 
 // JSON parsing library
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
 import com.sqream.jdbc.connector.enums.StatementType;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
@@ -151,9 +149,6 @@ public class ConnectorImpl implements Connector {
      * (5) _send_message -
      */
 
-    private JsonObject parseJson(String jsonStr) {
-        return Json.parse(jsonStr).asObject();
-    }
 
     // Internal API Functions
     // ----------------------------

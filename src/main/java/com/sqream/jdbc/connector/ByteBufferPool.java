@@ -12,7 +12,6 @@ public class ByteBufferPool {
     private static final Logger LOGGER = Logger.getLogger(ByteBufferPool.class.getName());
 
     private BlockingQueue<BlockDto> queue;
-    private ByteBufferCopier copier;
     private int blockSize;
 
     public ByteBufferPool(int queueSize, int blockSize, TableMetadata metadata) {

@@ -133,7 +133,7 @@ public class SQConnection implements Connection {
 
 	@Override
 	public Statement createStatement() throws SQLException {
-		log("inside constructor SQConnection");
+		LOGGER.log(Level.FINE, "createStatement without params");
 
 		if (isClosed.get()) {
 			throw new SQLException(MessageFormat.format("Statement is closed: isClosed=[{0}]", isClosed));
@@ -151,7 +151,9 @@ public class SQConnection implements Connection {
 
 	@Override
 	public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-		log("inside constructor SQConnection");
+		LOGGER.log(Level.FINE, MessageFormat.format(
+				"createStatement with params: resultSetType=[{0}], resultSetConcurrency=[{1}]",
+				resultSetType, resultSetConcurrency));
 
 		if (isClosed.get() || !validParams(resultSetType, resultSetConcurrency)) {
 			throw new SQLException(MessageFormat.format("Wrong params in createStatement: " +
@@ -187,7 +189,9 @@ public class SQConnection implements Connection {
 
 	@Override
 	public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-		log("inside createStatement SQConnection");
+		LOGGER.log(Level.FINE, MessageFormat.format(
+				"createStatement with params: resultSetType=[{0}], resultSetConcurrency=[{1}], resultSetHoldability=[{2}]",
+				resultSetType, resultSetConcurrency, resultSetHoldability));
 
 		if (isClosed.get() || !validParams(resultSetType, resultSetConcurrency, resultSetHoldability)) {
 			throw new SQLException(MessageFormat.format("Wrong params in createStatement: " +
@@ -209,7 +213,7 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		log("inside prepareStatement SQConnection");
+		LOGGER.log(Level.FINE, MessageFormat.format("prepareStatement for sql=[{0}]", sql));
 
 		if (isClosed.get()) {
 			throw new SQLException(MessageFormat.format("Statement is closed: isClosed=[{0}]", isClosed));
@@ -225,7 +229,9 @@ public class SQConnection implements Connection {
 
 	@Override
 	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-		log("inside prepareStatement 2 SQConnection");
+		LOGGER.log(Level.FINE, MessageFormat.format(
+				"prepareStatement with params: sql=[{0}], resultSetType=[{1}], resultSetConcurrency=[{2}]",
+				sql, resultSetType, resultSetConcurrency));
 
 		if (isClosed.get()) {
 			throw new SQLException(MessageFormat.format("Statement is closed: isClosed=[{0}]", isClosed));
@@ -246,7 +252,8 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public void close() throws SQLException {
-		log("inside close SQConnection");
+		LOGGER.log(Level.FINE, "Close SQConnection");
+
 		try {
 			if(Statement_list!=null) {
 				for(SQStatment item : Statement_list) {
@@ -280,7 +287,7 @@ public class SQConnection implements Connection {
 	
 	@Override
 	public boolean isClosed() throws SQLException {
-		log("inside isClosed SQConnection");
+		LOGGER.log(Level.FINE, MessageFormat.format("isClosed return [{0}]", isClosed.get()));
 		return isClosed.get();
 	}
 	

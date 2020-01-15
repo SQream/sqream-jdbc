@@ -71,7 +71,6 @@ public class ConnectorImpl implements Connector {
     private boolean useSsl;
 
     // Binary data related
-    private static final int FLUSH_SIZE = 10_000_000;
     int ROWS_PER_FLUSH = 100000;
     private int rows_per_flush;
 

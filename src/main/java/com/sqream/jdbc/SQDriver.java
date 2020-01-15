@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -34,6 +35,8 @@ public class SQDriver implements java.sql.Driver {
 
 	@Override
 	public boolean acceptsURL(String url) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("acceptsURL: url=[{0}]", url));
+
 		log("inside acceptsURL in SQDriver");
 		UriEx uex = new UriEx(url); // parse the url to object.
 		if (uex.getProvider() == null || !"sqream".equals(uex.getProvider().toLowerCase())) {
@@ -44,10 +47,11 @@ public class SQDriver implements java.sql.Driver {
 
 	@Override
 	public Connection connect(String url, Properties info) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("Connect with params: url=[{0}], info=[{1}]", url, info));
+
 		setPropsLoggerLevel();
 		setUrlLoggerLevel(url);
 
-		log("inside connect in SQDriver");
 		try {
 			System.setProperty("file.encoding","UTF-8");
 			Field charset = Charset.class.getDeclaredField("defaultCharset");

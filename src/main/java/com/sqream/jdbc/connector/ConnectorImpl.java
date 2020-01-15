@@ -13,7 +13,6 @@ import com.eclipsesource.json.ParseException;
 import com.eclipsesource.json.WriterConfig;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonArray;
 import com.sqream.jdbc.connector.enums.StatementType;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,6 +56,7 @@ public class ConnectorImpl implements Connector {
     // Date/Time conversion related
     private static final ZoneId SYSTEM_TZ = ZoneId.systemDefault();
     private static final Charset UTF8 = StandardCharsets.UTF_8;
+    private static final String DENIED = "denied";
 
     private SQSocketConnector socket;
     private Messenger messenger;
@@ -74,7 +74,6 @@ public class ConnectorImpl implements Connector {
     // Binary data related
     private static final int FLUSH_SIZE = 10_000_000;
     int ROWS_PER_FLUSH = 100000;
-    int TEXT_ITEM_SIZE = (int) Math.pow(10, 5);
     private int rows_per_flush;
 
     // Column metadata
@@ -83,6 +82,7 @@ public class ConnectorImpl implements Connector {
 
     private ColumnsMetadata colMetadata;
     private ColumnStorage colStorage;
+    private JsonParser jsonParser;
 
     private boolean openStatement = false;
 
@@ -117,6 +117,7 @@ public class ConnectorImpl implements Connector {
         this.messenger = new Messenger(socket);
         this.colMetadata = new ColumnsMetadata();
         this.colStorage = new ColumnStorage();
+        this.jsonParser = new JsonParser();
     }
 
     private void reconnectToNode() throws NoSuchAlgorithmException, IOException, KeyManagementException {
@@ -164,9 +165,9 @@ public class ConnectorImpl implements Connector {
 
     // ()  /* Unpack the json of column data arriving via queryType/(named). Called by prepare()  */
     //@SuppressWarnings("rawtypes") // "Map is a raw type" @ col_data = (Map)query_type.get(idx);
-    private void parseQueryType(JsonArray query_type) throws IOException, ScriptException{
+    private void parseQueryType(List<ColumnMetadataDto> queryType) throws IOException, ScriptException{
 
-        row_length = query_type.size();
+        row_length = queryType.size();
         if(row_length ==0) {
             return;
         }
@@ -176,20 +177,16 @@ public class ConnectorImpl implements Connector {
         col_calls = new int[row_length];
         // Parse the queryType json to get metadata for every column
         // An internal item looks like: {"isTrueVarChar":false,"nullable":true,"type":["ftInt",4,0]}
-        for(int idx=0; idx < row_length; idx++) {
+        for(int i=0; i < row_length; i++) {
             // Parse JSON to correct objects
-            JsonObject col_data = query_type.get(idx).asObject();
-            JsonArray col_type_data = col_data.get("type").asArray(); // type is a list of 3 items
+            ColumnMetadataDto colMetaDataDto = queryType.get(i);
+
+            if (!statement_type.equals(SELECT)) {
+                colMetaDataDto.setName(DENIED);
+            }
 
             // Assign data from parsed JSON objects to metadata arrays
-            colMetadata.setByIndex(
-                    idx,
-                    col_data.get("nullable").asBoolean(),
-                    col_data.get("isTrueVarChar").asBoolean(),
-                    statement_type.equals(SELECT) ? col_data.get("name").asString() : "denied",
-                    col_type_data.get(0).asString(),
-                    col_type_data.get(1).asInt() != 0 ? col_type_data.get(1).asInt() : TEXT_ITEM_SIZE
-            );
+            colMetadata.setByIndex(i, colMetaDataDto);
         }
 
         // Create Storage for insert / select operations
@@ -235,22 +232,22 @@ public class ConnectorImpl implements Connector {
         /* Request and get data from SQream following a SELECT query */
 
         // Send fetch request and get metadata on data to be received
-        JsonObject response_json = parseJson(messenger.fetch());
-        int new_rows_fetched = response_json.get("rows").asInt();
-        JsonArray fetch_sizes =   response_json.get("colSzs").asArray();  // Chronological sizes of all rows recieved, only needed for nvarchars
-        if (new_rows_fetched == 0) {
+
+        FetchMetadataDto fetchMeta = jsonParser.toFetchMetadata(messenger.fetch());
+
+        if (fetchMeta.getNewRowsFetched() == 0) {
             close();  // Auto closing statement if done fetching
-            return new_rows_fetched;
+            return fetchMeta.getNewRowsFetched();
         }
         // Initiate storage columns using the "colSzs" returned by SQream
         // All buffers in a single array to use SocketChannel's read(ByteBuffer[] dsts)
         int col_buf_size;
-        ByteBuffer[] fetch_buffers = new ByteBuffer[fetch_sizes.size()];
+        ByteBuffer[] fetch_buffers = new ByteBuffer[fetchMeta.colAmount()];
         colStorage.init(row_length);
 
-        for (int idx=0; idx < fetch_sizes.size(); idx++)
-            fetch_buffers[idx] = ByteBuffer.allocateDirect(fetch_sizes.get(idx).asInt()).order(ByteOrder.LITTLE_ENDIAN);
-
+        for (int i=0; i < fetchMeta.colAmount(); i++) {
+            fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);
+        }
         // Sort buffers to appropriate arrays (row_length determied during _query_type())
         for (int idx=0, buf_idx = 0; idx < row_length; idx++, buf_idx++) {
             if(colMetadata.isNullable(idx)) {
@@ -272,7 +269,7 @@ public class ConnectorImpl implements Connector {
         data_buffers.add(colStorage.getDataColumns());
         null_buffers.add(colStorage.getNullColumns());
         nvarc_len_buffers.add(colStorage.getNvarcLenColumns());
-        rows_per_batch.add(new_rows_fetched);
+        rows_per_batch.add(fetchMeta.getNewRowsFetched());
 
         // Initial naive implememntation - Get all socket data in advance
         int bytes_read = socket.getParseHeader();   // Get header out of the way
@@ -281,7 +278,7 @@ public class ConnectorImpl implements Connector {
             //Arrays.stream(fetch_buffers).forEach(fetched -> fetched.flip());
         }
 
-        return new_rows_fetched;  // counter nullified by next()
+        return fetchMeta.getNewRowsFetched();  // counter nullified by next()
     }
 
 
@@ -358,10 +355,9 @@ public class ConnectorImpl implements Connector {
         password = _password;
         service = _service;
 
-        JsonObject response_json = parseJson(messenger.connect(database, user, password, service));
-        connection_id = response_json.get("connectionId").asInt();
-        varchar_encoding = response_json.getString("varcharEncoding", "ascii");
-        varchar_encoding = (varchar_encoding.contains("874"))? "cp874" : "ascii";
+        ConnectionStateDto connState = jsonParser.toConnectionState(messenger.connect(database, user, password, service));
+        connection_id = connState.getConnectionId();
+        varchar_encoding = connState.getVarcharEncoding();
 
         return connection_id;
     }
@@ -390,7 +386,7 @@ public class ConnectorImpl implements Connector {
         }
         openStatement = true;
         // Get statement ID, send prepareStatement and get response parameters
-        statementId = parseJson(messenger.getStatementId()).get("statementId").asInt();
+        statementId = jsonParser.toStatementId(messenger.getStatementId());
 
         // Generating a valid json string via external library
         JsonObject prepare_jsonify;
@@ -409,36 +405,25 @@ public class ConnectorImpl implements Connector {
         //String prepareStr = (String) engine.eval("JSON.stringify({prepareStatement: statement, chunkSize: 0})");
         String prepareStr = prepare_jsonify.toString(WriterConfig.MINIMAL);
 
-        JsonObject response_json =  parseJson(socket.sendMessage(prepareStr, true));
+        StatementStateDto statementState = jsonParser.toStatementState(socket.sendMessage(prepareStr, true));
 
-        if(response_json.get("error") != null) {
-            throw new ConnException(response_json.get("error").asString());
-        }
-
-        // Parse response parameters
-        int listener_id =    response_json.get("listener_id").asInt();
-        int port =           response_json.get("port").asInt();
-        int port_ssl =       response_json.get("port_ssl").asInt();
-        boolean reconnect =      response_json.get("reconnect").asBoolean();
-        String ip =             response_json.get("ip").asString();
-
-        port = useSsl ? port_ssl : port;
+        int port = useSsl ? statementState.getPortSsl() : statementState.getPort();
         // Reconnect and reestablish statement if redirected by load balancer
-        if (reconnect) {
-            socket.reconnect(ip, port, useSsl);
+        if (statementState.isReconnect()) {
+            socket.reconnect(statementState.getIp(), port, useSsl);
 
             // Sending reconnect, reconstruct commands
-            messenger.reconnect(database, user, password, service, connection_id, listener_id);
+            messenger.reconnect(database, user, password, service, connection_id, statementState.getListenerId());
             messenger.isStatementReconstructed(statementId);
         }
 
         // Getting query type manouver and setting the type of query
         messenger.execute();
-        JsonArray query_type =  parseJson(messenger.queryTypeInput()).get("queryType").asArray();
+        List<ColumnMetadataDto> queryType = jsonParser.toQueryTypeInput(messenger.queryTypeInput());
 
-        if (query_type.isEmpty()) {
-            query_type =  parseJson(messenger.queryTypeOut()).get("queryTypeNamed").asArray();
-            statement_type = query_type.isEmpty() ? DML : SELECT;
+        if (queryType.isEmpty()) {
+            queryType = jsonParser.toQueryTypeOut(messenger.queryTypeOut());
+            statement_type = queryType.isEmpty() ? DML : SELECT;
         }
         else {
             statement_type = INSERT;
@@ -446,7 +431,7 @@ public class ConnectorImpl implements Connector {
 
         // Select or Insert statement - parse queryType response for metadata
         if (!statement_type.equals(DML)) {
-            parseQueryType(query_type);
+            parseQueryType(queryType);
         }
         // First fetch on the house, auto close statement if no data returned
         if (statement_type.equals(SELECT)) {

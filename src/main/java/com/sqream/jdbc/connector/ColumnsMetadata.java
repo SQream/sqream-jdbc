@@ -24,12 +24,12 @@ public class ColumnsMetadata {
         colNamesMap = new HashMap<>();
     }
 
-    public void setByIndex(int index, boolean nullable, boolean truVarchar, String name, String type, int size) {
-        colNullable.set(index, nullable);
-        colTvc.set(index, truVarchar);
-        colNames[index] = name;
-        colTypes[index] = type;
-        colSizes[index] = size;
+    public void setByIndex(int index, ColumnMetadataDto colMetaData) {
+        colNullable.set(index, colMetaData.isNullable());
+        colTvc.set(index, colMetaData.isTruVarchar());
+        colNames[index] = colMetaData.getName();
+        colTypes[index] = colMetaData.getValueType();
+        colSizes[index] = colMetaData.getValueSize();
         colNamesMap.put(colNames[index].toLowerCase(), index + 1);
     }
 

@@ -5,6 +5,7 @@ import com.sqream.jdbc.connector.storage.ColumnStorage;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,17 +16,9 @@ public class ByteBufferPoolTest {
     @Test
     public void getBlockReturnBuffersWithTheSameParamsTest() throws InterruptedException {
         int blockSize = 3;
-        List<ColumnMetadataDto> columnMetadataList = new ArrayList<>();
-        columnMetadataList.add(new ColumnMetadataDto(true, "testColName0", true, "ftInt", 4));
-        columnMetadataList.add(new ColumnMetadataDto(false, "testColName1", false, "ftBool", 1));
-        columnMetadataList.add(new ColumnMetadataDto(true, "testColName1", false, "ftLong", 8));
-        int rowLength = columnMetadataList.size();
+        int rowLength = 3;
 
-        TableMetadata metadata = TableMetadata.builder()
-                .rowLength(rowLength)
-                .fromColumnsMetadata(columnMetadataList)
-                .statementType(StatementType.INSERT)
-                .build();
+        TableMetadata metadata = createTableMetadata(rowLength);
 
         ColumnStorage storage = ColumnStorage.builder()
                 .metadata(metadata)
@@ -34,13 +27,57 @@ public class ByteBufferPoolTest {
 
         BlockDto blockFromStorage = storage.getBlock();
 
-        ByteBufferPool pool = new ByteBufferPool(1, 3, metadata);
+        ByteBufferPool pool = new ByteBufferPool(1, blockSize, metadata);
         BlockDto blockFromPool = pool.getBlock();
 
         assertNotNull(blockFromPool);
         assertNotNull(blockFromStorage);
         assertNotEquals(blockFromPool, blockFromStorage);
         checkBlocksHaveTheSameParams(blockFromPool, blockFromStorage);
+    }
+
+    @Test
+    public void whenReleaseAndGetBlockThenBlocksAndArraysHaveDifferentHashCodesTest() throws InterruptedException {
+        int blockSize = 3;
+        int rowLength = 3;
+
+        TableMetadata metadata = createTableMetadata(rowLength);
+
+        ColumnStorage storage = ColumnStorage.builder()
+                .metadata(metadata)
+                .blockSize(blockSize)
+                .build();
+
+        BlockDto blockFromStorage = storage.getBlock();
+        int blockFromStorageHashCode = blockFromStorage.hashCode();
+
+        ByteBufferPool pool = new ByteBufferPool(1, blockSize, metadata);
+
+        BlockDto blockFromPool = pool.getBlock();
+        int blockFromPoolHashCode = blockFromPool.hashCode();
+
+        assertNotEquals(blockFromPoolHashCode, blockFromStorageHashCode);
+        assertNotEquals(blockFromPool.getDataBuffers(), blockFromStorage.getDataBuffers());
+        assertNotEquals(blockFromPool.getNullBuffers(), blockFromStorage.getNullBuffers());
+        assertNotEquals(blockFromPool.getNvarcLenBuffers(), blockFromStorage.getNvarcLenBuffers());
+    }
+
+    private TableMetadata createTableMetadata(int excpectedRowLength) {
+        List<ColumnMetadataDto> columnMetadataList = new ArrayList<>();
+        columnMetadataList.add(new ColumnMetadataDto(true, "testColName0", true, "ftInt", 4));
+        columnMetadataList.add(new ColumnMetadataDto(false, "testColName1", false, "ftBool", 1));
+        columnMetadataList.add(new ColumnMetadataDto(true, "testColName1", false, "ftLong", 8));
+        int rowLength = columnMetadataList.size();
+
+        if (excpectedRowLength != rowLength) {
+            throw new IllegalArgumentException(MessageFormat.format("Method generate metadata only for rowLength == [{0}]", rowLength));
+        }
+
+        return TableMetadata.builder()
+                .rowLength(rowLength)
+                .fromColumnsMetadata(columnMetadataList)
+                .statementType(StatementType.INSERT)
+                .build();
     }
 
     private void checkBlocksHaveTheSameParams(BlockDto expectedBlock, BlockDto originalBlock) {

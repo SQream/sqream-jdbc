@@ -33,7 +33,8 @@ public class ColumnStorage {
     }
 
     void init(TableMetadata metadata, int blockSize) {
-        LOGGER.log(Level.FINE, MessageFormat.format("Start to init storage for block size = [{0}}", blockSize));
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Start to init storage for block size = [{0}}", blockSize));
 
         initArrays(metadata, blockSize);
         // Initiate buffers for each column using the metadata
@@ -51,7 +52,10 @@ public class ColumnStorage {
             }
         }
 
-        LOGGER.log(Level.FINE, "Initialized block");
+        if (LOGGER.getParent().getLevel() == Level.FINE) {
+            LOGGER.log(Level.FINE, MessageFormat.format("Initialized block. Allocated [{0}] mb.",
+                    calculateAllocation(dataColumns, null_columns, nvarc_len_columns) / 1_000_000));
+        }
     }
 
     void initFromFetch(ByteBuffer[] fetchBuffers, TableMetadata metadata, int blockSize) {

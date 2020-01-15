@@ -8,6 +8,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.sqream.jdbc.utils.Utils.calculateAllocation;
+
 public class ByteBufferPool {
     private static final Logger LOGGER = Logger.getLogger(ByteBufferPool.class.getName());
 
@@ -62,6 +64,11 @@ public class ByteBufferPool {
             LOGGER.log(Level.FINEST, "Created block");
             logBlockInfo(block);
         }
+        if (LOGGER.getParent().getLevel() == Level.FINE) {
+            LOGGER.log(Level.FINE, MessageFormat.format("Created block. Allocated [{0}]",
+                    calculateAllocation(block) / 1_000_000));
+        }
+
         return block;
     }
 

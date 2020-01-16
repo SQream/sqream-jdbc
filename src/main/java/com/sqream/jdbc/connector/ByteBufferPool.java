@@ -23,11 +23,15 @@ public class ByteBufferPool {
     }
 
     public BlockDto getBlock() throws InterruptedException {
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Getting block from ByteBuffer pool. Blocks in the pool [{0}] (before taking)", queue.size()));
         return queue.take();
     }
 
     public void releaseBlock(BlockDto block) throws InterruptedException {
         queue.put(block);
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Released block in the pool. Blocks in the pool [{0}] (after releasing)", queue.size()));
     }
 
     private void initByteBuffers(TableMetadata metadata, int blockSize, int queueSize) {

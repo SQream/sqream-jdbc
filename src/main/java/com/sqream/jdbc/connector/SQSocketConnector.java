@@ -14,9 +14,9 @@ import static com.sqream.jdbc.utils.Utils.decode;
 
 public class SQSocketConnector extends SQSocket {
 
-    private static final byte PROTOCOL_VERSION = 7;
+    private static final byte PROTOCOL_VERSION = 8;
     private static final int HEADER_SIZE = 10;
-    private static final List<Byte> SUPPORTED_PROTOCOLS = new ArrayList<>(Arrays.asList((byte)6, (byte)7));
+    private static final List<Byte> SUPPORTED_PROTOCOLS = new ArrayList<>(Arrays.asList((byte)6, (byte)7, (byte)8));
 
     private ByteBuffer responseMessage = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);;
     private ByteBuffer header = ByteBuffer.allocateDirect(10).order(ByteOrder.LITTLE_ENDIAN);

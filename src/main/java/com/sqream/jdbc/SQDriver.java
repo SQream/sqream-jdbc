@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.StringJoiner;
 import java.util.logging.*;
@@ -15,6 +16,7 @@ import javax.script.ScriptException;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.enums.LoggerLevel;
+import com.sqream.jdbc.utils.LoggerUtil;
 
 import java.nio.charset.Charset;
 
@@ -164,6 +166,7 @@ public class SQDriver implements java.sql.Driver {
 		}
 		ConsoleHandler consoleHandler = new ConsoleHandler();
 		consoleHandler.setLevel(Level.ALL);
+		consoleHandler.setFormatter(LoggerUtil.getCustomFormatter());
 		PARENT_LOGGER.addHandler(consoleHandler);
 		PARENT_LOGGER.setLevel(Level.OFF);
 

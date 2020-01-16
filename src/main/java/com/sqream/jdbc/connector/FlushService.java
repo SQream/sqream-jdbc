@@ -45,6 +45,7 @@ public class FlushService {
 
             executorService.submit(() -> {
                 try {
+                    Thread.currentThread().setName("flush-service");
                     flush(rowLength,
                             rowCounter,
                             metadata,

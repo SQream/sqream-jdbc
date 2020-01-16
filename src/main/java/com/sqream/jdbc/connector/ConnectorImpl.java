@@ -57,6 +57,8 @@ public class ConnectorImpl implements Connector {
     private static final ZoneId SYSTEM_TZ = ZoneId.systemDefault();
     private static final Charset UTF8 = StandardCharsets.UTF_8;
 
+    private static final int BYTE_BUFFER_POOL = 3;
+
     private SQSocketConnector socket;
     private Messenger messenger;
 
@@ -191,7 +193,7 @@ public class ConnectorImpl implements Connector {
                     .blockSize(ROWS_PER_FLUSH)
                     .build();
 
-            byteBufferPool = new ByteBufferPool(3, ROWS_PER_FLUSH, tableMetadata);
+            byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL, ROWS_PER_FLUSH, tableMetadata);
         }
         if (statement_type.equals(SELECT)) {
 

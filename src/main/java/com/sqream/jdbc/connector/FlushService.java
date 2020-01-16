@@ -29,6 +29,10 @@ public class FlushService {
 
     public BlockDto process(int rowLength, int rowCounter, TableMetadata metadata,
                         BlockDto block, int totalLengthForHeader, ByteBufferPool byteBufferPool, boolean async) {
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Process block: rowLength=[{0}], rowCounter=[{1}], asynchronous=[{2}]",
+                rowLength, rowCounter, async));
+
         if (async) {
             if (executorService.isShutdown()) {
                 executorService = Executors.newSingleThreadExecutor();
@@ -69,14 +73,18 @@ public class FlushService {
     }
 
     public void awaitTermination() {
+        LOGGER.log(Level.FINE, "Wait for termination");
         if (!executorService.isTerminated()) {
-            LOGGER.log(Level.FINE, "Await async flush");
+            LOGGER.log(Level.FINE, "Shutdown flush service");
             executorService.shutdown();
             try {
-                executorService.awaitTermination(5, TimeUnit.SECONDS);
+                if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                    throw new RuntimeException("Could not send data to SQream server");
+                }
                 LOGGER.log(Level.FINE, "Async flush successfully completed");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                executorService.shutdownNow();
+                Thread.currentThread().interrupt();
             }
         }
     }

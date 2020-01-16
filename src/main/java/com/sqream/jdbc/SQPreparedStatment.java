@@ -34,6 +34,8 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 import com.sqream.jdbc.connector.Connector;
@@ -42,6 +44,7 @@ import com.sqream.jdbc.connector.ConnException;
 
 
 public class SQPreparedStatment implements PreparedStatement {
+    private static final Logger LOGGER = Logger.getLogger(SQPreparedStatment.class.getName());
 
     private Connector Client;
     private SQResultSet SQRS = null;
@@ -70,7 +73,7 @@ public class SQPreparedStatment implements PreparedStatement {
     
     @Override
     public void close() throws SQLException {
-    	//print ("inside SQPreparedStatement close");
+    	LOGGER.log(Level.FINE,"Close prepared statement");
         try {
         	if (Client!= null && Client.isOpen()) {
 				if (Client.isOpenStatement()) {
@@ -87,17 +90,12 @@ public class SQPreparedStatment implements PreparedStatement {
 
     @Override
     public int[] executeBatch() throws SQLException {
+        LOGGER.log(Level.FINE,"execute batch");
 
-        // Integer[] res = new Integer[addBatchCounter.size()];
-        // res = addBatchCounter.toArray(res);  
-        // int[] res = addBatchList.stream().mapToInt(i->i).toArray();  
-
-        // Generating an array of 1's, sized by the amount of nextRow()s we issued
-        
         int[] res = new int[setsPerBatch.size()];
         Arrays.fill(res, 1);
         setsPerBatch.clear();
-        rowsInBatch = 0;    
+        rowsInBatch = 0;
 
         return res;
     }
@@ -109,6 +107,8 @@ public class SQPreparedStatment implements PreparedStatement {
 
     @Override
     public void addBatch() throws SQLException {
+        LOGGER.log(Level.FINEST, "add batch");
+
         try {
             Client.next();
             // Update nextRow counter
@@ -123,6 +123,8 @@ public class SQPreparedStatment implements PreparedStatement {
 
     @Override
     public boolean execute() {
+        LOGGER.log(Level.FINE,"execute");
+
         SQRS = new SQResultSet(Client, db_name);
 
         return SQRS != null;
@@ -130,6 +132,8 @@ public class SQPreparedStatment implements PreparedStatement {
     
     @Override
     public ResultSet executeQuery() {
+        LOGGER.log(Level.FINE,"execute query");
+
         SQRS = new SQResultSet(Client, db_name);
         return SQRS;
     }

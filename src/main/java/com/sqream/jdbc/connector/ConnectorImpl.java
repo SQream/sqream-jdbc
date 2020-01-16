@@ -40,6 +40,7 @@ import javax.script.ScriptException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // SSL over SocketChannel abstraction
@@ -441,6 +442,8 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public Boolean close() throws IOException, ConnException {
+        LOGGER.log(Level.FINE, MessageFormat.format("Close statement: openStatement=[{0}], statementType=[{1}]]", openStatement, statement_type));
+
     	if (isOpen()) {
     		if (openStatement) {
                 flushService.awaitTermination();

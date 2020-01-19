@@ -13,7 +13,7 @@ public class JsonParserTest {
     private JsonParser parser = new JsonParser();
 
     @Test
-    public void toConnectionStateTest() {
+    public void toConnectionStateTest() throws ConnException {
         int CONNECTION_ID = 123;
         String ENCODING = "cp874";
         String JSON = String.format(
@@ -29,7 +29,7 @@ public class JsonParserTest {
     }
 
     @Test
-    public void checkDefaultVarcharEncoding() {
+    public void checkDefaultVarcharEncoding() throws ConnException {
         int CONNECTION_ID = 123;
         String DEFAULT_ENCODING = "ascii";
         String JSON_WITHOUT_ENCODING = String.format(
@@ -43,7 +43,7 @@ public class JsonParserTest {
     }
 
     @Test
-    public void checkCP874VarcharEncoding() {
+    public void checkCP874VarcharEncoding() throws ConnException {
         int CONNECTION_ID = 123;
         String ENCODING_CONTAINS_874 = "someEncodingContains874-*&%#$@";
         String EXPECTED_ENCODING = "cp874";
@@ -59,7 +59,7 @@ public class JsonParserTest {
     }
 
     @Test
-    public void whenQueryTypeInIsEmptyArrayTest() {
+    public void whenQueryTypeInIsEmptyArrayTest() throws ConnException {
         String json = "{\"queryType\":[]}";
 
         List<ColumnMetadataDto> resultList = parser.toQueryTypeInput(json);
@@ -69,7 +69,7 @@ public class JsonParserTest {
     }
 
     @Test
-    public void toQueryTypeInputTest() {
+    public void toQueryTypeInputTest() throws ConnException {
         String JSON = "{" +
                 "  \"queryType\": [" +
                 "    {" +
@@ -112,12 +112,46 @@ public class JsonParserTest {
     }
 
     @Test
-    public void whenQueryTypeOutIsEmptyArrayTest() {
+    public void whenQueryTypeOutIsEmptyArrayTest() throws ConnException {
         String json = "{\"queryTypeNamed\":[]}";
 
         List<ColumnMetadataDto> resultList = parser.toQueryTypeOut(json);
 
         assertNotNull(resultList);
         assertTrue(resultList.isEmpty());
+    }
+
+    @Test(expected = ConnException.class)
+    public void whenJsonHasErrorThenToConnectionStateThrowsExceptionTest() throws ConnException {
+        parser.toConnectionState(generateJsonWithError());
+    }
+
+    @Test(expected = ConnException.class)
+    public void whenJsonHasErrorThenToQueryTypeInputThrowsExceptionTest() throws ConnException {
+        parser.toQueryTypeInput(generateJsonWithError());
+    }
+
+    @Test(expected = ConnException.class)
+    public void whenJsonHasErrorThenToQueryTypeOutThrowsExceptionTest() throws ConnException {
+        parser.toQueryTypeOut(generateJsonWithError());
+    }
+
+    @Test(expected = ConnException.class)
+    public void whenJsonHasErrorThenToFetchMetadataThrowsExceptionTest() throws ConnException {
+        parser.toFetchMetadata(generateJsonWithError());
+    }
+
+    @Test(expected = ConnException.class)
+    public void whenJsonHasErrorThenToStatementIdThrowsExceptionTest() throws ConnException {
+        parser.toStatementId(generateJsonWithError());
+    }
+
+    @Test(expected = ConnException.class)
+    public void whenJsonHasErrorThenToStatementStateThrowsExceptionTest() throws ConnException {
+        parser.toStatementState(generateJsonWithError());
+    }
+
+    private String generateJsonWithError() {
+        return "{\"error\":\"some  error message\"}";
     }
 }

@@ -19,7 +19,7 @@ public class JsonParser {
 
     public static final int TEXT_ITEM_SIZE = 100_000;
 
-    public ConnectionStateDto toConnectionState(String body) {
+    public ConnectionStateDto toConnectionState(String body) throws ConnException {
         JsonObject jsonObj = parseJson(body);
         int connId = jsonObj.get("connectionId").asInt();
         String varcharEncoding = jsonObj.getString("varcharEncoding", "ascii");
@@ -32,17 +32,17 @@ public class JsonParser {
         return new ConnectionStateDto(connId, varcharEncoding);
     }
 
-    public List<ColumnMetadataDto> toQueryTypeInput(String body) {
+    public List<ColumnMetadataDto> toQueryTypeInput(String body) throws ConnException {
         LOGGER.log(Level.FINEST, body);
         return toQueryType(body, QUERY_TYPE);
     }
 
-    public List<ColumnMetadataDto> toQueryTypeOut(String body) {
+    public List<ColumnMetadataDto> toQueryTypeOut(String body) throws ConnException {
         LOGGER.log(Level.FINEST, body);
         return toQueryType(body, QUERY_TYPE_NAMED);
     }
 
-    public FetchMetadataDto toFetchMetadata(String body) {
+    public FetchMetadataDto toFetchMetadata(String body) throws ConnException {
         JsonObject jsonObj = parseJson(body);
         int newRowsFetched = jsonObj.get("rows").asInt();
         JsonArray jsonSizes = jsonObj.get("colSzs").asArray();
@@ -59,7 +59,7 @@ public class JsonParser {
         return new FetchMetadataDto(newRowsFetched, sizes);
     }
 
-    public int toStatementId(String body) {
+    public int toStatementId(String body) throws ConnException {
         int statementId = parseJson(body).get("statementId").asInt();
         LOGGER.log(Level.FINEST, MessageFormat.format("Statement id = [{0}] from json [{1}]", statementId, body));
         return statementId;
@@ -67,10 +67,6 @@ public class JsonParser {
 
     public StatementStateDto toStatementState(String body) throws ConnException {
         JsonObject jsonObj = parseJson(body);
-
-        if(jsonObj.get("error") != null) {
-            throw new ConnException(String.format("\n\nError from SQream:\n\n%s",jsonObj.get("error").asString()));
-        }
 
         int listenerId = jsonObj.get("listener_id").asInt();
         int port = jsonObj.get("port").asInt();
@@ -85,7 +81,7 @@ public class JsonParser {
         return new StatementStateDto(listenerId, port, portSsl, reconnect, ip);
     }
 
-    private List<ColumnMetadataDto> toQueryType(String body, String type) {
+    private List<ColumnMetadataDto> toQueryType(String body, String type) throws ConnException {
         LOGGER.log(Level.FINEST, MessageFormat.format("Json=[{0}]",body));
 
         List<ColumnMetadataDto> resultList = new ArrayList<>();
@@ -99,7 +95,7 @@ public class JsonParser {
         return resultList;
     }
 
-    private ColumnMetadataDto toColumnMetadata(String body) {
+    private ColumnMetadataDto toColumnMetadata(String body) throws ConnException {
         LOGGER.log(Level.FINEST, MessageFormat.format("Json=[{0}]",body));
 
         JsonObject jsonObj = parseJson(body);
@@ -114,7 +110,15 @@ public class JsonParser {
         return new ColumnMetadataDto(truVarchar, name, nullable, valueType, valueSize);
     }
 
-    private JsonObject parseJson(String jsonStr) {
-        return Json.parse(jsonStr).asObject();
+    private JsonObject parseJson(String jsonStr) throws ConnException {
+        JsonObject jsonObj = Json.parse(jsonStr).asObject();
+        checkError(jsonObj);
+        return jsonObj;
+    }
+
+    private void checkError(JsonObject jsonObj) throws ConnException {
+        if(jsonObj.get("error") != null) {
+            throw new ConnException(String.format("\n\nError from SQream:\n\n%s",jsonObj.get("error").asString()));
+        }
     }
 }

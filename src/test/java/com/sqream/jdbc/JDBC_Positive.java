@@ -132,19 +132,20 @@ public class JDBC_Positive {
              Statement stmt = conn.createStatement()) {
 
             stmt.executeQuery(createSql);
-
-            try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
-                for (int i = 0; i < times; i++) {
-                    ps.setInt(1, randomInt);
-                    ps.addBatch();
-                }
-                ps.executeBatch();
+        }
+        try (Connection conn = createConnection();
+             PreparedStatement ps = conn.prepareStatement(insertSql)) {
+            for (int i = 0; i < times; i++) {
+                ps.setInt(1, randomInt);
+                ps.addBatch();
             }
-
-            try(ResultSet rs = stmt.executeQuery(selectSql)) {
-                while(rs.next()) {
-                    rs.getInt(1);
-                }
+            ps.executeBatch();
+        }
+        try (Connection conn = createConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(selectSql)) {
+            while(rs.next()) {
+                rs.getInt(1);
             }
         }
 	}

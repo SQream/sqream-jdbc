@@ -1,3 +1,8 @@
+if (params.version_num == "") {
+    error("Please provide the version_num parameter!")
+}
+
+
 pipeline { 
     agent {
             label "x86_64_compilation"
@@ -14,16 +19,18 @@ pipeline {
         }
         stage('git clone jdbc') { 
             steps { 
-                sh 'git clone -b $branch http://gitlab.sq.l/connectors/jdbc-driver.git --recursive' 
+                sh '''
+                rm -rf jdbc-driver
+                git clone -b $branch http://gitlab.sq.l/connectors/jdbc-driver.git --recursive
+                '''
                 }
         }
         stage('Build'){
             steps {
-                sh '''
-                cd jdbc-driver
-                sed -i "6s|<version>.*</version>|<version>$version_num</version>|" pom.xml
-                mvn -f pom.xml package -DskipTests
-                '''
+                sh """
+                chmod u+x jenkins_build.sh
+                ./jenkins_build.sh
+                """
             }
         }
         //stage('Unit Testing'){
@@ -35,6 +42,7 @@ pipeline {
             steps {
                 sh '''
                 rm jdbc-driver/target/sqream-jdbc-$version_num.jar
+                rm jdbc-driver/target/original-sqream-jdbc-$version_num.jar
                 mv jdbc-driver/target/sqream-jdbc-$version_num-jar-with-dependencies.jar jdbc-driver/target/sqream-jdbc-$version_num.jar
                 file_to_upload=$(ls -al jdbc-driver/target | grep -v dependencies | grep -i jar | awk '{ print $9 }')
                 echo $file_to_upload

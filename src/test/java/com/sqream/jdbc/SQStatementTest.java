@@ -1,10 +1,8 @@
 package com.sqream.jdbc;
 
 import org.junit.Test;
-import sun.awt.X11.XStateProtocol;
 
 import java.sql.*;
-import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 

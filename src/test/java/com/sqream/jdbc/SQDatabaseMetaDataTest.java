@@ -87,4 +87,18 @@ public class SQDatabaseMetaDataTest {
         // SQ-988
         assertTrue(metadata.supportsBatchUpdates());
     }
+
+    @Test
+    public void supportsCatalogsInDataManipulationTest() throws SQLException {
+        assertNotNull(metadata);
+        // SQ-986
+        assertFalse(metadata.supportsCatalogsInDataManipulation());
+    }
+
+    @Test
+    public void supportsSchemasInDataManipulationTest() throws SQLException {
+        assertNotNull(metadata);
+        // SQ-986
+        assertFalse(metadata.supportsSchemasInDataManipulation());
+    }
 }

@@ -80,4 +80,11 @@ public class SQDatabaseMetaDataTest {
         // SQ-1299
         assertTrue(metadata.supportsMixedCaseQuotedIdentifiers());
     }
+
+    @Test
+    public void supportsBatchUpdatesTest() throws SQLException {
+        assertNotNull(metadata);
+        // SQ-988
+        assertTrue(metadata.supportsBatchUpdates());
+    }
 }

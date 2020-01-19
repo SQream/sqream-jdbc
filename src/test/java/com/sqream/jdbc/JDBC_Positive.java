@@ -202,41 +202,6 @@ public class JDBC_Positive {
 	}
 	
 	@Test
-	public void limited_fetch() throws SQLException {
-		boolean a_ok = false;  // The test is visual, pass if ends
-		int count = 0, max_rows = 3;
-		
-		conn = DriverManager.getConnection(url,"sqream","sqream");
-		
-		String sql = "create or replace table test_fetch (ints int)";
-	    stmt = conn.createStatement();
-	    stmt.execute(sql);
-	    stmt.close();
-	    
-	    sql = "insert into test_fetch values (1), (2), (3), (4), (5)";
-	    stmt = conn.createStatement();
-	    stmt.execute(sql);
-	    stmt.close();
-	    
-	    sql = "select * from test_fetch";
-	    //stmt = conn.prepareStatement(sql);
-	    stmt = conn.createStatement();
-	    stmt.setMaxRows(max_rows);
-	    rs = stmt.executeQuery(sql);
-	    while(rs.next()) { 
-	        rs.getInt(1);
-	        count++;
-	    }
-	    
-	    if (count == max_rows)
-            a_ok = true;    
-        else
-        	log.info("limited fetch of 3 items, amount returned: " + count);
-
-        assertTrue(a_ok);
-	}
-	
-	@Test
 	public void display_size() throws SQLException {
         boolean a_ok = false;
         int[] res;

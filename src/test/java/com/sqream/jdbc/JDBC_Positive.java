@@ -395,7 +395,7 @@ public class JDBC_Positive {
     
     @Test
     public void bool_as_string() throws SQLException {
-    	
+
     	boolean a_ok = false;
     	
         conn = DriverManager.getConnection(url,"sqream","sqream");
@@ -425,28 +425,20 @@ public class JDBC_Positive {
     
     @Test
      public void getUDF() throws SQLException {
-        /*  Check isSigned command()   */
-        boolean a_ok = false;
-        
-        // Create some user defined functions
-        conn = DriverManager.getConnection(url,"sqream","sqream");
-        String sql = "CREATE OR REPLACE FUNCTION fud () RETURNS int as $$ return 1 $$ LANGUAGE PYTHON";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-               
-        // Run getProcedures
-        dbmeta = conn.getMetaData();
-        rs = dbmeta.getProcedures(null, null, null);
-        while(rs.next()) {
-            if ("fud".equals(rs.getString("procedure_name"))) {
-                a_ok = true;
+        String createSql = "CREATE OR REPLACE FUNCTION fud () RETURNS int as $$ return 1 $$ LANGUAGE PYTHON";
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.execute(createSql);
+            DatabaseMetaData metaData = conn.getMetaData();
+
+            try (ResultSet rs = metaData.getProcedures(null, null, null)) {
+                while(rs.next()) {
+                    assertEquals("fud", rs.getString("procedure_name"));
+                }
             }
         }
-        rs.close();
-
-        // Check functionality
-        assertTrue(a_ok);
     }
 
     @Test
@@ -993,5 +985,13 @@ public class JDBC_Positive {
         conn.close();
         //conn.close();
         return true;
+    }
+
+    private Connection createConnection() {
+        try {
+            return DriverManager.getConnection(url,"sqream","sqream");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

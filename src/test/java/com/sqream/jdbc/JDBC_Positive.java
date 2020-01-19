@@ -121,40 +121,32 @@ public class JDBC_Positive {
 	}
 	
 	@Test
-	public void hundred_mil_fetch() throws SQLException {
-		
-		boolean a_ok = false;  // The test is visual, pass if ends
-		
-		conn = DriverManager.getConnection(url,"sqream","sqream");
-		
-		String sql = "create or replace table test_fetch (ints int)";
-	    stmt = conn.createStatement();
-	    stmt.execute(sql);
-	    stmt.close();
-	    
-	    sql = "insert into test_fetch values (?)";
-        ps = conn.prepareStatement(sql);
-        int random_int = 8;
-        int times = 100000000;  // Assuming chunk size is around 1 million, giving X10 more
-        for (int i = 0; i < times; i++) {
-            ps.setInt(1, random_int);
-            ps.addBatch();
-        }
-        ps.executeBatch();
-        ps.close();  
-	    
-	    sql = "select * from test_fetch";
-	    //stmt = conn.prepareStatement(sql);
-	    stmt = conn.createStatement();
-	    rs = stmt.executeQuery(sql);
-	    
-	    while(rs.next()) { 
-	        rs.getInt(1);
-	    }
-	    
-        a_ok = true;    
+	public void hundredMilFetch() throws SQLException {
+        String createSql = "create or replace table test_fetch (ints int)";
+        String insertSql = "insert into test_fetch values (?)";
+        String selectSql = "select * from test_fetch";
+        int randomInt = 8;
+        int times = 100_000_000;  // Assuming chunk size is around 1 million, giving X10 more
 
-	    assertTrue(a_ok);
+	    try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.executeQuery(createSql);
+
+            try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
+                for (int i = 0; i < times; i++) {
+                    ps.setInt(1, randomInt);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+
+            try(ResultSet rs = stmt.executeQuery(selectSql)) {
+                while(rs.next()) {
+                    rs.getInt(1);
+                }
+            }
+        }
 	}
 	
 	@Test

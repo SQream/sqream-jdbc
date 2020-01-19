@@ -127,6 +127,7 @@ public class JDBC_Positive {
         String selectSql = "select * from test_fetch";
         int randomInt = 8;
         int times = 100_000_000;  // Assuming chunk size is around 1 million, giving X10 more
+        int fetchCounter = 0;
 
 	    try (Connection conn = createConnection();
              Statement stmt = conn.createStatement()) {
@@ -146,8 +147,10 @@ public class JDBC_Positive {
             ResultSet rs = stmt.executeQuery(selectSql)) {
             while(rs.next()) {
                 rs.getInt(1);
+                fetchCounter++;
             }
         }
+        assertEquals(fetchCounter, times);
 	}
 	
 	@Test

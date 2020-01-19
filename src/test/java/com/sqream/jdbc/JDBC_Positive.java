@@ -443,28 +443,21 @@ public class JDBC_Positive {
 
     @Test
     public void isSigned() throws SQLException {
-        /*  Check isSigned command()   */
-        boolean a_ok = false;
-        
-        // Create table for test
-        conn = DriverManager.getConnection(url,"sqream","sqream");
-        String sql = "create or replace table test_signed (x int, y varchar(10))";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        
-        // Run select statement and check metadata
-        stmt = conn.createStatement();
-        rs = stmt.executeQuery("select * from test_signed");
-        rsmeta = rs.getMetaData();
-        
-        // Check functionality
-        if (rsmeta.isSigned(1) && !rsmeta.isSigned(2))
-            a_ok = true;    
-        rs.close();
-        stmt.close();
+        String createSql = "create or replace table test_signed (x int, y varchar(10))";
+        String selectSql = "select * from test_signed";
 
-        assertTrue(a_ok);
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.execute(createSql);
+
+            try (ResultSet rs = stmt.executeQuery(selectSql)) {
+                ResultSetMetaData metaData = rs.getMetaData();
+
+                assertTrue(metaData.isSigned(1));
+                assertFalse(metaData.isSigned(2));
+            }
+        }
     }
     
     @Test

@@ -18,7 +18,7 @@ import com.sqream.jdbc.connector.ConnectorImpl;
 import com.sqream.jdbc.connector.ConnException;
 
 
-public class SQStatment implements Statement {
+public class SQStatement implements Statement {
 
 	private int NO_LIMIT = 0;
 	private int SIZE_RESULT = NO_LIMIT; // 0 means no limit.
@@ -30,7 +30,7 @@ public class SQStatment implements Statement {
 	private String dbName;
 	private boolean isClosed;
 
-	SQStatment(SQConnection conn, String catalog, ConnectorFactory connectorFactory)
+	SQStatement(SQConnection conn, String catalog, ConnectorFactory connectorFactory)
 			throws NumberFormatException, IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException {
 		this.connection = conn;
 		this.dbName = catalog;

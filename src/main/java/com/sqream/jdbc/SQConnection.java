@@ -34,7 +34,7 @@ public class SQConnection implements Connection {
 
 	private ConnectorFactory connectorFactory;
 	private Path SQConnection_log = Paths.get("/tmp/SQConnection.txt");
-	private Vector<SQStatment> Statement_list = new Vector<SQStatment>();
+	private Vector<SQStatement> Statement_list = new Vector<SQStatement>();
 	private Connector globalClient;
 	private boolean printouts = false;
 	private SQDatabaseMetaData data = null;
@@ -139,9 +139,9 @@ public class SQConnection implements Connection {
 			throw new SQLException(MessageFormat.format("Statement is closed: isClosed=[{0}]", isClosed));
 		}
 
-		SQStatment SQS;
+		SQStatement SQS;
 		try {
-			SQS = new SQStatment(this, dbName, this.connectorFactory);
+			SQS = new SQStatement(this, dbName, this.connectorFactory);
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -161,9 +161,9 @@ public class SQConnection implements Connection {
 					resultSetType, resultSetConcurrency));
 		}
 
-		SQStatment SQS = null;
+		SQStatement SQS = null;
 		try {
-			SQS = new SQStatment(this, dbName, this.connectorFactory);
+			SQS = new SQStatement(this, dbName, this.connectorFactory);
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -199,9 +199,9 @@ public class SQConnection implements Connection {
 					resultSetType, resultSetConcurrency, resultSetHoldability));
 		}
 
-		SQStatment SQS;
+		SQStatement SQS;
 		try {
-			SQS = new SQStatment(this, dbName, this.connectorFactory);
+			SQS = new SQStatement(this, dbName, this.connectorFactory);
 			Statement_list.addElement(SQS);
 			
 		} catch (Exception e) {
@@ -256,7 +256,7 @@ public class SQConnection implements Connection {
 
 		try {
 			if(Statement_list!=null) {
-				for(SQStatment item : Statement_list) {
+				for(SQStatement item : Statement_list) {
 					item.cancel();
 				}
 				Statement_list.clear();

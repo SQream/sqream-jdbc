@@ -1,8 +1,10 @@
 package com.sqream.jdbc;
 
 import org.junit.Test;
+import sun.awt.X11.XStateProtocol;
 
 import java.sql.*;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
 
@@ -34,6 +36,15 @@ public class SQStatementTest {
         }
 
         assertEquals(count, maxRows);
+    }
+
+    @Test(expected = SQLFeatureNotSupportedException.class)
+    public void executeBatchTest() throws SQLException {
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.executeBatch();
+        }
     }
 
     private Connection createConnection() {

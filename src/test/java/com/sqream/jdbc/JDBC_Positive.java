@@ -229,37 +229,6 @@ public class JDBC_Positive {
 
         assertTrue(a_ok);
     }
-	
-	@Test
-    public void execBatchRes() throws SQLException {
-        boolean a_ok = false;
-        int[] res;
-        
-        // Create table for test
-        conn = DriverManager.getConnection(url,"sqream","sqream");
-        String sql = "create or replace table test_exec (x int)";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        
-        // Insert an int via network insert
-        sql = "insert into test_exec values (?)";
-        ps = conn.prepareStatement(sql);
-        int random_int = 8;
-        int times = 10;
-        for (int i = 0; i < times; i++) {
-            ps.setInt(1, random_int);
-            ps.addBatch();
-        }
-        res = ps.executeBatch();
-        ps.close();
-        
-        // Check result
-        if (res.length == 10 && IntStream.of(res).sum() == 10)
-            a_ok = true;
-
-        assertTrue(a_ok);
-    }
     
     public void get_connection () throws SQLException {
     	conn = DriverManager.getConnection(url,"sqream","sqream");

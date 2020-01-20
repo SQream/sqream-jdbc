@@ -1,8 +1,10 @@
 package com.sqream.jdbc.connector;
 
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -154,26 +156,41 @@ public class JsonParserTest {
 
     @Test(expected = ConnException.class)
     public void toConnectionStateGetEmptyStateTest() throws ConnException {
-        parser.toConnectionState(buildTestJson().build());
+        String json = jsonBuilder().build();
+        parser.toConnectionState(json);
     }
 
     @Test
     public void toConnectionStateGetStateWithoutVarcharEncodingTest() throws ConnException {
-        String json = buildTestJson().connectionId(1).build();
+        String json = jsonBuilder().connectionId(1).build();
         parser.toConnectionState(json);
+    }
+
+    @Test(expected = ConnException.class)
+    public void toFetchMetadataGetEmptyJsonTest() throws ConnException {
+        String json = jsonBuilder().build();
+        parser.toFetchMetadata(json);
+    }
+
+    @Test(expected = ConnException.class)
+    public void toFetchMetadataGetJsonWithoutColSzsTest() throws ConnException {
+        String json = jsonBuilder().rows(1).build();
+        parser.toFetchMetadata(json);
     }
 
     private String generateJsonWithError() {
         return "{\"error\":\"some  error message\"}";
     }
 
-    private TestJsonBuilder buildTestJson() {
+    private TestJsonBuilder jsonBuilder() {
         return new TestJsonBuilder();
     }
 
     private static class TestJsonBuilder {
         Integer connectionId;
         String varcharEncoding;
+        Integer rows;
+        int[] colSzs;
 
         private  TestJsonBuilder() { }
 
@@ -187,6 +204,16 @@ public class JsonParserTest {
             return this;
         }
 
+        TestJsonBuilder rows(int rows) {
+            this.rows = rows;
+            return this;
+        }
+
+        TestJsonBuilder colSzs(int[] colSzs) {
+            this.colSzs = colSzs;
+            return this;
+        }
+
         String build() {
             JsonObject result = new JsonObject();
             if (connectionId != null) {
@@ -194,6 +221,14 @@ public class JsonParserTest {
             }
             if (varcharEncoding != null) {
                 result.set("varcharEncoding", varcharEncoding);
+            }
+            if (rows != null) {
+                result.set("rows", rows);
+            }
+            if (colSzs != null) {
+                JsonArray array = new JsonArray();
+                Arrays.stream(colSzs).forEach(array::add);
+                result.set("colSzs", array);
             }
             return result.toString();
         }

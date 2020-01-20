@@ -45,8 +45,8 @@ public class JsonParser {
 
     public FetchMetadataDto toFetchMetadata(String body) throws ConnException {
         JsonObject jsonObj = parseJson(body);
-        int newRowsFetched = jsonObj.get("rows").asInt();
-        JsonArray jsonSizes = jsonObj.get("colSzs").asArray();
+        int newRowsFetched = safeReadValue(jsonObj,"rows").asInt();
+        JsonArray jsonSizes = safeReadValue(jsonObj, "colSzs").asArray();
         int[] sizes = new int[jsonSizes.size()];
         for (int i = 0; i < jsonSizes.size(); i++) {
             sizes[i] = jsonSizes.get(i).asInt();

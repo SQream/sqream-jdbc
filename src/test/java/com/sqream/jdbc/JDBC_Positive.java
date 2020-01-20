@@ -676,6 +676,35 @@ public class JDBC_Positive {
         }
     }
 
+    @Test
+    public void sqreamHang2Test() throws SQLException {
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.execute("CREATE OR REPLACE TABLE public.class (Name VARCHAR(8),Sex VARCHAR(1),Age DOUBLE,Height DOUBLE, Weight DOUBLE);");
+        }
+
+        try (Connection conn0 = createConnection();
+             Statement stmt0 = conn0.createStatement()) {
+
+            stmt0.setQueryTimeout(0);
+            stmt0.execute("SELECT * FROM public.CLASS WHERE 0=1");
+
+            try (Connection conn1 = createConnection();
+                 Statement stmt1 = conn0.createStatement()) {
+
+                stmt1.execute("SELECT * FROM public.CLASS WHERE 0=1");
+
+                try (Connection conn2 = createConnection();
+                     Statement stmt2 = conn0.createStatement()) {
+
+                    stmt2.execute("CREATE OR REPLACE TABLE public.class22 (Name VARCHAR(8),Sex VARCHAR(1),Age DOUBLE,Height DOUBLE, Weight DOUBLE)");
+                }
+            }
+        }
+    }
+
 
     private boolean insert(String table_type) throws IOException, SQLException, KeyManagementException, NoSuchAlgorithmException{
         

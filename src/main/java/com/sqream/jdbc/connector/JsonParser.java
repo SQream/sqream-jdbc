@@ -46,10 +46,10 @@ public class JsonParser {
     public FetchMetadataDto toFetchMetadata(String body) throws ConnException {
         JsonObject jsonObj = parseJson(body);
         int newRowsFetched = safeReadValue(jsonObj,"rows").asInt();
-        JsonArray jsonSizes = safeReadValue(jsonObj, "colSzs").asArray();
-        int[] sizes = new int[jsonSizes.size()];
-        for (int i = 0; i < jsonSizes.size(); i++) {
-            sizes[i] = jsonSizes.get(i).asInt();
+        JsonArray columnSizes = safeReadValue(jsonObj, "colSzs").asArray();
+        int[] sizes = new int[columnSizes.size()];
+        for (int i = 0; i < columnSizes.size(); i++) {
+            sizes[i] = columnSizes.get(i).asInt();
         }
 
         if (LOGGER.getParent().getLevel() == Level.FINEST) {
@@ -70,11 +70,11 @@ public class JsonParser {
     public StatementStateDto toStatementState(String body) throws ConnException {
         JsonObject jsonObj = parseJson(body);
 
-        int listenerId = jsonObj.get("listener_id").asInt();
-        int port = jsonObj.get("port").asInt();
-        int portSsl = jsonObj.get("port_ssl").asInt();
-        boolean reconnect = jsonObj.get("reconnect").asBoolean();
-        String ip = jsonObj.get("ip").asString();
+        int listenerId = safeReadValue(jsonObj,"listener_id").asInt();
+        int port = safeReadValue(jsonObj, "port").asInt();
+        int portSsl = safeReadValue(jsonObj, "port_ssl").asInt();
+        boolean reconnect = safeReadValue(jsonObj, "reconnect").asBoolean();
+        String ip = safeReadValue(jsonObj, "ip").asString();
 
         LOGGER.log(Level.FINEST, MessageFormat.format(
                 "Parsed: listenerId=[{0}], port=[{1}], portSsl=[{2}], reconnect=[{3}], ip=[{4}] from json [{5}]",

@@ -51,7 +51,10 @@ public class SQConnection implements Connection {
 	
 	SQConnection(Properties connectionInfo, ConnectorFactory connectorFactory)
 			throws ScriptException, SQLException, NumberFormatException, IOException, NoSuchAlgorithmException, KeyManagementException, ConnException {
-		log("inside constructor SQConnection");
+		if (Level.FINE == LOGGER.getParent().getLevel()) {
+			LOGGER.log(Level.FINE,"Construct SQConnection with properties");
+			logProperties(connectionInfo);
+		}
 
 		this.connectorFactory = connectorFactory;
 
@@ -604,5 +607,14 @@ public class SQConnection implements Connection {
 //		System.out.println("createSQLXML");
 		throw new SQLFeatureNotSupportedException("createSQLXML in SQConnection");
 	}
-	
+
+	private void logProperties(Properties props) {
+		if (props == null) {
+			LOGGER.log(Level.FINE, "Properties is null");
+		} else {
+			for (String key : props.stringPropertyNames()) {
+				LOGGER.log(Level.FINE, MessageFormat.format("[{0}]=[{1}]", key, props.getProperty(key)));
+			}
+		}
+	}
 }

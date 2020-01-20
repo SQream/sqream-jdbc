@@ -187,6 +187,56 @@ public class JsonParserTest {
         parser.toStatementId(json);
     }
 
+    @Test(expected = ConnException.class)
+    public void toStatementStateGetEmptyJson() throws ConnException {
+        String json = jsonBuilder().build();
+        parser.toStatementState(json);
+    }
+
+    @Test(expected = ConnException.class)
+    public void toStatementStateGetJsonWithoutPortTest() throws ConnException {
+        String json = jsonBuilder()
+                .listenerId(1)
+                .portSsl(8080)
+                .reconnect(false)
+                .ip("8.8.8.8")
+                .build();
+        parser.toStatementState(json);
+    }
+
+    @Test(expected = ConnException.class)
+    public void toStatementStateGetJsonWithoutPortSslTest() throws ConnException {
+        String json = jsonBuilder()
+                .listenerId(1)
+                .port(8080)
+                .reconnect(false)
+                .ip("8.8.8.8")
+                .build();
+        parser.toStatementState(json);
+    }
+
+    @Test(expected = ConnException.class)
+    public void toStatementStateGetJsonWithoutReconnectTest() throws ConnException {
+        String json = jsonBuilder()
+                .listenerId(1)
+                .port(8080)
+                .portSsl(8080)
+                .ip("8.8.8.8")
+                .build();
+        parser.toStatementState(json);
+    }
+
+    @Test(expected = ConnException.class)
+    public void toStatementStateGetJsonWithoutIpTest() throws ConnException {
+        String json = jsonBuilder()
+                .listenerId(1)
+                .port(8080)
+                .portSsl(8080)
+                .reconnect(false)
+                .build();
+        parser.toStatementState(json);
+    }
+
     private String generateJsonWithError() {
         return "{\"error\":\"some  error message\"}";
     }
@@ -200,6 +250,11 @@ public class JsonParserTest {
         private String varcharEncoding;
         private Integer rows;
         private int[] colSzs;
+        private Integer listenerId;
+        private Integer port;
+        private Integer portSsl;
+        private Boolean reconnect;
+        private String ip;
 
         private  TestJsonBuilder() { }
 
@@ -223,6 +278,31 @@ public class JsonParserTest {
             return this;
         }
 
+        TestJsonBuilder listenerId(int id) {
+            this.listenerId = id;
+            return this;
+        }
+
+        TestJsonBuilder port(int port) {
+            this.port = port;
+            return this;
+        }
+
+        TestJsonBuilder portSsl(int portSsl) {
+            this.portSsl = portSsl;
+            return this;
+        }
+
+        TestJsonBuilder reconnect(boolean reconnect) {
+            this.reconnect = reconnect;
+            return this;
+        }
+
+        TestJsonBuilder ip(String ip) {
+            this.ip = ip;
+            return this;
+        }
+
         String build() {
             JsonObject result = new JsonObject();
             if (connectionId != null) {
@@ -238,6 +318,21 @@ public class JsonParserTest {
                 JsonArray array = new JsonArray();
                 Arrays.stream(colSzs).forEach(array::add);
                 result.set("colSzs", array);
+            }
+            if (listenerId != null) {
+                result.set("listener_id", listenerId);
+            }
+            if (port != null) {
+                result.set("port", port);
+            }
+            if (portSsl != null) {
+                result.set("port_ssl", portSsl);
+            }
+            if (reconnect != null) {
+                result.set("reconnect", reconnect);
+            }
+            if (ip != null) {
+                result.set("ip", ip);
             }
             return result.toString();
         }

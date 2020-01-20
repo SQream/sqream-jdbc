@@ -330,6 +330,8 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public int execute(String statement, int chunkSize) throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException {
+        LOGGER.log(Level.FINE, MessageFormat.format("Statement=[{0}], ChunkSize=[{1}]", statement, chunkSize));
+
         if (chunkSize < 0) {
             throw new ConnException("chunk_size should be positive, got " + chunkSize);
         }

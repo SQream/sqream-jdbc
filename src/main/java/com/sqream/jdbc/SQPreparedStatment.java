@@ -10,6 +10,7 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Array;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 
@@ -59,7 +60,8 @@ public class SQPreparedStatment implements PreparedStatement {
     private boolean is_closed = true;
 
     public SQPreparedStatment(Connector client, String Sql, SQConnection conn, String catalog) throws SQLException, IOException, KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
-        
+        LOGGER.log(Level.FINE, MessageFormat.format("Construct SQPreparedStatement for [{0}]", Sql));
+
         connection = conn;
         db_name = catalog;
         is_closed = false;

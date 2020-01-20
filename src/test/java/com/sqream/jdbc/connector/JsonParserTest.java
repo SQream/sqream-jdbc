@@ -237,6 +237,18 @@ public class JsonParserTest {
         parser.toStatementState(json);
     }
 
+    @Test
+    public void toStatementStateTest() throws ConnException {
+        String json = jsonBuilder()
+                .listenerId(1)
+                .port(8080)
+                .portSsl(8080)
+                .reconnect(false)
+                .ip("8.8.8.8")
+                .build();
+        parser.toStatementState(json);
+    }
+
     private String generateJsonWithError() {
         return "{\"error\":\"some  error message\"}";
     }

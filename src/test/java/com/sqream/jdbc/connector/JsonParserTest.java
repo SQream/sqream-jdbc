@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector;
 
+import com.eclipsesource.json.JsonObject;
 import org.junit.Test;
 
 import java.util.LinkedList;
@@ -151,7 +152,50 @@ public class JsonParserTest {
         parser.toStatementState(generateJsonWithError());
     }
 
+    @Test(expected = ConnException.class)
+    public void toConnectionStateGetEmptyStateTest() throws ConnException {
+        parser.toConnectionState(buildTestJson().build());
+    }
+
+    @Test
+    public void toConnectionStateGetStateWithoutVarcharEncodingTest() throws ConnException {
+        String json = buildTestJson().connectionId(1).build();
+        parser.toConnectionState(json);
+    }
+
     private String generateJsonWithError() {
         return "{\"error\":\"some  error message\"}";
+    }
+
+    private TestJsonBuilder buildTestJson() {
+        return new TestJsonBuilder();
+    }
+
+    private static class TestJsonBuilder {
+        Integer connectionId;
+        String varcharEncoding;
+
+        private  TestJsonBuilder() { }
+
+        TestJsonBuilder connectionId(int id) {
+            this.connectionId = id;
+            return this;
+        }
+
+        TestJsonBuilder varcharEncoding(String encoding) {
+            this.varcharEncoding = encoding;
+            return this;
+        }
+
+        String build() {
+            JsonObject result = new JsonObject();
+            if (connectionId != null) {
+                result.set("connectionId", connectionId);
+            }
+            if (varcharEncoding != null) {
+                result.set("varcharEncoding", varcharEncoding);
+            }
+            return result.toString();
+        }
     }
 }

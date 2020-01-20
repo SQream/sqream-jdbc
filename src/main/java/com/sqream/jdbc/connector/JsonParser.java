@@ -3,6 +3,7 @@ package com.sqream.jdbc.connector;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class JsonParser {
 
     public ConnectionStateDto toConnectionState(String body) throws ConnException {
         JsonObject jsonObj = parseJson(body);
-        int connId = jsonObj.get("connectionId").asInt();
+        int connId = safeReadValue(jsonObj, "connectionId").asInt();
         String varcharEncoding = jsonObj.getString("varcharEncoding", "ascii");
         varcharEncoding = (varcharEncoding.contains("874"))? "cp874" : "ascii";
 
@@ -79,6 +80,15 @@ public class JsonParser {
                 listenerId, port, portSsl, reconnect, ip, body));
 
         return new StatementStateDto(listenerId, port, portSsl, reconnect, ip);
+    }
+
+    private JsonValue safeReadValue(JsonObject jsonObj, String key) throws ConnException {
+        JsonValue value = jsonObj.get(key);
+        if (value == null) {
+            throw new ConnException(MessageFormat.format("Wrong json: [{0}]. Does not contain key: [{1}]",
+                    jsonObj.toString(), key));
+        }
+        return value;
     }
 
     private List<ColumnMetadataDto> toQueryType(String body, String type) throws ConnException {

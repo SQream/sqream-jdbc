@@ -19,8 +19,6 @@ public class SQResultSetMetaDataTest {
 
         SQResultSetMetaData resultSetMetaData = new SQResultSetMetaData(connector, catalog);
 
-        // SQ-1246: JDBC - Set default value to isCurrency
-        // check that return false by default
         assertFalse(resultSetMetaData.isCurrency(1));
     }
 

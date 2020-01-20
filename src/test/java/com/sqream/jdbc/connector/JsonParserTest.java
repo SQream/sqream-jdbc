@@ -19,9 +19,10 @@ public class JsonParserTest {
     public void toConnectionStateTest() throws ConnException {
         int CONNECTION_ID = 123;
         String ENCODING = "cp874";
-        String JSON = String.format(
-                "{\"connectionId\":%s,\"databaseConnected\":\"databaseConnected\",\"varcharEncoding\":\"%s\"}",
-                CONNECTION_ID, ENCODING);
+        String JSON = jsonBuilder()
+                .connectionId(CONNECTION_ID)
+                .varcharEncoding(ENCODING)
+                .build();
         ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, ENCODING);
 
         ConnectionStateDto result = parser.toConnectionState(JSON);
@@ -35,8 +36,9 @@ public class JsonParserTest {
     public void checkDefaultVarcharEncoding() throws ConnException {
         int CONNECTION_ID = 123;
         String DEFAULT_ENCODING = "ascii";
-        String JSON_WITHOUT_ENCODING = String.format(
-                "{\"connectionId\":%s,\"databaseConnected\":\"databaseConnected\"}", CONNECTION_ID);
+        String JSON_WITHOUT_ENCODING = jsonBuilder()
+                .connectionId(CONNECTION_ID)
+                .build();
         ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, DEFAULT_ENCODING);
 
         ConnectionStateDto result = parser.toConnectionState(JSON_WITHOUT_ENCODING);
@@ -50,9 +52,10 @@ public class JsonParserTest {
         int CONNECTION_ID = 123;
         String ENCODING_CONTAINS_874 = "someEncodingContains874-*&%#$@";
         String EXPECTED_ENCODING = "cp874";
-        String JSON = String.format(
-                "{\"connectionId\":%s,\"databaseConnected\":\"databaseConnected\",\"varcharEncoding\":\"%s\"}",
-                CONNECTION_ID, ENCODING_CONTAINS_874);
+        String JSON = jsonBuilder()
+                .connectionId(CONNECTION_ID)
+                .varcharEncoding(ENCODING_CONTAINS_874)
+                .build();
         ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, EXPECTED_ENCODING);
 
         ConnectionStateDto result = parser.toConnectionState(JSON);
@@ -193,10 +196,10 @@ public class JsonParserTest {
     }
 
     private static class TestJsonBuilder {
-        Integer connectionId;
-        String varcharEncoding;
-        Integer rows;
-        int[] colSzs;
+        private Integer connectionId;
+        private String varcharEncoding;
+        private Integer rows;
+        private int[] colSzs;
 
         private  TestJsonBuilder() { }
 

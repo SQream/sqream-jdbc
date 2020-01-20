@@ -178,6 +178,12 @@ public class JsonParserTest {
         parser.toFetchMetadata(json);
     }
 
+    @Test(expected = ConnException.class)
+    public void toStatementIdGetEmptyJsonTest() throws ConnException {
+        String json = jsonBuilder().build();
+        parser.toStatementId(json);
+    }
+
     private String generateJsonWithError() {
         return "{\"error\":\"some  error message\"}";
     }

@@ -61,7 +61,8 @@ public class JsonParser {
     }
 
     public int toStatementId(String body) throws ConnException {
-        int statementId = parseJson(body).get("statementId").asInt();
+        JsonObject jsonObj = parseJson(body);
+        int statementId = safeReadValue(jsonObj, "statementId").asInt();
         LOGGER.log(Level.FINEST, MessageFormat.format("Statement id = [{0}] from json [{1}]", statementId, body));
         return statementId;
     }

@@ -9,6 +9,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
 
+import static com.sqream.jdbc.TestEnvironment.*;
+
 public class JDBC_Csv_Perf {
 
     private static final String SQL_CREATE_TABLE = "create or replace table lineitem (\n" +
@@ -32,9 +34,6 @@ public class JDBC_Csv_Perf {
             ")\n" +
             ";";
     private static final String SQL_INSERT = "insert into lineitem values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String URI = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
-    private static final String USER = "sqream";
-    private static final String PASSWORD = "sqream";
 
     @Before
     public void setup() throws SQLException {
@@ -78,6 +77,6 @@ public class JDBC_Csv_Perf {
     }
 
     private Connection createConenction() throws SQLException {
-        return DriverManager.getConnection(URI, USER, PASSWORD);
+        return DriverManager.getConnection(URL, USER, PASS);
     }
 }

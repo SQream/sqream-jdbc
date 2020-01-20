@@ -10,6 +10,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.*;
 
 public class SQResultSetMetaDataTest {
@@ -18,10 +19,9 @@ public class SQResultSetMetaDataTest {
     public void isCurrencyTest() throws
             ConnException, NoSuchAlgorithmException, IOException, KeyManagementException, SQLException {
 
-        String catalog = "master";
-        Connector connector = new ConnectorImpl("127.0.0.1", 5000, false, false);
+        Connector connector = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
 
-        SQResultSetMetaData resultSetMetaData = new SQResultSetMetaData(connector, catalog);
+        SQResultSetMetaData resultSetMetaData = new SQResultSetMetaData(connector, DATABASE);
 
         assertFalse(resultSetMetaData.isCurrency(1));
     }

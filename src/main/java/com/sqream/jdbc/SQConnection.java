@@ -43,7 +43,6 @@ public class SQConnection implements Connection {
 	private String username;
 	private Properties connInfo;
 	private String dbName;
-	private String DEFAULT_SERVICE = "sqream";
     
 	SQConnection(Connector client) {
 		globalClient = client;

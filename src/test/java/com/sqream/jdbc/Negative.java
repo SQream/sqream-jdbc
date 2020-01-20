@@ -20,6 +20,7 @@ import com.sqream.jdbc.connector.ConnException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.*;
 
 @RunWith(JUnit4.class)
@@ -50,10 +51,9 @@ public class Negative {
     	
     	boolean a_ok = false; 
     	String table_name = table_type.contains("varchar(100)") ?  table_type.substring(0,7) : table_type;
-    	ConnectorImpl conn = new ConnectorImpl("127.0.0.1", 5000, false, false);
-		conn.connect("master", "sqream", "sqream", "sqream");
-			
-		
+    	ConnectorImpl conn = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
+		conn.connect(DATABASE, USER, PASS, SERVICE);
+
     	// Prepare Table
 //    	log.info(" - Create Table t_" + table_type);
     	String sql = MessageFormat.format("create or replace table t_{0} (x {1})", table_name, table_type);
@@ -175,8 +175,8 @@ public class Negative {
     	
     	boolean a_ok = false;
     	String table_name = table_type.contains("varchar(100)") ?  table_type.substring(0,7) : table_type;
-    	ConnectorImpl conn = new ConnectorImpl("127.0.0.1", 5000, false, false);
-		conn.connect("master", "sqream", "sqream", "sqream");
+		ConnectorImpl conn = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
+		conn.connect(DATABASE, USER, PASS, SERVICE);
 		
 		
     	// Prepare Table
@@ -347,9 +347,9 @@ public class Negative {
     	
     	boolean a_ok = false;
     	String tableName = table_type.contains("varchar(10)") ?  table_type.substring(0,7) : table_type;
-    	
-    	ConnectorImpl conn = new ConnectorImpl("127.0.0.1", 5000, false, false);
-		conn.connect("master", "sqream", "sqream", "sqream");
+
+		ConnectorImpl conn = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
+		conn.connect(DATABASE, USER, PASS, SERVICE);
 		
     	// Prepare Table
     	//log.info(" - Create Table t_" + table_type);

@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import static com.sqream.jdbc.TestEnvironment.*;
 import static org.hamcrest.core.Is.isA;
 
 @RunWith(JUnit4.class)
@@ -25,9 +26,6 @@ public class JDBC_Negative {
     private static final String SQL_INSERT = "insert into perf values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_INSERT_LESS_MARKS_THAN_COLUMNS = "insert into perf values (?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_SELECT_COUNT = "select count(*) from perf;";
-    private static final String URI = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
-    private static final String USER = "sqream";
-    private static final String PASSWORD = "sqream";
 
     @Before
     public void setUp() throws SQLException {
@@ -72,7 +70,7 @@ public class JDBC_Negative {
     }
 
     private Connection createConenction() throws SQLException {
-        return DriverManager.getConnection(URI, USER, PASSWORD);
+        return DriverManager.getConnection(URL, USER, PASS);
     }
 
     private static Date date_from_tuple(int year, int month, int day) {

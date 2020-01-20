@@ -4,12 +4,10 @@ import org.junit.Test;
 
 import java.sql.*;
 
+import static com.sqream.jdbc.TestEnvironment.URL;
 import static org.junit.Assert.*;
 
 public class SQStatementTest {
-
-    private static final String url =
-            "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false;service=sqream";
 
     @Test
     public void setMaxRowsTest() throws SQLException {
@@ -47,7 +45,7 @@ public class SQStatementTest {
 
     private Connection createConnection() {
         try {
-            return DriverManager.getConnection(url,"sqream","sqream");
+            return DriverManager.getConnection(URL,"sqream","sqream");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

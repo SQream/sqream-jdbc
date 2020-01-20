@@ -21,6 +21,8 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import static com.sqream.jdbc.TestEnvironment.*;
+import static com.sqream.jdbc.TestEnvironment.SERVICE;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
@@ -81,8 +83,8 @@ public class Positive {
 	    /* Test that get_varchar returns corect results for all types */
 		
 		boolean a_ok = false;
-		ConnectorImpl conn = new ConnectorImpl("127.0.0.1", 5000, false, false);
-		conn.connect("master", "sqream", "sqream", "sqream");
+		ConnectorImpl conn = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
+		conn.connect(DATABASE, USER, PASS, SERVICE);
 		
 		// Prepare Table
 		String sql = "create or replace table mcVarc (t_bool bool, t_ubyte tinyint, t_short smallint, t_int int, t_long bigint, t_float real, t_double double, t_date date, t_datetime datetime, t_varchar varchar(10), t_nvarchar nvarchar(10))";
@@ -136,8 +138,8 @@ public class Positive {
     	
     	boolean a_ok = false;
     	String table_name = table_type.contains("varchar(") ?  table_type.substring(0,7) : table_type;
-    	ConnectorImpl conn = new ConnectorImpl("127.0.0.1", 5000, false, false);
-    	conn.connect("master", "sqream", "sqream", "sqream");
+		ConnectorImpl conn = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
+		conn.connect(DATABASE, USER, PASS, SERVICE);
 		
     	// Prepare Table
 //    	log.info(" - Create Table t_" + table_type);
@@ -337,8 +339,8 @@ public class Positive {
 	
     private boolean autoflush(int total_inserts, int insert_every) throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException   {
 
-    	ConnectorImpl conn = new ConnectorImpl("127.0.0.1", 5000, false, false);
-		conn.connect("master", "sqream", "sqream", "sqream");
+		ConnectorImpl conn = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
+		conn.connect(DATABASE, USER, PASS, SERVICE);
     	
     	// Prepare Table
     	String table_type = "int";

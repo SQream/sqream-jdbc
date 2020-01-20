@@ -5,11 +5,19 @@ import org.junit.Test;
 import java.sql.*;
 import java.util.stream.IntStream;
 
+import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.assertEquals;
 
 public class SQPreparedStatmentTest {
-    private static final String url =
-            "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false;service=sqream";
+
+    public static final String IP = "127.0.0.1";
+    public static final int PORT = 5000;
+    public static final String DATABASE = "master";
+    public static boolean CLUSTER = false;
+    public static boolean SSL = false;
+    public static String USER = "sqream";
+    public static String PASS = "sqream";
+    public static String SERVICE = "sqream";
 
     @Test
     public void setMaxRowsTest() throws SQLException {
@@ -60,7 +68,7 @@ public class SQPreparedStatmentTest {
 
     private Connection createConnection() {
         try {
-            return DriverManager.getConnection(url,"sqream","sqream");
+            return DriverManager.getConnection(URL,USER,PASS);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

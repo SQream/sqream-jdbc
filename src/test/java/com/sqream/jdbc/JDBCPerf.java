@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.logging.Logger;
 
+import static com.sqream.jdbc.TestEnvironment.*;
+
 public class JDBCPerf {
 
     private static final String SQL_CREATE_TABLE = "create or replace table perf " +
@@ -18,9 +20,6 @@ public class JDBCPerf {
             "strings varchar(10), strangs nvarchar(10), dates date, dts datetime)";
     private static final String SQL_INSERT = "insert into perf values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_SELECT_COUNT = "select count(*) from perf;";
-    private static final String URI = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
-    private static final String USER = "sqream";
-    private static final String PASSWORD = "sqream";
     private static final int AMOUNT = 10_000_000;
 
     private static final Logger log = Logger.getLogger(JDBCPerf.class.toString());
@@ -47,7 +46,7 @@ public class JDBCPerf {
     }
 
     private Connection createConnection() throws SQLException {
-        return DriverManager.getConnection(URI, USER, PASSWORD);
+        return DriverManager.getConnection(URL, USER, PASS);
     }
 
     @Test

@@ -10,6 +10,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.*;
 
 public class SQDatabaseMetaDataTest {
@@ -18,11 +19,9 @@ public class SQDatabaseMetaDataTest {
     @Before
     public void setUp() throws KeyManagementException, NoSuchAlgorithmException, IOException, SQLException {
 
-        String user = "sqream";
-        String catalog = "master";
-        Connector connector = new ConnectorImpl("127.0.0.1", 5000, false, false);
+        Connector connector = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
         SQConnection connection = new SQConnection(connector);
-        metadata = new SQDatabaseMetaData(connector, connection, user, catalog);
+        metadata = new SQDatabaseMetaData(connector, connection, USER, DATABASE);
     }
 
     @Test

@@ -7,6 +7,7 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import static com.sqream.jdbc.TestEnvironment.URL;
 import static org.junit.Assert.*;
 
 public class SQConnectionTest {
@@ -14,7 +15,7 @@ public class SQConnectionTest {
     @Test
     public void getSchemaByDefaultTest() throws SQLException {
         String DEFAULT_SCHEMA = "public";
-        final String url = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false;service=sqream";
+        final String url = URL;
         Driver driver = new SQDriver();
         Connection conn = driver.connect(url, new Properties());
 
@@ -26,11 +27,10 @@ public class SQConnectionTest {
     @Test
     public void getSchemaTest() throws SQLException {
         String expectedSchema = "expectedSchema";
-        final String url = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;cluster=false;ssl=false;service=sqream";
         Driver driver = new SQDriver();
         Properties props = new Properties();
         props.setProperty("schema", expectedSchema);
-        Connection conn = driver.connect(url, props);
+        Connection conn = driver.connect(URL, props);
 
         String schema = conn.getSchema();
 

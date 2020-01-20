@@ -3,6 +3,8 @@ package com.sqream.jdbc;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import static com.sqream.jdbc.TestEnvironment.*;
+
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ 
@@ -12,12 +14,10 @@ import org.junit.runners.Suite;
 	})
 
 public class ConnectorTest {
-	public static final String DbName="master";
-	public static final String Usr ="sqream";
-	public static final String Pswd ="sqream";
-	public static final String Host = "127.0.0.1";
-	public static final Integer Port = 5000; 
-	public static final boolean Ssl = false; 
-
-
+	public static final String DbName = DATABASE;
+	public static final String Usr = USER;
+	public static final String Pswd = PASS;
+	public static final String Host = IP;
+	public static final Integer Port = PORT;
+	public static final boolean Ssl = SSL;
 }

@@ -15,12 +15,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import static com.sqream.jdbc.TestEnvironment.*;
+
 public class ExecuteQueriesInLoop {
     private static final Logger LOGGER = Logger.getLogger(ExecuteQueriesInLoop.class.getName());
-
-    private static final String URI = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
-    private static final String USER = "sqream";
-    private static final String PASSWORD = "sqream";
 
     private static final int STATEMENTS_AMOUNT = 75;
     private static final int TIMES = 100;
@@ -89,7 +87,7 @@ public class ExecuteQueriesInLoop {
     }
 
     private Connection createConnection() throws SQLException {
-        return DriverManager.getConnection(URI, USER, PASSWORD);
+        return DriverManager.getConnection(URL, USER, PASS);
     }
 
     private void executeQuery(String query) {

@@ -1,14 +1,18 @@
 package com.sqream.jdbc.connector.messenger;
 
+import com.eclipsesource.json.JsonObject;
 import com.sqream.jdbc.connector.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.sqream.jdbc.TestEnvironment.IP;
+import static com.sqream.jdbc.TestEnvironment.PORT;
 import static com.sqream.jdbc.connector.JsonParser.TEXT_ITEM_SIZE;
 import static org.junit.Assert.*;
 
@@ -248,5 +252,32 @@ public class MessengerImplTest {
                 throw new RuntimeException("Wrong message exception", e);
             }
         }
+    }
+
+    @Test
+    public void prepareStatementTest() throws IOException, ConnException {
+        String statement = "select * from test_table;";
+        int chunkSize = 1_000;
+        int listenerId = 1;
+        int portSsl = 5001;
+        JsonObject request = new JsonObject();
+        request.set("prepareStatement", statement);
+        request.set("chunkSize", chunkSize);
+        JsonObject response = new JsonObject();
+        response.set("ip", IP);
+        response.set("listener_id", listenerId);
+        response.set("port", PORT);
+        response.set("port_ssl", portSsl);
+        response.set("reconnect", true);
+        response.set("statementPrepared", true);
+        Mockito.when(socket.sendMessage(request.toString(), true)).thenReturn(response.toString());
+
+        StatementStateDto result = messenger.prepareStatement(statement, chunkSize);
+
+        assertEquals(result.getIp(), IP);
+        assertEquals(result.getListenerId(), listenerId);
+        assertEquals(result.getPort(), PORT);
+        assertEquals(result.getPortSsl(), portSsl);
+        assertTrue(result.isReconnect());
     }
 }

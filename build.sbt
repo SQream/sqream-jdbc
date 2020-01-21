@@ -1,6 +1,6 @@
 name :=         "SQream JDBC"
 organization := "com.sqream"
-version :=      "2.9.4"
+version :=      "3.1.0"
 description :=  "SQream JDBC driver"
 
 // Compilation parameters

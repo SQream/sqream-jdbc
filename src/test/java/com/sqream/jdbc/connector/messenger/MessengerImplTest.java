@@ -1,10 +1,16 @@
 package com.sqream.jdbc.connector.messenger;
 
+import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
 import com.sqream.jdbc.connector.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -15,7 +21,11 @@ import static com.sqream.jdbc.TestEnvironment.IP;
 import static com.sqream.jdbc.TestEnvironment.PORT;
 import static com.sqream.jdbc.connector.JsonParser.TEXT_ITEM_SIZE;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.powermock.api.mockito.PowerMockito.when;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({Json.class})
 public class MessengerImplTest {
 
     private static final String EXPECTED_PART_OF_EXCEPTION = "Expected message:";
@@ -279,5 +289,17 @@ public class MessengerImplTest {
         assertEquals(result.getPort(), PORT);
         assertEquals(result.getPortSsl(), portSsl);
         assertTrue(result.isReconnect());
+    }
+
+    @Test(expected = ConnException.class)
+    public void whenJsonParserThrowsExceptionThenPrepareStatementWrapItTest() throws IOException, ConnException {
+        String statement = "select * from test_table;";
+        int chunkSize = 1_000;
+        JsonObject jsonObjectMock = Mockito.mock(JsonObject.class);
+        Mockito.when(jsonObjectMock.add(any(String.class), any(String.class))).thenThrow(ParseException.class);
+        PowerMockito.mockStatic(Json.class);
+        when(Json.object()).thenReturn(jsonObjectMock);
+
+        messenger.prepareStatement(statement, chunkSize);
     }
 }

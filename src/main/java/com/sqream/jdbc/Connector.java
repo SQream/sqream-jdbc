@@ -821,6 +821,10 @@ public class Connector {
         
         // Send fetch request and get metadata on data to be received
         response_json = _parse_sqream_json(_send_message(form_json("fetch"), true));
+        err =    response_json.getString("error", "no error");
+        if (!err.equals("no error"))
+    		throw new ConnException("\n\nError from SQream:\n\n" + err);
+        
         new_rows_fetched = response_json.get("rows").asInt();
         fetch_sizes =   response_json.get("colSzs").asArray();  // Chronological sizes of all rows recieved, only needed for nvarchars
         if (new_rows_fetched == 0) {

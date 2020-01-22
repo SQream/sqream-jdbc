@@ -2,28 +2,24 @@ package com.sqream.jdbc;
 
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import static com.sqream.jdbc.TestEnvironment.*;
 
 public class ExecuteQueriesInLoop {
-    private static final Logger LOGGER = Logger.getLogger(ExecuteQueriesInLoop.class.getName());
+    private static final int THREADS = 75;
+    private static final long TIME = TimeUnit.HOURS.toMillis(24);
+    private static final int SLEEP_SEC = 30;
 
-    private static final int STATEMENTS_AMOUNT = 75;
-    private static final int TIMES = 100;
 
     private static final List<String> queries = new ArrayList<>();
+
+    private boolean stopFlag = false;
 
     static {
         queries.add("create or replace table customers (ID integer not NULL, Fname varchar(30) not NULL,Lname nvarchar(60));");
@@ -69,21 +65,44 @@ public class ExecuteQueriesInLoop {
     @Test
     public void executeQueriesInLoop() throws InterruptedException {
         queries.forEach(this::executeQuery);
+        System.out.println("All queries are valid. Start test.");
 
-        ExecutorService executorService = Executors.newFixedThreadPool(STATEMENTS_AMOUNT);
-        for (int i = 0; i < TIMES; i++) {
-            generateQueries(STATEMENTS_AMOUNT).forEach((query) -> {
+        startTimer();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(THREADS);
+        while (!stopFlag) {
+            generateQueries(THREADS).forEach((query) -> {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
-                        executeQuery(query);
+                        executeQuery(getRandomQuery());
                     }
                 });
             });
+            System.out.println("Sleep 30 sec.");
+            Thread.sleep(SLEEP_SEC * 1_000);
+            System.out.println("Continue");
         }
 
         executorService.shutdown();
         executorService.awaitTermination(20, TimeUnit.MINUTES);
+        System.out.println("SUCCESS");
+    }
+
+    private void startTimer() {
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                stopFlag = true;
+            }
+        };
+        Timer timer = new Timer();
+        timer.schedule(task, TIME);
+    }
+
+    private String getRandomQuery() {
+        Random rand = new Random();
+        return queries.get(rand.nextInt(queries.size()));
     }
 
     private Connection createConnection() throws SQLException {

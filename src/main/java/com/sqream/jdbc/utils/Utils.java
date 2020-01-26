@@ -92,24 +92,24 @@ public class Utils {
         return UTF_8.decode(message).toString();
     }
 
-    public static int calculateAllocation (BlockDto block) {
-        int totalAllocated = 0;
+    public static long calculateAllocation (BlockDto block) {
+        long totalAllocated = 0;
         totalAllocated += calculateBuffersSize(block.getDataBuffers());
         totalAllocated += calculateBuffersSize(block.getNullBuffers());
         totalAllocated += calculateBuffersSize(block.getNvarcLenBuffers());
         return totalAllocated;
     }
 
-    public static int calculateAllocation (ByteBuffer[]...arrays) {
-        int totalAllocated = 0;
+    public static long calculateAllocation (ByteBuffer[]...arrays) {
+        long totalAllocated = 0;
         for (int i = 0; i < arrays.length; i++) {
             totalAllocated += calculateBuffersSize(arrays[i]);
         }
         return totalAllocated;
     }
 
-    private static int calculateBuffersSize(ByteBuffer[] array) {
-        int result = 0;
+    private static long calculateBuffersSize(ByteBuffer[] array) {
+        long result = 0;
         for (int i = 0; i < array.length; i++) {
             if (array[i] != null) {
                 result += array[i].capacity();

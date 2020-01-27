@@ -6,6 +6,7 @@ import com.sqream.jdbc.connector.byteReaders.ByteReaderFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
@@ -125,18 +126,6 @@ public class ColumnStorage {
 
     public BlockDto getBlock() {
         return new BlockDto(dataColumns, null_columns, nvarc_len_columns);
-    }
-
-    public ByteBuffer getDataColumns(int index) {
-        return dataColumns[index];
-    }
-
-    public ByteBuffer getNullColumn(int index) {
-        return null_columns[index];
-    }
-
-    public ByteBuffer getNvarcLenColumn(int index) {
-        return nvarc_len_columns[index];
     }
 
     public boolean isNotNull(int colIndex, int rowIndex) {
@@ -322,6 +311,28 @@ public class ColumnStorage {
                 .readDateTime(dataColumns[colIndex], rowIndex);
 
         return longToDt(dateTimeAsLong, zoneId);
+    }
+
+    public String getVarchar(int colIndex, int rowIndex, String varcharEncoding, boolean repeatedly) {
+        int colSize = metadata.getSize(colIndex);
+        if (repeatedly) {
+            dataColumns[colIndex].position(dataColumns[colIndex].position() - colSize);
+        }
+        return isNotNull(colIndex, rowIndex) ?
+                ByteReaderFactory
+                        .getReader(metadata.getType(colIndex))
+                        .readVarchar(dataColumns[colIndex], colSize, varcharEncoding) : null;
+    }
+
+    public String getNvarchar(int colIndex, int rowIndex, Charset varcharEncoding, boolean repeatedly) {
+        int nvarcLen = nvarc_len_columns[colIndex].getInt(rowIndex * 4);
+        if (repeatedly) {
+            dataColumns[colIndex].position(dataColumns[colIndex].position() - nvarcLen);
+        }
+        return isNotNull(colIndex, rowIndex) ?
+                ByteReaderFactory
+                        .getReader(metadata.getType(colIndex))
+                        .readNvarchar(dataColumns[colIndex], nvarcLen, varcharEncoding) : null;
     }
 
     private void initDataColumns(int index, int size) {

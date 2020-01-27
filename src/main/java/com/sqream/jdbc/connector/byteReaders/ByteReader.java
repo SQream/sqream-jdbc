@@ -1,6 +1,7 @@
 package com.sqream.jdbc.connector.byteReaders;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.sql.Date;
 
 public interface ByteReader {
@@ -22,4 +23,8 @@ public interface ByteReader {
     int readDate(ByteBuffer buffer, int rowIndex);
 
     long readDateTime(ByteBuffer buffer, int rowIndex);
+
+    String readVarchar(ByteBuffer buffer, int colSize, String varcharEncoding);
+
+    String readNvarchar(ByteBuffer buffer, int nvarcLen, Charset nvarcharEncoding);
 }

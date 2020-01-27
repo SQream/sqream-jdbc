@@ -488,16 +488,6 @@ public class ConnectorImpl implements Connector {
     // Gets
     // ----
 
-    boolean _validate_get(int col_num, String value_type) throws ConnException {
-        /* If get function is appropriate, return true for non null values, false for a null */
-        // Validate type
-        if (!tableMetadata.getType(col_num).equals(value_type))
-            throw new ConnException("Trying to get a value of type " + value_type + " from column number " + col_num + " of type " + tableMetadata.getType(col_num));
-
-        // print ("null column holder: " + Arrays.toString(null_columns));
-        return colStorage.getNullColumn(col_num) == null || colStorage.getNullColumn(col_num).get(rowCounter) == 0;
-    }
-
     // -o-o-o-o-o    By index -o-o-o-o-o
     @Override
     public Boolean getBoolean(int colNum) throws ConnException {
@@ -542,29 +532,19 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public String get_varchar(int col_num) throws ConnException, UnsupportedEncodingException {   col_num--;  // set / get work with starting index 1
-    	_validate_index(col_num);
-        // Get bytes the size of the varchar column into string_bytes
-        if (col_calls[col_num]++ > 0) {
-            // Resetting buffer position in case someone runs the same get()
-            colStorage.getDataColumns(col_num).position(colStorage.getDataColumns(col_num).position() - tableMetadata.getSize(col_num));
-        }
-        colStorage.getDataColumns(col_num).get(string_bytes, 0, tableMetadata.getSize(col_num));
-
-        return (_validate_get(col_num, "ftVarchar")) ? ("X" + (new String(string_bytes, 0, tableMetadata.getSize(col_num), varchar_encoding))).trim().substring(1) : null;
+    public String get_varchar(int colNum) {
+        int colIndex = colNum - 1;
+        validator.validateColumnIndex(colIndex);
+        boolean repeatedly = col_calls[colIndex]++ > 0;
+        return colStorage.getVarchar(colIndex, rowCounter, varchar_encoding, repeatedly);
     }
 
     @Override
-    public String get_nvarchar(int col_num) throws ConnException {   col_num--;  // set / get work with starting index 1
-        _validate_index(col_num);
-        int nvarc_len = colStorage.getNvarcLenColumn(col_num).getInt(rowCounter * 4);
-
-        // Get bytes the size of this specific nvarchar into string_bytes
-        if (col_calls[col_num]++ > 0)
-            colStorage.getDataColumns(col_num).position(colStorage.getDataColumns(col_num).position() - nvarc_len);
-        colStorage.getDataColumns(col_num).get(string_bytes, 0, nvarc_len);
-
-        return (_validate_get(col_num, "ftBlob")) ? new String(string_bytes, 0, nvarc_len, UTF8) : null;
+    public String get_nvarchar(int colNum) throws ConnException {
+        int colIndex = colNum - 1;
+        validator.validateColumnIndex(colIndex);
+        boolean repeatedly = col_calls[colIndex]++ > 0;
+        return colStorage.getNvarchar(colIndex, rowCounter, UTF8, repeatedly);
     }
 
     @Override
@@ -670,25 +650,6 @@ public class ConnectorImpl implements Connector {
 
     // Sets
     // ----
-
-    boolean _validate_set(int col_num, Object value, String value_type) throws ConnException {
-        boolean is_null = false;
-        // Validate type
-        String type = tableMetadata.getType(col_num);
-        if (!type.equals(value_type))
-            throw new ConnException("Trying to set " + value_type + " on a column number " + col_num + " of type " + type);
-
-        // Optional null handling - if null is appropriate, mark null column
-        if (value == null) {
-            if (colStorage.getNullColumn(col_num) != null) {
-                colStorage.getNullColumn(col_num).put((byte)1);
-                is_null = true;
-            } else {
-                throw new ConnException("Trying to set null on a non nullable column of type " + type);
-            }
-        }
-        return is_null;
-    }
 
     @Override
     public boolean set_boolean(int colNum, Boolean value) throws ConnException {

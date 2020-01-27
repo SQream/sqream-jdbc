@@ -1,6 +1,7 @@
 package com.sqream.jdbc.connector.byteReaders;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 public abstract class BaseReader implements ByteReader {
     @Override
@@ -53,7 +54,20 @@ public abstract class BaseReader implements ByteReader {
 
     @Override
     public long readDateTime(ByteBuffer buffer, int rowIndex) {
-        throw new UnsupportedOperationException(String.format("Trying to get a value of type [DateTime] from column type [%s]", getColumnType()));
+        throw new UnsupportedOperationException(
+                String.format("Trying to get a value of type [DateTime] from column type [%s]", getColumnType()));
+    }
+
+    @Override
+    public String readVarchar(ByteBuffer buffer, int colSize, String varcharEncoding) {
+        throw new UnsupportedOperationException(
+                String.format("Trying to get a value of type [Varchar] from column type [%s]", getColumnType()));
+    }
+
+    @Override
+    public String readNvarchar(ByteBuffer buffer, int nvarcLen, Charset nvarcharEncoding) {
+        throw new UnsupportedOperationException(
+                String.format("Trying to get a value of type [Nvarchar] from column type [%s]", getColumnType()));
     }
 
     abstract String getColumnType();

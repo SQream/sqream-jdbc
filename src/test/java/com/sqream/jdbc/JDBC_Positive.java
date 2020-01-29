@@ -636,15 +636,16 @@ public class JDBC_Positive {
     @Test(expected = SQLException.class)
     public void bad_message() throws SQLException {
         String sql = "select momo";
+        String expectedErrorMessage = "At row 1, col 8: identifier not found momo";
 
 	    try (Connection conn = DriverManager.getConnection(url,"sqream","sqream");
              Statement stmt = conn.createStatement()) {
             stmt.executeQuery(sql);
         } catch (SQLException e) {
-	        if (e.getMessage().contains("Error from SQream")) {
+	        if (expectedErrorMessage.equals(e.getMessage().substring(0, expectedErrorMessage.length()))) {
 	            throw e;
             } else {
-                throw new RuntimeException("Wrong exception message");
+                fail(MessageFormat.format("Wrong exception message: [{0}]", e.getMessage()));
             }
         }
     }

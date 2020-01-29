@@ -176,7 +176,7 @@ public class SQStatement implements Statement {
 
 		} catch (IOException | ConnException | ScriptException | KeyManagementException | NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
-			throw new SQLException(e);
+			throw new SQLException(e.getMessage(), e);
 		}
 	}
 

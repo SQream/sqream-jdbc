@@ -129,7 +129,7 @@ public class JsonParser {
 
     private void checkError(JsonObject jsonObj) throws ConnException {
         if(jsonObj.get("error") != null) {
-            throw new ConnException(String.format("\n\nError from SQream:\n\n%s",jsonObj.get("error").asString()));
+            throw new ConnException(jsonObj.get("error").asString());
         }
     }
 }

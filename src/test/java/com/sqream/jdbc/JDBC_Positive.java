@@ -193,9 +193,24 @@ public class JDBC_Positive {
        		
         return a_ok;
        
-    }     
-	
-	
+    }
+
+    public boolean correct_message_without_wrapping() {
+        boolean result = false;
+        String actualResponse = "{\"error\":\"expected message\"}";
+        String expectedResponse = "{\"executed\":\"executed\"}";
+        Connector conn = null;
+        try {
+            conn = new Connector("127.0.0.1", 5000, false, false);
+            conn._validate_response(actualResponse, expectedResponse);
+        } catch (Exception e) {
+            if ("expected message".equals(e.getMessage())) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
 	public boolean hundred_mil_fetch() throws SQLException {
 		
 		boolean a_ok = true;  // The test is visual, pass if ends
@@ -1217,6 +1232,7 @@ public class JDBC_Positive {
         //String[] typelist = {"varchar(100)", "nvarchar(100)"}; //"nvarchar(100)"
         
         //String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        print ("Correct message without wrapping - " + (pos_tests.correct_message_without_wrapping() ? "OK" : "Fail"));
         print ("Bad message test - " + (pos_tests.bad_message() ? "OK" : "Fail"));
         print ("Stores supports functions test - " + (pos_tests.stores_supports_functions() ? "OK" : "Fail"));
         print ("Get X functions test - " + (pos_tests.get_x_functions() ? "OK" : "Fail"));

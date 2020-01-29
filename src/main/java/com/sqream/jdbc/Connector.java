@@ -26,11 +26,7 @@ import javax.net.ssl.X509TrustManager;
 import java.security.cert.X509Certificate;
 
 // JSON parsing library
-import com.eclipsesource.json.ParseException;
-import com.eclipsesource.json.WriterConfig;
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.*;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -676,12 +672,17 @@ public class Connector {
     	
     	return true;
     }
-    
+
     String _validate_response(String response, String expected) throws ConnException {
-        
-        if (!response.equals(expected))  // !response.contains("stop_statement could not find a statement")
-            throw new ConnException("Expected message: " + expected + " but got " + response);
-        
+
+        if (!response.equals(expected)) { // !response.contains("stop_statement could not find a statement")
+            JsonValue errorMessage = _parse_sqream_json(response).get("error");
+            if (errorMessage != null) {
+                throw new ConnException(errorMessage.asString());
+            } else {
+                throw new ConnException("Expected message: " + expected + " but got " + response);
+            }
+        }
         return response;
     }
     

@@ -69,6 +69,7 @@ public class JDBC_Positive {
     float     res_real     = r.nextFloat();
     double    res_double   = 0.0;
     String    res_varchar  = "";
+    String    res_nvarchar = "";
     //String test_varchar = "koko"; 
     Date      res_date     = date_from_tuple(2012, 9, 13);
     Timestamp res_datetime = datetime_from_tuple(2002, 9, 13, 14, 56, 34, 567);
@@ -548,7 +549,7 @@ public class JDBC_Positive {
         String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
 
         for (String col_type : typelist) {
-            assertTrue(insert(col_type));
+            insert(col_type);
         }
     }
 
@@ -676,15 +677,14 @@ public class JDBC_Positive {
     }
 
 
-    private boolean insert(String table_type) throws IOException, SQLException {
-        
-        boolean a_ok = false;
+    private void insert(String table_type) throws IOException, SQLException {
+
         String table_name = table_type.contains("varchar(100)") ?  table_type.substring(0,7) : table_type;
         table_name = table_name.toUpperCase();
         String sql;
 
         conn = DriverManager.getConnection(url,"sqream","sqream");
-        
+
         // Prepare Table
 //      log.info();(" - Create Table t_" + table_type);
         stmt = conn.createStatement();
@@ -693,111 +693,99 @@ public class JDBC_Positive {
         if (stmt != null){
             stmt.close();
         }
-        
+
         // Insert value
-//      log.info();(" - Insert test value " + table_type);
-        if (table_type == "bool") 
-            for (boolean test : test_bools) {
-                test_bool = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
+        sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
+        if ("bool".equals(table_type)) {
+            for (boolean expectedBool : test_bools) {
                 ps = conn.prepareStatement(sql);
-                
-                ps.setBoolean(1, test_bool); 
+                ps.setBoolean(1, expectedBool);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertEquals(expectedBool, res_bool);
+            }
+        } else if ("tinyint".equals(table_type)) {
+            for (byte excpectedUbyte : test_ubytes) {
+                ps = conn.prepareStatement(sql);
+                ps.setByte(1, excpectedUbyte);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertEquals(excpectedUbyte, res_ubyte);
+            }
+        } else if ("smallint".equals(table_type)) {
+            for (short expectedShort : test_shorts) {
+                ps = conn.prepareStatement(sql);
+                ps.setShort(1, expectedShort);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertEquals(expectedShort, res_short);
+            }
+        }
+        else if ("int".equals(table_type)) {
+            for (int expectedInt : test_ints) {
+                ps = conn.prepareStatement(sql);
+                ps.setInt(1, expectedInt);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertEquals(expectedInt, res_int);
+            }
+        } else if ("bigint".equals(table_type)) {
+            for (long expectedLong : test_longs) {
+                ps = conn.prepareStatement(sql);
+                ps.setLong(1, expectedLong);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertEquals(expectedLong, res_long);
+            }
+        } else if ("real".equals(table_type)) {
+            for (float expectedReal : test_reals) {
+                ps = conn.prepareStatement(sql);
+                ps.setFloat(1, expectedReal);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertEquals(expectedReal, res_real, 0f);
+            }
+        } else if ("double".equals(table_type)) {
+            for (double expectedDouble : test_doubles) {
+                ps = conn.prepareStatement(sql);
+                ps.setDouble(1, expectedDouble);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertEquals(expectedDouble, res_double, 0d);
+            }
+        } else if ("varchar(100)".equals(table_type)) {
+            for (String expectedVarchar : test_varchars) {
+                ps = conn.prepareStatement(sql);
+                ps.setString(1, expectedVarchar);
                 send_and_retreive_result (ps, table_name, table_type);
-                a_ok = is_identical(table_type);}
-        else if (table_type == "tinyint") 
-            for (byte test : test_ubytes) {
-                test_ubyte = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
+
+                assertEquals(expectedVarchar, res_varchar.trim());
+            }
+        } else if ("nvarchar(100)".equals(table_type)) {
+            for (String expectedNvarchar : test_varchars) {
                 ps = conn.prepareStatement(sql);
-                
-                ps.setByte(1, test_ubyte);
-                send_and_retreive_result (ps, table_name, table_type);
-                a_ok = is_identical(table_type);}
-        else if (table_type == "smallint") 
-            for (short test : test_shorts) {
-                test_short = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
+                ps.setString(1, expectedNvarchar);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertEquals(expectedNvarchar, res_nvarchar);
+            }
+        } else if ("date".equals(table_type)) {
+            for (Date expectedDate : test_dates) {
                 ps = conn.prepareStatement(sql);
-                
-                ps.setShort(1, test_short);
-                send_and_retreive_result (ps, table_name, table_type);
-                a_ok = is_identical(table_type);}
-        else if (table_type == "int") 
-            for (int test : test_ints) {
-                test_int = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
+                ps.setDate(1, expectedDate);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertTrue(Math.abs(test_date.compareTo(res_date)) <= 1);
+            }
+        } else if ("datetime".equals(table_type)) {
+            for (Timestamp expectedDatetime : test_datetimes) {
                 ps = conn.prepareStatement(sql);
-                
-                ps.setInt(1, test_int);
-                send_and_retreive_result (ps, table_name, table_type);
-                a_ok = is_identical(table_type);}
-        else if (table_type == "bigint")
-            for (long test : test_longs) {
-                test_long = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
-                ps = conn.prepareStatement(sql);
-                
-                ps.setLong(1, test_long);
-                send_and_retreive_result (ps, table_name, table_type);
-                a_ok = is_identical(table_type);}
-        else if (table_type == "real")
-            for (float test : test_reals) {
-                test_real = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
-                ps = conn.prepareStatement(sql);
-                
-                ps.setFloat(1, test_real);
-                send_and_retreive_result (ps, table_name, table_type);
-                a_ok = is_identical(table_type);}
-        else if (table_type == "double")
-            for (double test : test_doubles) {
-                test_double = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
-                ps = conn.prepareStatement(sql);
-                
-                ps.setDouble(1, test_double);
-                send_and_retreive_result (ps, table_name, table_type); 
-                a_ok = is_identical(table_type);}
-        else if (table_type == "varchar(100)")
-            for (String test : test_varchars) {
-                test_varchar = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
-                ps = conn.prepareStatement(sql);
-                
-                ps.setString(1, test_varchar);
-                send_and_retreive_result (ps, table_name, table_type);
-                a_ok = is_identical(table_type);}
-        else if (table_type == "nvarchar(100)")
-            for (String test : test_varchars) {
-                test_varchar = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
-                ps = conn.prepareStatement(sql);
-                
-                ps.setString(1, test_varchar);
-                send_and_retreive_result (ps, table_name, table_type); 
-                a_ok = is_identical(table_type);}
-        else if (table_type == "date")
-            for (Date test : test_dates) {
-                test_date = test;
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
-                ps = conn.prepareStatement(sql);
-                
-                ps.setDate(1, test_date);
-                send_and_retreive_result (ps, table_name, table_type);
-                a_ok = is_identical(table_type);}
-        else if (table_type == "datetime")
-            for (Timestamp test : test_datetimes) {
-                test_datetime = test;
-                //log.info();("datetime: " + test_datetime);
-                sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
-                ps = conn.prepareStatement(sql);
-                
-                ps.setTimestamp(1, test_datetime);
-                send_and_retreive_result (ps, table_name, table_type); 
-                a_ok = is_identical(table_type);}
-    
-        return a_ok;
+                ps.setTimestamp(1, expectedDatetime);
+                send_and_retreive_result(ps, table_name, table_type);
+
+                assertEquals(expectedDatetime, res_datetime);
+            }
+        }
     }
     
     public void send_and_retreive_result (PreparedStatement ps, String table_name, String table_type) throws IOException, SQLException {
@@ -892,7 +880,7 @@ public class JDBC_Positive {
             }else if (table_type == "nvarchar(100)") {
             	if (!rs.getString(1).equals(rs.getString("Xx")))
             		log.info ("Different results on getString on index vs column name");
-                res_varchar = rs.getString(1);
+                res_nvarchar = rs.getString(1);
             }else if (table_type == "date") {
             	if (Math.abs(rs.getDate(1).compareTo(rs.getDate("Xx"))) > 1) 
             		log.info ("Different results on getDate on index vs column name");
@@ -914,50 +902,6 @@ public class JDBC_Positive {
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
-    }
-    
-    public boolean is_identical(String table_type) {
-        
-        boolean use_junit = false;
-
-        boolean res = false;
-            
-            if (table_type == "bool" && test_bool != res_bool)
-                log.info("Results not identical on table type " + table_type + " " + test_bool + " " + res_bool);
-            else if (table_type == "tinyint" && test_ubyte != res_ubyte) 
-                log.info("Results not identical on table type " + table_type + " " + test_ubyte + " " + res_ubyte);
-            else if (table_type == "smallint" && test_short != res_short) 
-                log.info("Results not identical on table type " + table_type + " " + test_short + " " + res_short);
-            else if (table_type == "int" && test_int != res_int) 
-                log.info("Results not identical on table type " + table_type + " " + test_int + " " + res_int);
-            else if (table_type == "bigint" && test_long != res_long) 
-                log.info("Results not identical on table type " + table_type + " " + test_long + " " + res_long);
-            else if (table_type == "real" && test_real != res_real) 
-                log.info("Results not identical on table type " + table_type + " " + test_real + " " + res_real);
-            else if (table_type == "double" && test_double != res_double) 
-                log.info("Results not identical on table type " + table_type + " " + test_double + " " + res_double);
-            else if (table_type == "varchar(100)" && !test_varchar.equals(res_varchar.trim()))  {
-                log.info("Results not identical on table type " + table_type + " " + test_varchar + " " + res_varchar);
-                log.info(test_varchar.compareTo(res_varchar) + "a"+ test_varchar.length() + "b" + res_varchar.length());}
-            else if (table_type == "date" && Math.abs(test_date.compareTo(res_date)) > 1) {
-            //else if (table_type == "date" && !test_date.equals(res_date))  {  
-                log.info("Results not identical on table type " + table_type + " " + test_date + " " + test_date.getTime() + " " + res_date + " " + res_date.getTime());
-                log.info(String.valueOf(test_date.compareTo(res_date)));}
-            else if (table_type == "datetime" && !test_datetime.equals(res_datetime))
-            //else if (table_type == "datetime" && Math.abs(test_datetime.compareTo(res_datetime)) > 1) 
-
-                log.info("Results not identical on table type " + table_type + " " + test_datetime + " " + test_datetime.getTime() + " " + res_datetime + " " + res_datetime.getTime());
-            
-            else {
-                log.info(" Results identical");
-                res = true;}
-            
-        //}
-        
-        
-        
-        return res;     
-        
     }
     
     public boolean get_tables_test() throws SQLException {

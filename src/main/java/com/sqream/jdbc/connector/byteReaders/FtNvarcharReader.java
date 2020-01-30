@@ -17,6 +17,6 @@ public class FtNvarcharReader extends BaseReader {
 
     @Override
     String getColumnType() {
-        return "ftVarchar";
+        return "ftNvarchar";
     }
 }

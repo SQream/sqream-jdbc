@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static com.sqream.jdbc.TestEnvironment.URL;
+import static com.sqream.jdbc.TestEnvironment.*;
 import static java.sql.Types.*;
 import static org.junit.Assert.*;
 
@@ -155,80 +155,60 @@ public class JDBC_Positive {
 	}
 	
 	@Test
-	public void unused_fetch() throws SQLException {
-		boolean a_ok = false;  // The test is visual, pass if ends
-		int max_rows = 3;
-		
-		conn = DriverManager.getConnection(url,"sqream","sqream");
-		
-		String sql = "create or replace table test_fetch (ints int)";
-	    stmt = conn.createStatement();
-	    stmt.execute(sql);
-	    stmt.close();
-	    
-	    sql = "insert into test_fetch values (?)";
-        ps = conn.prepareStatement(sql);
-        int random_int = 8;
-        int times = 10000000;  // Assuming chunk size is around 1 million, giving X10 more
-        for (int i = 0; i < times; i++) {
-            ps.setInt(1, random_int);
-            ps.addBatch();
+	public void unusedFetchTest() throws SQLException {
+        String sqlCreate = "create or replace table test_fetch (ints int)";
+        String sqlInsert = "insert into test_fetch values (?)";
+        String sqlSelectAll = "select * from test_fetch";
+        String sqlSelectOne = "select 1";
+
+		int maxRows = 3;
+
+		try (Connection conn = DriverManager.getConnection(url,"sqream","sqream")) {
+
+		    try (Statement stmt = conn.createStatement()) {
+                stmt.execute(sqlCreate);
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(sqlInsert)) {
+                int random_int = 8;
+                int times = 10000000;  // Assuming chunk size is around 1 million, giving X10 more
+                for (int i = 0; i < times; i++) {
+                    ps.setInt(1, random_int);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.setMaxRows(maxRows);
+                ResultSet rs = stmt.executeQuery(sqlSelectAll);
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(sqlSelectOne);
+                assertTrue(rs.next());
+                assertEquals(1, rs.getInt(1));
+            }
         }
-        ps.executeBatch();
-        ps.close();  
-	    
-	    sql = "select * from test_fetch";
-	    //stmt = conn.prepareStatement(sql);
-	    stmt = conn.createStatement();
-	    stmt.setMaxRows(max_rows);
-	    rs = stmt.executeQuery(sql);
-	    
-	    sql = "select 1";
-	    //stmt = conn.prepareStatement(sql);
-	    stmt = conn.createStatement();
-	    rs = stmt.executeQuery(sql);
-	    rs.next();
-	        
-	    if (rs.getInt(1) == 1)
-            a_ok = true;    
-        else
-        	log.info("unused fetch test failed");
-
-
-        assertTrue(a_ok);
 	}
 	
 	@Test
-	public void display_size() throws SQLException {
-        boolean a_ok = false;
-        int[] res;
-        
-        // Create table for test
-        conn = DriverManager.getConnection(url,"sqream","sqream");
-        String sql = "create or replace table test_display (x varchar(11))";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        
-        conn = DriverManager.getConnection(url,"sqream","sqream");
-        sql = "select * from test_display";
-        stmt = conn.createStatement();
-        rs = stmt.executeQuery(sql);
-        rsmeta = rs.getMetaData();
-        rs.close();
-        stmt.close();
-        
-        // Check result
-        if (rsmeta.getColumnDisplaySize(1) == 11)
-            a_ok = true;    
-        else
-        	log.info("varchar(11) display size should be 11 but got " +  rsmeta.getColumnDisplaySize(1));
+	public void displaySize() throws SQLException {
+	    String createSql = "create or replace table test_display (x varchar(11))";
+	    String selectSql = "select * from test_display";
 
-        assertTrue(a_ok);
-    }
-    
-    public void get_connection () throws SQLException {
-    	conn = DriverManager.getConnection(url,"sqream","sqream");
+        ResultSetMetaData rsmeta;
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.execute(createSql);
+            ResultSet rs = stmt.executeQuery(selectSql);
+            rsmeta = rs.getMetaData();
+            rs.close();
+        }
+
+        assertNotNull(rsmeta);
+        assertEquals(11, rsmeta.getColumnDisplaySize(1));
     }
 
     @Test
@@ -391,33 +371,21 @@ public class JDBC_Positive {
     }
     
     @Test
-    public void bool_as_string() throws SQLException {
+    public void boolAsString() throws SQLException {
+        String sqlCreate = "create or replace table bool_string (x bool, y bool)";
+        String sqlInsert = "insert into bool_string values (true, false)";
+    	String sqlSelect = "select * from bool_string";
 
-    	boolean a_ok = false;
-    	
-        conn = DriverManager.getConnection(url,"sqream","sqream");
-        String sql = "create or replace table bool_string (x bool, y bool)";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        
-        sql = "insert into bool_string values (true, false)";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-    	
-        sql = "select * from bool_string";
-        stmt = conn.createStatement();
-        rs = stmt.executeQuery(sql);
-        rs.next();
-        if (rs.getString(1).equals("true") && rs.getString(2).equals("false"))
-        	a_ok = true;
-        
-        rs.close();
-        stmt.close();
+    	try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(sqlCreate);
+            stmt.execute(sqlInsert);
+            ResultSet rs = stmt.executeQuery(sqlSelect);
 
-
-        assertTrue(a_ok);
+            assertTrue(rs.next());
+            assertEquals("true", rs.getString(1));
+            assertEquals("false", rs.getString(2));
+        }
     }
     
     @Test
@@ -708,7 +676,7 @@ public class JDBC_Positive {
     }
 
 
-    private boolean insert(String table_type) throws IOException, SQLException, KeyManagementException, NoSuchAlgorithmException{
+    private boolean insert(String table_type) throws IOException, SQLException {
         
         boolean a_ok = false;
         String table_name = table_type.contains("varchar(100)") ?  table_type.substring(0,7) : table_type;

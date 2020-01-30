@@ -50,7 +50,7 @@ public class SQStatementTest {
     }
 
     @Test(expected = SQLException.class)
-    public void fdskjfldskjfTest() throws SQLException {
+    public void correctExceptionMessageTest() throws SQLException {
         String sql = "CREATE TABLE nba_hdfs\n" +
                 "(\n" +
                 "     \"Name\"       TEXT,\n" +

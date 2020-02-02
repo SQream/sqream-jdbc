@@ -368,22 +368,22 @@ public class SQPreparedStatment implements PreparedStatement {
     
     @Override
     public boolean execute(String arg0) throws SQLException {
-        return false;
+        throw new SQLException("Method is called on a PreparedStatement");
     }
 
     @Override
     public boolean execute(String arg0, int arg1) throws SQLException {
-        return false;
+        throw new SQLException("Method is called on a PreparedStatement");
     }
 
     @Override
     public boolean execute(String arg0, int[] arg1) throws SQLException {
-        return false;
+        throw new SQLException("Method is called on a PreparedStatement");
     }
 
     @Override
     public boolean execute(String arg0, String[] arg1) throws SQLException {
-        return false;
+        throw new SQLException("Method is called on a PreparedStatement");
     }
     
     @Override

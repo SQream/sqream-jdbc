@@ -86,6 +86,38 @@ public class SQStatementTest {
         }
     }
 
+    @Test
+    public void executeReturnResultDependsOnStatementTypeTest() throws SQLException {
+        String createTable = "create or replace table check_select_statement (col1 int)";
+        String insertData = "insert into check_select_statement values (42)";
+        String selectData = "select * from check_select_statement";
+        String dropTable = "drop table check_select_statement";
+        boolean createResult;
+        boolean insertResult;
+        boolean selectResult;
+        boolean deleteResult;
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                createResult = stmt.execute(createTable);
+            }
+            try (Statement stmt = conn.createStatement()) {
+                insertResult = stmt.execute(insertData);
+            }
+            try (Statement stmt = conn.createStatement()) {
+                selectResult = stmt.execute(selectData);
+            }
+            try (Statement stmt = conn.createStatement()) {
+                deleteResult = stmt.execute(dropTable);
+            }
+        }
+
+        assertFalse(createResult);
+        assertFalse(insertResult);
+        assertTrue(selectResult);
+        assertFalse(deleteResult);
+    }
+
     private Connection createConnection() {
         try {
             return DriverManager.getConnection(URL,"sqream","sqream");

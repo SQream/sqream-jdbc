@@ -6,7 +6,7 @@ import java.sql.*;
 import java.util.stream.IntStream;
 
 import static com.sqream.jdbc.TestEnvironment.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class SQPreparedStatmentTest {
 
@@ -64,6 +64,50 @@ public class SQPreparedStatmentTest {
         assertEquals(affectedRows.length, times);
         assertEquals(IntStream.of(affectedRows).sum(), times);
         assertEquals(insertedRows, times);
+    }
+
+    @Test(expected = SQLException.class)
+    public void executeWithParamThrowException1Test() throws SQLException {
+        String sql = "select 1";
+
+        try (Connection conn = createConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.execute(sql);
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void executeWithParamThrowException2Test() throws SQLException {
+        String sql = "select 1";
+
+        try (Connection conn = createConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.execute(sql, new int[0]);
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void executeWithParamThrowException3Test() throws SQLException {
+        String sql = "select 1";
+
+        try (Connection conn = createConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.execute(sql, 1);
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void executeWithParamThrowException4Test() throws SQLException {
+        String sql = "select 1";
+
+        try (Connection conn = createConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.execute(sql, new String[0]);
+        }
     }
 
     private Connection createConnection() {

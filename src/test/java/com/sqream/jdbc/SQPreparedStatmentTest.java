@@ -110,6 +110,38 @@ public class SQPreparedStatmentTest {
         }
     }
 
+    @Test
+    public void executeReturnResultDependsOnStatementTypeTest() throws SQLException {
+        String createTable = "create or replace table check_select_statement (col1 int)";
+        String insertData = "insert into check_select_statement values (42)";
+        String selectData = "select * from check_select_statement";
+        String dropTable = "drop table check_select_statement";
+        boolean createResult;
+        boolean insertResult;
+        boolean selectResult;
+        boolean deleteResult;
+
+        try (Connection conn = createConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(createTable)) {
+                createResult = ps.execute();
+            }
+            try (PreparedStatement ps = conn.prepareStatement(insertData)) {
+                insertResult = ps.execute();
+            }
+            try (PreparedStatement ps = conn.prepareStatement(selectData)) {
+                selectResult = ps.execute();
+            }
+            try (PreparedStatement ps = conn.prepareStatement(dropTable)) {
+                deleteResult = ps.execute();
+            }
+        }
+
+        assertFalse(createResult);
+        assertFalse(insertResult);
+        assertTrue(selectResult);
+        assertFalse(deleteResult);
+    }
+
     private Connection createConnection() {
         try {
             return DriverManager.getConnection(URL,USER,PASS);

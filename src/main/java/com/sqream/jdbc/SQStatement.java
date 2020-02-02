@@ -129,7 +129,8 @@ public class SQStatement implements Statement {
 					throw new SQLException("Statement cancelled by user");
 				}
 
-				if ((client.getQueryType() != "INSERT") && client.getRowLength() > 0)
+				//TODO: Duplicate logic in SQPreparedStatement
+				if ((!"INSERT".equals(client.getQueryType())) && client.getRowLength() > 0)
 					result = true;
 
 				resultSet = new SQResultSet(client, dbName);

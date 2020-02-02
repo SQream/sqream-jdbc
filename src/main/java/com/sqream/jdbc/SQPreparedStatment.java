@@ -129,7 +129,9 @@ public class SQPreparedStatment implements PreparedStatement {
 
         SQRS = new SQResultSet(Client, db_name);
 
-        return SQRS != null;
+        //TODO: Duplicate logic in SQStatement
+        return (!"INSERT".equals(Client.getQueryType())) && Client.getRowLength() > 0;
+
     }
     
     @Override

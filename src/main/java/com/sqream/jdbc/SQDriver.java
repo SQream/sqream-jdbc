@@ -24,6 +24,7 @@ public class SQDriver implements java.sql.Driver {
 	private static final Logger PARENT_LOGGER = Logger.getLogger("com.sqream.jdbc");
 	private static final Logger LOGGER = Logger.getLogger(SQDriver.class.getName());
 	private static final String PROP_KEY_LOGGER_LEVEL = "loggerLevel";
+	private static final String PROP_KEY_LOGGER_FILE_PATH = "logFile";
 
 	private DriverPropertyInfo[] DPIArray;
 
@@ -53,6 +54,7 @@ public class SQDriver implements java.sql.Driver {
 
 		setPropsLoggerLevel();
 		setUrlLoggerLevel(url);
+		addFileHandler(url);
 
 		try {
 			System.setProperty("file.encoding","UTF-8");
@@ -177,6 +179,7 @@ public class SQDriver implements java.sql.Driver {
 					.filter(prop -> prop.split("=")[0].equals(PROP_KEY_LOGGER_LEVEL))
 					.findFirst()
 					.map(prop -> prop.split("=")[1])
+					.map(prop -> prop.split(",")[0])
 					.ifPresent(this::setLevel);
 		}
 	}
@@ -204,6 +207,19 @@ public class SQDriver implements java.sql.Driver {
 				Arrays.stream(LoggerLevel.values()).forEach(value -> supportedLevels.add(value.getValue()));
 				throw new IllegalArgumentException(String.format(
 						"Unsupported logging level: %s. Driver supports: %s", loggerLevel, supportedLevels));
+		}
+	}
+
+	private void addFileHandler(String url) {
+		if (url.contains(PROP_KEY_LOGGER_FILE_PATH)) {
+			String logFilePath = url.substring(url.indexOf(PROP_KEY_LOGGER_FILE_PATH + "=") + 8);
+			try {
+				Handler handler = new FileHandler(logFilePath, true);
+				handler.setFormatter(LoggerUtil.getCustomFormatter());
+				PARENT_LOGGER.addHandler(handler);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

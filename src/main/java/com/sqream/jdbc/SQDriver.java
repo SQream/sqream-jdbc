@@ -215,6 +215,7 @@ public class SQDriver implements java.sql.Driver {
 			String logFilePath = url.substring(url.indexOf(PROP_KEY_LOGGER_FILE_PATH + "=") + 8);
 			try {
 				Handler handler = new FileHandler(logFilePath, true);
+				handler.setLevel(Level.ALL);
 				handler.setFormatter(LoggerUtil.getCustomFormatter());
 				PARENT_LOGGER.addHandler(handler);
 			} catch (IOException e) {

@@ -906,7 +906,7 @@ public class JDBC_Positive {
 
     private Connection createConnection() {
         try {
-            return DriverManager.getConnection(url,"sqream","sqream");
+            return DriverManager.getConnection(URL,USER,PASS);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

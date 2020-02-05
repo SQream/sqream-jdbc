@@ -14,9 +14,12 @@ import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SQDriverTest {
-    private static final String CORRECT_URI = "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
-    private static final String LOWER_CASE_PROVIDER_URI = "jdbc:sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
-    private static final String ANOTHER_PROVIDER_URI = "jdbc:SomeProvider://127.0.0.1:5000/master;user=sqream;password=sqream";
+    private static final String CORRECT_URI =
+            "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
+    private static final String LOWER_CASE_PROVIDER_URI =
+            "jdbc:sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
+    private static final String ANOTHER_PROVIDER_URI =
+            "jdbc:SomeProvider://127.0.0.1:5000/master;user=sqream;password=sqream";
 
     private static final int MINOR_VERSION = 0;
     private static final int MAJOR_VERSION = 4;

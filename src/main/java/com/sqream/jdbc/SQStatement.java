@@ -136,7 +136,6 @@ public class SQStatement implements Statement {
 				resultSet = new SQResultSet(client, dbName);
 				resultSet.setMaxRows(SIZE_RESULT);
 			} catch (Exception e) {
-				e.printStackTrace();
 				if (e.getMessage().contains("stopped by user")
 						|| e.getMessage().contains("cancelled by user")) {
 					throw new SQLException("Statement cancelled by user");

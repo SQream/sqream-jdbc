@@ -1,4 +1,4 @@
-package com.sqream.jdbc.enums;
+package com.sqream.jdbc.logging;
 
 public enum LoggerLevel {
     OFF("OFF"),

@@ -1,6 +1,5 @@
 package com.sqream.jdbc.logging;
 
-import com.sqream.jdbc.enums.LoggerLevel;
 import com.sqream.jdbc.utils.LoggerUtil;
 
 import java.io.IOException;

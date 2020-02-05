@@ -1,12 +1,7 @@
 package com.sqream.jdbc;
 
-import com.sqream.jdbc.connector.ConnException;
 import org.junit.Test;
 
-import javax.script.ScriptException;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.text.MessageFormat;
 

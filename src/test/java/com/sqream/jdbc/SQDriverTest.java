@@ -1,5 +1,7 @@
 package com.sqream.jdbc;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -22,11 +24,22 @@ public class SQDriverTest {
     private static final Properties CORRECT_CONN_PROPERTIES = new Properties();
 
     private Driver driver = new SQDriver();
+    private Level testLogLevel;
 
     // init connection properties
     static {
         CORRECT_CONN_PROPERTIES.setProperty("user", "sqream");
         CORRECT_CONN_PROPERTIES.setProperty("password", "password");
+    }
+
+    @Before
+    public void saveCurrentDebugLevel() throws SQLFeatureNotSupportedException {
+        testLogLevel = driver.getParentLogger().getLevel();
+    }
+
+    @After
+    public void setPreviousDebugLevel() throws SQLFeatureNotSupportedException {
+        driver.getParentLogger().setLevel(testLogLevel);
     }
 
     @Test

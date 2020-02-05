@@ -5,26 +5,24 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Optional;
 import java.util.Properties;
-import java.util.StringJoiner;
 import java.util.logging.*;
 import java.lang.reflect.Field;
 import javax.script.ScriptException;
 
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnException;
-import com.sqream.jdbc.enums.LoggerLevel;
-import com.sqream.jdbc.utils.LoggerUtil;
+import com.sqream.jdbc.logging.LoggingService;
+import com.sqream.jdbc.urlParser.URLParser;
+import com.sqream.jdbc.urlParser.UrlDto;
 
 import java.nio.charset.Charset;
 
 public class SQDriver implements java.sql.Driver {
-	private static final Logger PARENT_LOGGER = Logger.getLogger("com.sqream.jdbc");
 	private static final Logger LOGGER = Logger.getLogger(SQDriver.class.getName());
-	private static final String PROP_KEY_LOGGER_LEVEL = "loggerLevel";
-	private static final String PROP_KEY_LOGGER_FILE_PATH = "logFile";
+
+	private static final URLParser urlParser = new URLParser();
+	private static final LoggingService loggingService = new LoggingService();
 
 	private DriverPropertyInfo[] DPIArray;
 
@@ -41,8 +39,8 @@ public class SQDriver implements java.sql.Driver {
 		LOGGER.log(Level.FINE, MessageFormat.format("acceptsURL: url=[{0}]", url));
 
 		log("inside acceptsURL in SQDriver");
-		UriEx uex = new UriEx(url); // parse the url to object.
-		if (uex.getProvider() == null || !"sqream".equals(uex.getProvider().toLowerCase())) {
+		UrlDto urlDto = urlParser.parse(url);
+		if (urlDto.getProvider() == null || !"sqream".equals(urlDto.getProvider().toLowerCase())) {
 			return false; // cause it is an other provider, not us..
 		}
 		return true;
@@ -51,10 +49,6 @@ public class SQDriver implements java.sql.Driver {
 	@Override
 	public Connection connect(String url, Properties info) throws SQLException {
 		LOGGER.log(Level.FINE, MessageFormat.format("Connect with params: url=[{0}], info=[{1}]", url, info));
-
-		setPropsLoggerLevel();
-		setUrlLoggerLevel(url);
-		addFileHandler(url);
 
 		try {
 			System.setProperty("file.encoding","UTF-8");
@@ -75,44 +69,42 @@ public class SQDriver implements java.sql.Driver {
 		if (info == null)
 			throw new SQLException("Properties info is null");
 
-		UriEx UEX = new UriEx(url.trim()); // parse the url to object.
-		if (!UEX.getProvider().toLowerCase().equals("sqream")) {
+		UrlDto urlDto = urlParser.parse(url);
 
-			throw new SQLException("Bad provider in connection string. Should be sqream but got: " + UEX.getProvider().toLowerCase());
+		loggingService.levelFromUrl(urlDto.getLoggerLevel());
+		loggingService.logFilePath(urlDto.getLogFilePath());
+
+		if (!urlDto.getProvider().toLowerCase().equals("sqream")) {
+			throw new SQLException("Bad provider in connection string. Should be sqream but got: " + urlDto.getProvider().toLowerCase());
 		}
 
-		if (UEX.getUser() == null && info.getProperty("user") == null || UEX.getPswd() == null && info.getProperty("password") == null) {
-
+		if (urlDto.getUser() == null && info.getProperty("user") == null || urlDto.getPswd() == null && info.getProperty("password") == null) {
 			throw new SQLException("please apply user and password");
 		}
 
-		if (UEX.getUser() != null)
-
-		{
-			info.put("user", UEX.getUser());
-			info.put("password", UEX.getPswd());
+		if (urlDto.getUser() != null) {
+			info.put("user", urlDto.getUser());
+			info.put("password", urlDto.getPswd());
 		}
 		// now cast it to JDBC Properties object (cause thats what the
 		// DriverManager gives us as parameter):
-		if (UEX.getDbName() == null || UEX.getDbName().equals(""))
+		if (urlDto.getDbName() == null || urlDto.getDbName().equals(""))
 			throw new SQLException("connection string : missing database name error");
-		if (UEX.getHost() == null)
+		if (urlDto.getHost() == null)
 			throw new SQLException("connection string : missing host ip error");
-		if (UEX.getPort() == -1)
+		if (urlDto.getPort() == -1)
 			throw new SQLException("connection string : missing port error");
 
-		info.put("dbname", UEX.getDbName());
-		info.put("port", String.valueOf(UEX.getPort()));
-		info.put("host", UEX.getHost());
-		info.put("cluster", UEX.getCluster());
-		info.put("ssl", UEX.getSsl());
+		info.put("dbname", urlDto.getDbName());
+		info.put("port", String.valueOf(urlDto.getPort()));
+		info.put("host", urlDto.getHost());
+		info.put("cluster", urlDto.getCluster() != null	? urlDto.getCluster() : "false");
+		info.put("ssl", urlDto.getSsl() != null ? urlDto.getSsl() : "false");
 
-		if(UEX.getService() != null)
-			info.put("service", UEX.getService());
-
-		if (UEX.getShowFullStackTrace() != null) {
-			info.put("showFullStackTrace", UEX.getShowFullStackTrace());
+		if(urlDto.getService() != null) {
+			info.put("service", urlDto.getService());
 		}
+
 		Connection SQC;
 		try {
 			SQC = new SQConnection(info, ConnectorFactory.getFactory());
@@ -154,73 +146,13 @@ public class SQDriver implements java.sql.Driver {
 
 	@Override
 	public Logger getParentLogger() {
-		log("inside getParentLogger in SQDriver");
-		return PARENT_LOGGER;
+		LOGGER.log(Level.FINE, MessageFormat.format(
+				"Return parent logger [{0}]", LoggingService.getParentLogger()));
+		return LoggingService.getParentLogger();
 	}
 
 	private void log(String line) {
 		LOGGER.log(Level.FINE, line);
 	}
 
-	private void setUrlLoggerLevel(String url) {
-		for (Handler handler : PARENT_LOGGER.getHandlers()) {
-			PARENT_LOGGER.removeHandler(handler);
-		}
-		ConsoleHandler consoleHandler = new ConsoleHandler();
-		consoleHandler.setLevel(Level.ALL);
-		consoleHandler.setFormatter(LoggerUtil.getCustomFormatter());
-		PARENT_LOGGER.addHandler(consoleHandler);
-		PARENT_LOGGER.setLevel(Level.OFF);
-
-		int index = url.indexOf("?");
-		if (index != -1) {
-			String[] props = url.substring(index + 1).split("$");
-			Arrays.stream(props)
-					.filter(prop -> prop.split("=")[0].equals(PROP_KEY_LOGGER_LEVEL))
-					.findFirst()
-					.map(prop -> prop.split("=")[1])
-					.map(prop -> prop.split(",")[0])
-					.ifPresent(this::setLevel);
-		}
-	}
-
-	private void setPropsLoggerLevel() {
-		String LOGGING_LEVEL = System.getProperty(PROP_KEY_LOGGER_LEVEL);
-		if (LOGGING_LEVEL != null) {
-			setLevel(LOGGING_LEVEL);
-		}
-	}
-
-	private void setLevel(String loggerLevel) {
-		switch (LoggerLevel.valueOf(loggerLevel.toUpperCase())) {
-			case OFF:
-				PARENT_LOGGER.setLevel(Level.OFF);
-				break;
-			case DEBUG:
-				PARENT_LOGGER.setLevel(Level.FINE);
-				break;
-			case TRACE:
-				PARENT_LOGGER.setLevel(Level.FINEST);
-				break;
-			default:
-				StringJoiner supportedLevels = new StringJoiner(", ");
-				Arrays.stream(LoggerLevel.values()).forEach(value -> supportedLevels.add(value.getValue()));
-				throw new IllegalArgumentException(String.format(
-						"Unsupported logging level: %s. Driver supports: %s", loggerLevel, supportedLevels));
-		}
-	}
-
-	private void addFileHandler(String url) {
-		if (url.contains(PROP_KEY_LOGGER_FILE_PATH)) {
-			String logFilePath = url.substring(url.indexOf(PROP_KEY_LOGGER_FILE_PATH + "=") + 8);
-			try {
-				Handler handler = new FileHandler(logFilePath, true);
-				handler.setLevel(Level.ALL);
-				handler.setFormatter(LoggerUtil.getCustomFormatter());
-				PARENT_LOGGER.addHandler(handler);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 }

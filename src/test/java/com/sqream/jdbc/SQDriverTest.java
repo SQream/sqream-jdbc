@@ -100,27 +100,27 @@ public class SQDriverTest {
 
     @Test
     public void loggerLevelDebugTest() throws SQLException {
-        driver.connect(CORRECT_URI + "?loggerLevel=DEBUG", new Properties());
+        driver.connect(CORRECT_URI + ";loggerLevel=DEBUG", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.FINE);
     }
 
     @Test
     public void loggerLevelTraceTest() throws SQLException {
-        driver.connect(CORRECT_URI + "?loggerLevel=TRACE", new Properties());
+        driver.connect(CORRECT_URI + ";loggerLevel=TRACE", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.FINEST);
     }
 
     @Test
     public void loggerLevelWrongParamKeyIgnoredTest() throws SQLException {
-        driver.connect(CORRECT_URI + "?loggerWronKeyLevel=DEBUG", new Properties());
+        driver.connect(CORRECT_URI + ";loggerWrongKeyLevel=DEBUG", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.OFF);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void loggerLevelUnsupportedLevel() throws SQLException {
-        driver.connect(CORRECT_URI + "?loggerLevel=UNSUPPORTED_LEVEL", new Properties());
+        driver.connect(CORRECT_URI + ";loggerLevel=UNSUPPORTED_LEVEL", new Properties());
     }
 }

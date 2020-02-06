@@ -101,4 +101,21 @@ public class ConnectionParams {
     public void setService(String service) {
         this.service = service;
     }
+
+    @Override
+    public String toString() {
+        return "ConnectionParams{" +
+                "cluster=" + cluster +
+                ", lbip='" + lbip + '\'' +
+                ", lbport=" + lbport +
+                ", ip='" + ip + '\'' +
+                ", port=" + port +
+                ", user='" + user + '\'' +
+                ", password='" + password + '\'' +
+                ", schema='" + schema + '\'' +
+                ", dbName='" + dbName + '\'' +
+                ", useSsl=" + useSsl +
+                ", service='" + service + '\'' +
+                '}';
+    }
 }

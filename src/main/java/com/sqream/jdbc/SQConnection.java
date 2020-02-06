@@ -61,36 +61,39 @@ public class SQConnection implements Connection {
 		String cluster = connectionInfo.getProperty("cluster");
 
 		String ipaddress = connectionInfo.getProperty("host");
-		if (ipaddress.equals("-1"))
+		if (ipaddress == null) {
 			throw new SQLException("missing host error");
+		}
 
 		String s_port = connectionInfo.getProperty("port");
-		if (s_port.equals("-1"))
+		if (s_port == null) {
 			throw new SQLException("missing port error");
-			
-		dbName = connectionInfo.getProperty("dbname");
-		if (dbName.equals("-1"))
+		}
+
+		dbName = connectionInfo.getProperty("dbName");
+		if (dbName == null) {
 			throw new SQLException("missing database name error");
+		}
 
 		String service = connectionInfo.getProperty("service");
-		if(service == null || service.equals("-1")) {
+		if(service == null) {
 			System.out.println ("no service passed, defaulting to sqream");
 			service = "sqream";
 		}
 		
 		String schema = connectionInfo.getProperty("schema");
-		if(schema == null || schema.equals("-1")) {
+		if(schema == null) {
 			System.out.println ("no schema passed, defaulting to public");
 			schema = "public";
 		}
 		
 		String usr = connectionInfo.getProperty("user");
 		username = usr;
-		if (usr.equals("-1"))
+		if (usr == null)
 			throw new SQLException("missing user");
 
 		String pswd = connectionInfo.getProperty("password");
-		if (pswd.equals("-1"))
+		if (pswd == null)
 			throw new SQLException("missing database name error");
 
 		// Related to bug #541 - skip the picker if we are in cancel state

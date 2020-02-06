@@ -13,8 +13,6 @@ import javax.script.ScriptException;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.logging.LoggingService;
-import com.sqream.jdbc.urlParser.URLParser;
-import com.sqream.jdbc.urlParser.UrlDto;
 
 import java.nio.charset.Charset;
 
@@ -25,6 +23,7 @@ public class SQDriver implements java.sql.Driver {
 	private static final LoggingService loggingService = new LoggingService();
 
 	private DriverPropertyInfo[] DPIArray;
+
 
 	static {
 		try {
@@ -39,16 +38,14 @@ public class SQDriver implements java.sql.Driver {
 		LOGGER.log(Level.FINE, MessageFormat.format("acceptsURL: url=[{0}]", url));
 
 		log("inside acceptsURL in SQDriver");
-		UrlDto urlDto = urlParser.parse(url);
-		if (urlDto.getProvider() == null || !"sqream".equals(urlDto.getProvider().toLowerCase())) {
-			return false; // cause it is an other provider, not us..
-		}
-		return true;
+
+		Properties props = urlParser.parse(url);
+		return "sqream".equalsIgnoreCase(props.getProperty("provider"));
 	}
 
 	@Override
-	public Connection connect(String url, Properties info) throws SQLException {
-		LOGGER.log(Level.FINE, MessageFormat.format("Connect with params: url=[{0}], info=[{1}]", url, info));
+	public Connection connect(String url, Properties driverProps) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("Connect with params: url=[{0}], info=[{1}]", url, driverProps));
 
 		try {
 			System.setProperty("file.encoding","UTF-8");
@@ -61,60 +58,33 @@ public class SQDriver implements java.sql.Driver {
 		} 
 		String prfx = "jdbc:Sqream";
 
-		if (!url.trim().substring(0, prfx.length()).equals(prfx))
-			
-			throw new SQLException("Wrong prefix for connection string. Should be jdbc:Sqream but got: " + url.trim().substring(0, prfx.length())); // assaf: don't try to this url, it was not ment for
-							// sqream. (propegate it on..)
+		if (!url.trim().substring(0, prfx.length()).equals(prfx)) {
+			throw new SQLException("Wrong prefix for connection string. Should be jdbc:Sqream but got: " +
+					url.trim().substring(0, prfx.length()));
+		}
 
-		if (info == null)
+		if (driverProps == null) {
 			throw new SQLException("Properties info is null");
-
-		UrlDto urlDto = urlParser.parse(url);
-
-		loggingService.levelFromUrl(urlDto.getLoggerLevel());
-		loggingService.logFilePath(urlDto.getLogFilePath());
-
-		if (!urlDto.getProvider().toLowerCase().equals("sqream")) {
-			throw new SQLException("Bad provider in connection string. Should be sqream but got: " + urlDto.getProvider().toLowerCase());
 		}
 
-		if (urlDto.getUser() == null && info.getProperty("user") == null || urlDto.getPswd() == null && info.getProperty("password") == null) {
-			throw new SQLException("please apply user and password");
+		Properties urlProps = urlParser.parse(url);
+		Properties defaultProps = createDefaultProps();
+		Properties props = PropsParser.merge(urlProps, driverProps, defaultProps);
+
+		if (!"sqream".equalsIgnoreCase(props.getProperty("provider"))) {
+			throw new SQLException("Bad provider in connection string. Should be sqream but got: "
+					+ props.getProperty("provider"));
 		}
 
-		if (urlDto.getUser() != null) {
-			info.put("user", urlDto.getUser());
-			info.put("password", urlDto.getPswd());
-		}
-		// now cast it to JDBC Properties object (cause thats what the
-		// DriverManager gives us as parameter):
-		if (urlDto.getDbName() == null || urlDto.getDbName().equals(""))
-			throw new SQLException("connection string : missing database name error");
-		if (urlDto.getHost() == null)
-			throw new SQLException("connection string : missing host ip error");
-		if (urlDto.getPort() == -1)
-			throw new SQLException("connection string : missing port error");
+		loggingService.levelFromUrl(props.getProperty("loggerLevel"));
+		loggingService.logFilePath(props.getProperty("logFile"));
 
-		info.put("dbname", urlDto.getDbName());
-		info.put("port", String.valueOf(urlDto.getPort()));
-		info.put("host", urlDto.getHost());
-		info.put("cluster", urlDto.getCluster() != null	? urlDto.getCluster() : "false");
-		info.put("ssl", urlDto.getSsl() != null ? urlDto.getSsl() : "false");
-
-		if(urlDto.getService() != null) {
-			info.put("service", urlDto.getService());
-		}
-
-		Connection SQC;
 		try {
-			SQC = new SQConnection(info, ConnectorFactory.getFactory());
+			return new SQConnection(props, ConnectorFactory.getFactory());
 		} catch (NumberFormatException | ScriptException | IOException | NoSuchAlgorithmException |
 		KeyManagementException | ConnException e) {
-			e.printStackTrace();
 			throw new SQLException(e);
 		}
-
-		return SQC;
 	}
 
 	@Override
@@ -155,4 +125,13 @@ public class SQDriver implements java.sql.Driver {
 		LOGGER.log(Level.FINE, line);
 	}
 
+	private Properties createDefaultProps() {
+		Properties result = new Properties();
+		result.put("cluster", "false");
+		result.put("ssl", "false");
+		result.put("service", "sqream");
+		result.put("schema", "public");
+		result.put("SkipPicker", "false");// Related to bug #541 - skip the picker if we are in cancel state
+		return result;
+	}
 }

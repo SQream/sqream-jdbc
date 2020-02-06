@@ -1,8 +1,8 @@
-package com.sqream.jdbc.urlParser;
+package com.sqream.jdbc.propsParser;
 
+import com.sqream.jdbc.URLParser;
 import org.junit.Test;
 
-import java.net.URISyntaxException;
 import java.sql.SQLException;
 
 import static org.junit.Assert.*;
@@ -17,9 +17,9 @@ public class URLParserTest {
 
     @Test
     public void parseProviderTest() throws SQLException {
-        String expected = "sqream";
+        String expected = "Sqream";
 
-        String actual = parser.parse(TEST_URL).getProvider().toLowerCase();
+        String actual = parser.parse(TEST_URL).getProperty("provider");
 
         assertEquals(expected, actual);
     }
@@ -28,7 +28,7 @@ public class URLParserTest {
     public void parseHostTest() throws SQLException {
         String expected = "127.0.0.1";
 
-        String actual = parser.parse(TEST_URL).getHost();
+        String actual = parser.parse(TEST_URL).getProperty("host");
 
         assertEquals(expected, actual);
     }
@@ -37,7 +37,7 @@ public class URLParserTest {
     public void parsePortTest() throws SQLException {
         int expected = 1234;
 
-        int actual = parser.parse(TEST_URL).getPort();
+        int actual = Integer.parseInt(parser.parse(TEST_URL).getProperty("port"));
 
         assertEquals(expected, actual);
     }
@@ -46,7 +46,7 @@ public class URLParserTest {
     public void parseDataBaseTest() throws SQLException {
         String expected = "testDataBaseName";
 
-        String actual = parser.parse(TEST_URL).getDbName();
+        String actual = parser.parse(TEST_URL).getProperty("dbName");
 
         assertEquals(expected, actual);
     }
@@ -55,7 +55,7 @@ public class URLParserTest {
     public void parseUserTest() throws SQLException {
         String expected = "testUserName";
 
-        String actual = parser.parse(TEST_URL).getUser();
+        String actual = parser.parse(TEST_URL).getProperty("user");
 
         assertEquals(expected, actual);
     }
@@ -64,7 +64,7 @@ public class URLParserTest {
     public void parsePasswordTest() throws SQLException {
         String expected = "testPassword";
 
-        String actual = parser.parse(TEST_URL).getPswd();
+        String actual = parser.parse(TEST_URL).getProperty("password");
 
         assertEquals(expected, actual);
     }
@@ -73,7 +73,7 @@ public class URLParserTest {
     public void parseClusterTest() throws SQLException {
         String expected = "true";
 
-        String actual = parser.parse(TEST_URL).getCluster();
+        String actual = parser.parse(TEST_URL).getProperty("cluster");
 
         assertEquals(expected, actual);
     }
@@ -82,7 +82,7 @@ public class URLParserTest {
     public void parseSslTest() throws SQLException {
         String expected = "true";
 
-        String actual = parser.parse(TEST_URL).getSsl();
+        String actual = parser.parse(TEST_URL).getProperty("ssl");
 
         assertEquals(expected, actual);
     }
@@ -91,7 +91,7 @@ public class URLParserTest {
     public void parseServiceTest() throws SQLException {
         String expected = "testService";
 
-        String actual = parser.parse(TEST_URL).getService();
+        String actual = parser.parse(TEST_URL).getProperty("service");
 
         assertEquals(expected, actual);
     }
@@ -100,7 +100,7 @@ public class URLParserTest {
     public void parseLoggerLevelTest() throws SQLException {
         String expected = "testLoggerLevel";
 
-        String actual = parser.parse(TEST_URL).getLoggerLevel();
+        String actual = parser.parse(TEST_URL).getProperty("loggerLevel");
 
         assertEquals(expected, actual);
     }
@@ -109,7 +109,7 @@ public class URLParserTest {
     public void parseLogFilePathTest() throws SQLException {
         String expected = "testLogFilePath";
 
-        String actual = parser.parse(TEST_URL).getLogFilePath();
+        String actual = parser.parse(TEST_URL).getProperty("logFile");
 
         assertEquals(expected, actual);
     }

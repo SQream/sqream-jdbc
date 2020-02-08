@@ -16,8 +16,14 @@ import com.sqream.jdbc.logging.LoggingService;
 
 import java.nio.charset.Charset;
 
+import static com.sqream.jdbc.enums.DriverProperties.*;
+
 public class SQDriver implements java.sql.Driver {
 	private static final Logger LOGGER = Logger.getLogger(SQDriver.class.getName());
+
+	private static final String PREFIX = "jdbc:Sqream";
+	private static final int MAJOR_VERSION = 4;
+	private static final int MINOR_VERSION = 0;
 
 	private static final URLParser urlParser = new URLParser();
 	private static final LoggingService loggingService = new LoggingService();
@@ -45,22 +51,15 @@ public class SQDriver implements java.sql.Driver {
 
 	@Override
 	public Connection connect(String url, Properties driverProps) throws SQLException {
-		LOGGER.log(Level.FINE, MessageFormat.format("Connect with params: url=[{0}], info=[{1}]", url, driverProps));
+		LOGGER.log(Level.FINE, MessageFormat.format(
+				"Connect with params: url=[{0}], info=[{1}]", url, driverProps));
 
-		try {
-			System.setProperty("file.encoding","UTF-8");
-			Field charset = Charset.class.getDeclaredField("defaultCharset");
-			charset.setAccessible(true);
-			charset.set(null,null);
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		String prfx = "jdbc:Sqream";
+		setSystemProperties();
 
-		if (!url.trim().substring(0, prfx.length()).equals(prfx)) {
-			throw new SQLException("Wrong prefix for connection string. Should be jdbc:Sqream but got: " +
-					url.trim().substring(0, prfx.length()));
+		String urlPrefix = url.trim().substring(0, PREFIX.length());
+		if (!urlPrefix.equals(PREFIX)) {
+			throw new SQLException(MessageFormat.format(
+					"Wrong prefix for connection string. Should be jdbc:Sqream but got: [{0}]", urlPrefix));
 		}
 
 		if (driverProps == null) {
@@ -89,14 +88,14 @@ public class SQDriver implements java.sql.Driver {
 
 	@Override
 	public int getMajorVersion() {
-		log("inside getMajorVersion in SQDriver");
-		return 4;
+		LOGGER.log(Level.FINE, MessageFormat.format("return major version [{0}]", MAJOR_VERSION));
+		return MAJOR_VERSION;
 	}
 
 	@Override
 	public int getMinorVersion() {
-		log("inside getMinorVersion in SQDriver");
-		return 0;
+		LOGGER.log(Level.FINE, MessageFormat.format("return minor version [{0}]", MINOR_VERSION));
+		return MINOR_VERSION;
 	}
 
 	@Override
@@ -125,13 +124,24 @@ public class SQDriver implements java.sql.Driver {
 		LOGGER.log(Level.FINE, line);
 	}
 
+	private void setSystemProperties() throws SQLException {
+		try {
+			System.setProperty("file.encoding","UTF-8");
+			Field charset = Charset.class.getDeclaredField("defaultCharset");
+			charset.setAccessible(true);
+			charset.set(null,null);
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			throw new SQLException(e);
+		}
+	}
+
 	private Properties createDefaultProps() {
 		Properties result = new Properties();
-		result.put("cluster", "false");
-		result.put("ssl", "false");
-		result.put("service", "sqream");
-		result.put("schema", "public");
-		result.put("SkipPicker", "false");// Related to bug #541 - skip the picker if we are in cancel state
+		result.put(CLUSTER, "false");
+		result.put(SSL, "false");
+		result.put(SERVICE, "sqream");
+		result.put(SCHEMA, "public");
+		result.put(SKIP_PICKER, "false");// Related to bug #541 - skip the picker if we are in cancel state
 		return result;
 	}
 }

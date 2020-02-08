@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 @RunWith(MockitoJUnitRunner.class)
 public class SQDriverTest {
     private static final String CORRECT_URI =
-            "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
+            "jdbc:Sqream://192.168.0.158:5000/master;user=sqream;password=sqream;ssl=true";
     private static final String LOWER_CASE_PROVIDER_URI =
             "jdbc:sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
     private static final String ANOTHER_PROVIDER_URI =
@@ -27,7 +27,7 @@ public class SQDriverTest {
     private static final Properties CORRECT_CONN_PROPERTIES = new Properties();
 
     private Driver driver = new SQDriver();
-    private Level testLogLevel;
+    private Level logLevelBeforeTest;
 
     // init connection properties
     static {
@@ -37,12 +37,12 @@ public class SQDriverTest {
 
     @Before
     public void saveCurrentDebugLevel() throws SQLFeatureNotSupportedException {
-        testLogLevel = driver.getParentLogger().getLevel();
+        logLevelBeforeTest = driver.getParentLogger().getLevel();
     }
 
     @After
     public void setPreviousDebugLevel() throws SQLFeatureNotSupportedException {
-        driver.getParentLogger().setLevel(testLogLevel);
+        driver.getParentLogger().setLevel(logLevelBeforeTest);
     }
 
     @Test

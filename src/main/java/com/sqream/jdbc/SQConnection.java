@@ -33,7 +33,6 @@ public class SQConnection implements Connection {
 			new int[]{ResultSet.HOLD_CURSORS_OVER_COMMIT, ResultSet.CLOSE_CURSORS_AT_COMMIT};
 
 	private ConnectorFactory connectorFactory;
-	private Path SQConnection_log = Paths.get("/tmp/SQConnection.txt");
 	private Vector<SQStatement> Statement_list = new Vector<SQStatement>();
 	private Connector globalClient;
 	private boolean printouts = false;
@@ -102,19 +101,19 @@ public class SQConnection implements Connection {
 			skipPicker = "false";
 		}
 
-		boolean isCluster=cluster.equalsIgnoreCase("true");
+		boolean isCluster = "true".equalsIgnoreCase(cluster);
 		
 		boolean useSsl = false;
 		String SSL_Connection = connectionInfo.getProperty("ssl");
 		if (SSL_Connection == null || SSL_Connection.isEmpty()) {
 			useSsl = true;
 		}
-		else if (SSL_Connection.equalsIgnoreCase("true")){
+		else if ("ture".equalsIgnoreCase(SSL_Connection)){
 			useSsl = true;
 		}
 
 		globalClient = this.connectorFactory.initConnector(
-				ipaddress, Integer.parseInt(s_port), cluster.equalsIgnoreCase("true"), useSsl);
+				ipaddress, Integer.parseInt(s_port), "true".equalsIgnoreCase(cluster), useSsl);
 		globalClient.connect(dbName, usr, pswd, service);
 		
 		params.setCluster(isCluster);

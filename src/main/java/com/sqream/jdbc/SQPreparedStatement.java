@@ -44,14 +44,12 @@ import com.sqream.jdbc.connector.ConnectorImpl;
 import com.sqream.jdbc.connector.ConnException;
 
 
-public class SQPreparedStatment implements PreparedStatement {
-    private static final Logger LOGGER = Logger.getLogger(SQPreparedStatment.class.getName());
+public class SQPreparedStatement implements PreparedStatement {
+    private static final Logger LOGGER = Logger.getLogger(SQPreparedStatement.class.getName());
 
     private Connector Client;
     private SQResultSet SQRS = null;
     private SQResultSetMetaData metaData = null;
-    private String sql;
-    private SQConnection connection =null;
     private int statement_id;
     private String db_name;
     private int setCounter = 0;
@@ -59,17 +57,16 @@ public class SQPreparedStatment implements PreparedStatement {
     private List<Integer> setsPerBatch = new ArrayList<>();
     private boolean is_closed = true;
 
-    public SQPreparedStatment(Connector client, String Sql, SQConnection conn, String catalog) throws SQLException, IOException, KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
-        LOGGER.log(Level.FINE, MessageFormat.format("Construct SQPreparedStatement for [{0}]", Sql));
+    public SQPreparedStatement(String sql, ConnectionParams connParams) throws SQLException, IOException,
+            KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
 
-        connection = conn;
-        db_name = catalog;
+        LOGGER.log(Level.FINE, MessageFormat.format("Construct SQPreparedStatement for [{0}]", sql));
+        db_name = connParams.getDbName();
         is_closed = false;
-        Client = new ConnectorImpl(connection.getParams().getIp(), connection.getParams().getPort(), conn.getParams().getCluster(), connection.getParams().getUseSsl());
-        Client.connect(connection.getParams().getDbName(), connection.getParams().getUser(), connection.getParams().getPassword(), "sqream");  // default service
-        sql = Sql;
+        Client = new ConnectorImpl(connParams.getIp(), connParams.getPort(), connParams.getCluster(), connParams.getUseSsl());
+        Client.connect(connParams.getDbName(), connParams.getUser(), connParams.getPassword(), "sqream");  // default service
         statement_id = Client.execute(sql);
-        metaData = new SQResultSetMetaData(Client, connection.getParams().getDbName());
+        metaData = new SQResultSetMetaData(Client, connParams.getDbName());
     }
 
     
@@ -84,7 +81,6 @@ public class SQPreparedStatment implements PreparedStatement {
 				Client.closeConnection();
         	}
         } catch (IOException | ConnException | ScriptException e) {
-        	e.printStackTrace();
             throw new SQLException(e);
         } 
         is_closed = true;
@@ -146,13 +142,12 @@ public class SQPreparedStatment implements PreparedStatement {
     // ----
     
     @Override
-    public void setBoolean(int arg0, boolean arg1) {
+    public void setBoolean(int arg0, boolean arg1) throws SQLException {
         
         try {
 			Client.set_boolean(arg0, arg1);
 		} catch (ConnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new SQLException(e);
 		} setCounter++;      
     }
 
@@ -162,7 +157,7 @@ public class SQPreparedStatment implements PreparedStatement {
     	try {
 			Client.set_ubyte(arg0, arg1);
 		} catch (ConnException e) {
-			e.printStackTrace();
+            throw new SQLException(e);
 		} setCounter++; 
     }
     
@@ -171,7 +166,7 @@ public class SQPreparedStatment implements PreparedStatement {
 	    try {
 			Client.set_short(arg0, arg1);
 		} catch (ConnException e) {
-			e.printStackTrace();
+            throw new SQLException(e);
 		} setCounter++;    
     }
 
@@ -181,7 +176,7 @@ public class SQPreparedStatment implements PreparedStatement {
     	try {
 			Client.set_int(arg0, arg1);
 		} catch (ConnException e) {
-			e.printStackTrace();
+            throw new SQLException(e);
 		} setCounter++;    
     }
 
@@ -191,7 +186,7 @@ public class SQPreparedStatment implements PreparedStatement {
         try {
 			Client.set_long(arg0, arg1);
 		} catch (ConnException e) {
-			e.printStackTrace();
+            throw new SQLException(e);
 		} setCounter++; 
     }
     
@@ -200,7 +195,7 @@ public class SQPreparedStatment implements PreparedStatement {
         try {
 			Client.set_float(arg0, arg1);
 		} catch (ConnException e) {
-			e.printStackTrace();
+            throw new SQLException(e);
 		} setCounter++;    
     }
     
@@ -210,7 +205,7 @@ public class SQPreparedStatment implements PreparedStatement {
          try {
 			Client.set_double(arg0, arg1);
 		} catch (ConnException e) {
-			e.printStackTrace();
+             throw new SQLException(e);
 		} setCounter++;  
     }
     
@@ -229,7 +224,7 @@ public class SQPreparedStatment implements PreparedStatement {
     	try {
 			Client.set_date(colNum, date, cal.getTimeZone().toZoneId());
 		} catch (UnsupportedEncodingException | ConnException e) {
-			e.printStackTrace();
+            throw new SQLException(e);
 		} setCounter++; 
     }
     
@@ -239,42 +234,36 @@ public class SQPreparedStatment implements PreparedStatement {
     	try {
 			Client.set_datetime(colNum, datetime);
 		} catch (UnsupportedEncodingException | ConnException e) {
-			e.printStackTrace();
+            throw new SQLException(e);
 		} setCounter++; 
     }
 
     @Override
     public void setTimestamp(int colNum, Timestamp datetime, Calendar cal) throws SQLException {
-        
     	try {
 			Client.set_datetime(colNum, datetime, cal.getTimeZone().toZoneId());
 		} catch (UnsupportedEncodingException | ConnException e) {
-			e.printStackTrace();
-		} setCounter++; 
-		
-		// Original logic
-    	// ZonedDateTime zonedDate = datetime.toInstant().atZone(cal.getTimeZone().toZoneId()); 
-		// Client.set_datetime(colNum, Timestamp.valueOf(zonedDate.toLocalDateTime()));
-		// Client.set_date(colNum, Date.valueOf(zonedDate.toLocalDate()));
+            throw new SQLException(e);
+		}
+    	setCounter++;
     }
     
     @Override
-    public void setString(int arg0, String arg1) throws SQLException {
-        
-    	String type = getMetaData().getColumnTypeName(arg0);
-        if (type.equals("Varchar"))
-			try {
-				Client.set_varchar(arg0, arg1);
-			} catch (ConnException | UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-		else if (type.equals("NVarchar"))
-			try {
-				Client.set_nvarchar(arg0, arg1);
-			} catch (UnsupportedEncodingException | ConnException e) {
-				e.printStackTrace();
-			}
-        
+    public void setString(int colIndex, String value) throws SQLException {
+        String type = getMetaData().getColumnTypeName(colIndex);
+        try {
+            if ("Varchar".equals(type)) {
+                Client.set_varchar(colIndex, value);
+            } else if ("NVarchar".equals(type)) {
+                Client.set_nvarchar(colIndex, value);
+            } else {
+                throw new IllegalArgumentException(
+                        MessageFormat.format("Trying to set [{0}] on a column number [{1}] of type [{2}]",
+                                type, colIndex + 1, type));
+            }
+        } catch (ConnException | UnsupportedEncodingException e) {
+            throw new SQLException(e);
+        }
         setCounter++;   
     }
 
@@ -283,7 +272,7 @@ public class SQPreparedStatment implements PreparedStatement {
         try {
 			Client.set_nvarchar(arg0, arg1);
 		} catch (UnsupportedEncodingException | ConnException e) {
-			e.printStackTrace();
+            throw new SQLException(e);
 		} setCounter++; 
     }
     
@@ -294,53 +283,68 @@ public class SQPreparedStatment implements PreparedStatement {
     	
     	try {
     	    type = Client.get_col_type(arg0);
-    	  	
-    	    if (type.equals("ftBool")) 
-    	  		Client.set_boolean(arg0, null);
-      		else if (type.equals("ftUByte"))
-      			Client.set_ubyte(arg0, null);
-      		else if (type.equals("ftShort")) 
-      			Client.set_short(arg0, null);
-      		else if (type.equals("ftInt")) 	
-      			Client.set_int(arg0, null);
-      		else if (type.equals("ftLong")) 
-      			Client.set_long(arg0, null);
-      		else if (type.equals("ftFloat")) 
-      			Client.set_float(arg0, null);
-      		else if (type.equals("ftDouble"))
-      			Client.set_double(arg0, null);
-      		else if (type.equals("ftDate")) 
-      			Client.set_date(arg0, null);
-      		else if (type.equals("ftDateTime"))
-      			Client.set_datetime(arg0, null);
-      		else if (type.equals("ftVarchar")) 
-      			Client.set_varchar(arg0, null);
-      		else if (type.equals("ftBlob")) 	
-      			Client.set_nvarchar(arg0, null);
-  		
+
+            switch (type) {
+                case "ftBool":
+                    Client.set_boolean(arg0, null);
+                    break;
+                case "ftUByte":
+                    Client.set_ubyte(arg0, null);
+                    break;
+                case "ftShort":
+                    Client.set_short(arg0, null);
+                    break;
+                case "ftInt":
+                    Client.set_int(arg0, null);
+                    break;
+                case "ftLong":
+                    Client.set_long(arg0, null);
+                    break;
+                case "ftFloat":
+                    Client.set_float(arg0, null);
+                    break;
+                case "ftDouble":
+                    Client.set_double(arg0, null);
+                    break;
+                case "ftDate":
+                    Client.set_date(arg0, null);
+                    break;
+                case "ftDateTime":
+                    Client.set_datetime(arg0, null);
+                    break;
+                case "ftVarchar":
+                    Client.set_varchar(arg0, null);
+                    break;
+                case "ftBlob":
+                    Client.set_nvarchar(arg0, null);
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            MessageFormat.format("Unsupported column type [{0}]", type));
+            }
     	    setCounter++;   
         } catch (ConnException | UnsupportedEncodingException e) {
-			e.printStackTrace();
+            throw new SQLException(e);
 		} 
     }
 
     @Override
     public void setObject(int colIndex, Object value) throws SQLException {
-        
+
         if (value instanceof Boolean) {
-            setBoolean(colIndex, ((Boolean) value).booleanValue());
+            setBoolean(colIndex, (Boolean) value);
         } else if (value instanceof Byte) {
-            setByte(colIndex, ((Byte) value).byteValue());
+            setByte(colIndex, (Byte) value);
         } else if (value instanceof Short) {
-            setShort(colIndex, ((Short) value).shortValue());
+            setShort(colIndex, (Short) value);
         } else if (value instanceof Integer) {
-            setInt(colIndex, ((Integer) value).intValue());
+            setInt(colIndex, (Integer) value);
         } else if (value instanceof Long) {
-            setLong(colIndex, ((Long) value).longValue());
+            setLong(colIndex, (Long) value);
         } else if (value instanceof Float) {
-            setFloat(colIndex, ((Float) value).floatValue());
+            setFloat(colIndex, (Float) value);
         } else if (value instanceof Double) {
-            setDouble(colIndex, ((Double) value).doubleValue());
+            setDouble(colIndex, (Double) value);
         }  else if (value instanceof Date) {
             setDate(colIndex, (Date) value);
         } else if (value instanceof Timestamp) {

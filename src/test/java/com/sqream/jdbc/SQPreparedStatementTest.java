@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.*;
 
-public class SQPreparedStatmentTest {
+public class SQPreparedStatementTest {
 
     public static final String IP = "127.0.0.1";
     public static final int PORT = 5000;

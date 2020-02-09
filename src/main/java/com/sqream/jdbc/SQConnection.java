@@ -165,9 +165,9 @@ public class SQConnection implements Connection {
 			throw new SQLException(MessageFormat.format("Statement is closed: isClosed=[{0}]", isClosed));
 		}
 
-		SQPreparedStatment SQPS = null;
+		SQPreparedStatement SQPS = null;
 		try {
-			SQPS = new SQPreparedStatment(globalClient, sql, this, params.getDbName());
+			SQPS = new SQPreparedStatement(sql, params);
 		} catch (KeyManagementException | NoSuchAlgorithmException | IOException | SQLException | ScriptException | ConnException e) {
 			throw new SQLException(e);
 		} return SQPS;
@@ -186,9 +186,9 @@ public class SQConnection implements Connection {
 		if (printouts) System.out.println("prepareStatement5");
 		//spark use this function 
 		//sql = sql.replace("\"", "");
-		SQPreparedStatment SQPS = null;
+		SQPreparedStatement SQPS = null;
 		try {
-			SQPS = new SQPreparedStatment(globalClient, sql, this, params.getDbName());
+			SQPS = new SQPreparedStatement(sql, params);
 		} catch (KeyManagementException | NoSuchAlgorithmException | IOException | ScriptException | ConnException e) {
 			e.printStackTrace();
 			throw new SQLException(e);

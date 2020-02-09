@@ -13,6 +13,7 @@ import javax.script.ScriptException;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.logging.LoggingService;
+import com.sqream.jdbc.propsParser.PropsParser;
 
 import java.nio.charset.Charset;
 

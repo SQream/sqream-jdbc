@@ -16,4 +16,7 @@ public class TestEnvironment {
     public static final String URL = MessageFormat.format(
             "jdbc:Sqream://{0}:{1}/{2};user={3};password={4};cluster={5};ssl={6};service={7}",
             IP, String.valueOf(PORT), DATABASE, USER, PASS, CLUSTER, SSL, SERVICE);
+
+    public static final String SHORT_URL = MessageFormat.format(
+            "jdbc:Sqream://{0}:{1}/{2};user={3};password={4}", IP, String.valueOf(PORT), DATABASE, USER, PASS);
 }

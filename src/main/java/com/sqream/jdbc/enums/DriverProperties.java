@@ -6,6 +6,11 @@ public enum DriverProperties {
     SERVICE("service"),
     SCHEMA("schema"),
     PROVIDER("provider"),
+    HOST("host"),
+    PORT("port"),
+    DB_NAME("dbName"),
+    USER("user"),
+    PASSWORD("password"),
     LOGGER_LEVEL("loggerLevel"),
     LOG_FILE_PATH("logFile");
 

@@ -1,4 +1,4 @@
-package com.sqream.jdbc;
+package com.sqream.jdbc.propsParser;
 
 import java.net.URI;
 import java.net.URISyntaxException;

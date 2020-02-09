@@ -25,7 +25,6 @@ public class SQDriver implements java.sql.Driver {
 	private static final int MAJOR_VERSION = 4;
 	private static final int MINOR_VERSION = 0;
 
-	private static final URLParser urlParser = new URLParser();
 	private static final LoggingService loggingService = new LoggingService();
 
 	private DriverPropertyInfo[] DPIArray;
@@ -45,7 +44,7 @@ public class SQDriver implements java.sql.Driver {
 
 		log("inside acceptsURL in SQDriver");
 
-		Properties props = urlParser.parse(url);
+		Properties props = PropsParser.parse(url);
 		return "sqream".equalsIgnoreCase(props.getProperty("provider"));
 	}
 
@@ -66,11 +65,9 @@ public class SQDriver implements java.sql.Driver {
 			throw new SQLException("Properties info is null");
 		}
 
-		Properties urlProps = urlParser.parse(url);
-		Properties defaultProps = createDefaultProps();
-		Properties props = PropsParser.merge(urlProps, driverProps, defaultProps);
+		Properties props = PropsParser.parse(url, driverProps, createDefaultProps());
 
-		if (!"sqream".equalsIgnoreCase(props.getProperty("provider"))) {
+		if (!validProvider(props)) {
 			throw new SQLException("Bad provider in connection string. Should be sqream but got: "
 					+ props.getProperty("provider"));
 		}
@@ -141,7 +138,10 @@ public class SQDriver implements java.sql.Driver {
 		result.put(SSL, "false");
 		result.put(SERVICE, "sqream");
 		result.put(SCHEMA, "public");
-		result.put(SKIP_PICKER, "false");// Related to bug #541 - skip the picker if we are in cancel state
 		return result;
+	}
+
+	private boolean validProvider(Properties props) {
+		return props != null && "sqream".equalsIgnoreCase(props.getProperty("provider"));
 	}
 }

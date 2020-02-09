@@ -15,9 +15,6 @@ import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnException;
 
-//Logging
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,14 +30,13 @@ public class SQConnection implements Connection {
 			new int[]{ResultSet.HOLD_CURSORS_OVER_COMMIT, ResultSet.CLOSE_CURSORS_AT_COMMIT};
 
 	private ConnectorFactory connectorFactory;
-	private Vector<SQStatement> Statement_list = new Vector<SQStatement>();
+	private Vector<SQStatement> Statement_list = new Vector<>();
 	private Connector globalClient;
 	private boolean printouts = false;
 	private SQDatabaseMetaData data = null;
 	private ConnectionParams params = new ConnectionParams();
 	private AtomicBoolean isClosed = new AtomicBoolean(true);
 	private String username;
-	private Properties connInfo;
 	private String dbName;
     
 	SQConnection(Connector client) {
@@ -56,7 +52,6 @@ public class SQConnection implements Connection {
 
 		this.connectorFactory = connectorFactory;
 
-		connInfo = connectionInfo;
 		String cluster = connectionInfo.getProperty("cluster");
 
 		String ipaddress = connectionInfo.getProperty("host");
@@ -94,12 +89,6 @@ public class SQConnection implements Connection {
 		String pswd = connectionInfo.getProperty("password");
 		if (pswd == null)
 			throw new SQLException("missing database name error");
-
-		// Related to bug #541 - skip the picker if we are in cancel state
-		String skipPicker = connectionInfo.getProperty("SkipPicker");
-		if (skipPicker == null) {
-			skipPicker = "false";
-		}
 
 		boolean isCluster = "true".equalsIgnoreCase(cluster);
 		

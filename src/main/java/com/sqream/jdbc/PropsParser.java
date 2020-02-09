@@ -2,26 +2,34 @@ package com.sqream.jdbc;
 
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class PropsParser {
 
-    public static Properties merge(Properties urlProps, Properties driverProps, Properties defaultProps) throws SQLException {
-        if (urlProps == null || driverProps == null || defaultProps == null) {
-            throw new IllegalArgumentException(MessageFormat.format(
-                    "Properties should not be null: urlProps=[{0}], driverProps=[{1}], defaultProps=[{2}]",
-                    urlProps, driverProps, defaultProps));
-        }
-        putIfAbsent(urlProps, driverProps);
-        putIfAbsent(urlProps, defaultProps);
-        return urlProps;
+    private static final URLParser urlParser = new URLParser();
+
+    public static Properties parse(String url) throws SQLException {
+        return parse(url, new Properties());
     }
 
-    private static void putIfAbsent(Properties target, Properties values) {
+    public static Properties parse(String primary, Properties... additions) throws SQLException {
+        Properties result = urlParser.parse(primary);
+        for (Properties additional : additions) {
+            merge(result, additional);
+        }
+        return result;
+    }
+
+    private static void merge(Properties primary, Properties additional) {
+        if (primary == null || additional == null) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "Properties should not be null: primary=[{0}], additional=[{1}]", primary, additional));
+        }
+        addIfAbsent(primary, additional);
+    }
+
+    private static void addIfAbsent(Properties target, Properties values) {
         Set<String> keys = values.stringPropertyNames();
         for (String key : keys) {
             target.putIfAbsent(key, values.getProperty(key));

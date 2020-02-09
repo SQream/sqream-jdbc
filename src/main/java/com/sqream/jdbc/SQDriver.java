@@ -135,10 +135,10 @@ public class SQDriver implements java.sql.Driver {
 
 	private Properties createDefaultProps() {
 		Properties result = new Properties();
-		result.put(CLUSTER, "false");
-		result.put(SSL, "false");
-		result.put(SERVICE, "sqream");
-		result.put(SCHEMA, "public");
+		result.setProperty(CLUSTER.toString(), "false");
+		result.setProperty(SSL.toString(), "false");
+		result.setProperty(SERVICE.toString(), "sqream");
+		result.setProperty(SCHEMA.toString(), "public");
 		return result;
 	}
 

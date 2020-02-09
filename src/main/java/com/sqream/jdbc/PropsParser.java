@@ -30,9 +30,9 @@ public class PropsParser {
     }
 
     private static void addIfAbsent(Properties target, Properties values) {
-        Set<String> keys = values.stringPropertyNames();
-        for (String key : keys) {
-            target.putIfAbsent(key, values.getProperty(key));
+        Set<Object> keys = values.keySet();
+        for (Object key : keys) {
+            target.putIfAbsent(key, values.get(key));
         }
     }
 }

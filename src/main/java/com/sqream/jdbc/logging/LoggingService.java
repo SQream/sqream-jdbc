@@ -14,7 +14,12 @@ public class LoggingService {
         return PARENT_LOGGER;
     }
 
-    public void levelFromUrl(String level) {
+    public void set(String level, String filePath) {
+        setLevel(level);
+        setFilePath(filePath);
+    }
+
+    private void setLevel(String level) {
         setDefaultConsoleHandler();
         if (level == null || level.length() == 0) {
             return;
@@ -37,7 +42,7 @@ public class LoggingService {
         }
     }
 
-    public void logFilePath(String filePath) {
+    private void setFilePath(String filePath) {
         if (filePath == null || filePath.length() == 0) {
             return;
         }

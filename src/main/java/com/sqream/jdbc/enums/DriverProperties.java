@@ -5,7 +5,10 @@ public enum DriverProperties {
     SSL("ssl"),
     SERVICE("service"),
     SCHEMA("schema"),
-    SKIP_PICKER("SkipPicker");
+    PROVIDER("provider"),
+    LOGGER_LEVEL("loggerLevel"),
+    LOG_FILE_PATH("logFile");
+
 
 
     private String value;

@@ -69,11 +69,12 @@ public class SQDriver implements java.sql.Driver {
 
 		if (!validProvider(props)) {
 			throw new SQLException("Bad provider in connection string. Should be sqream but got: "
-					+ props.getProperty("provider"));
+					+ props.getProperty(PROVIDER.toString()));
 		}
 
-		loggingService.levelFromUrl(props.getProperty("loggerLevel"));
-		loggingService.logFilePath(props.getProperty("logFile"));
+		loggingService.set(
+				props.getProperty(LOGGER_LEVEL.toString()),
+				props.getProperty(LOG_FILE_PATH.toString()));
 
 		try {
 			return new SQConnection(props, ConnectorFactory.getFactory());

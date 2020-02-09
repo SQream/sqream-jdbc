@@ -22,6 +22,7 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Map;
 
@@ -34,23 +35,15 @@ import com.sqream.jdbc.enums.RS_STAT;
 class SQResultSet implements ResultSet {
 
 	private Connector client = null;
-	private RS_STAT status = RS_STAT.CLOSE;
 	private int maxRows = 0;
 	private String dbName;
 	private boolean empty = false;
-	private boolean removeSpaces = false;
 	private boolean isNull = true;
 	private boolean isClosed = true;
-
-	SQResultSet(Connector client, String catalog) {
-		this(client, catalog, false);
-	}
 	
-	SQResultSet(Connector client, String catalog, boolean removeSpaces) {
+	SQResultSet(Connector client, String catalog) {
 		this.client = client;
-		this.status = RS_STAT.OPEN;
 		this.dbName = catalog;
-		this.removeSpaces = removeSpaces;
 	    this.isClosed = false;
 	}
 
@@ -62,13 +55,12 @@ class SQResultSet implements ResultSet {
 	 * Retrieves the number, types and properties of this ResultSet object's columns.
 	 */
 	@Override
-	public ResultSetMetaData getMetaData() {
+	public ResultSetMetaData getMetaData() throws SQLException {
 		try {
 			return new SQResultSetMetaData(client, dbName);
 		} catch (ConnException e) {
-			e.printStackTrace();
+			throw new SQLException(e);
 		}
-		return null;
 	}
 
 	/**
@@ -76,21 +68,14 @@ class SQResultSet implements ResultSet {
 	 */
 	@Override
 	public boolean next() throws SQLException {
-		if (empty)
+		if (empty) {
 			return false;
-		try {
-			return this.client.next();
-		} catch (Exception e2) {
-			try {
-				if (client != null && client.isOpen() && client.isOpenStatement()) {
-					client.close();
-				}
-			} catch (IOException | ConnException | ScriptException e) {
-				e.printStackTrace();
-				throw new SQLException(e.getMessage());
-			}
-			e2.printStackTrace();
-			throw new SQLException(e2.getMessage());
+		}
+
+		try (Connector client = this.client) {
+			return client.next();
+		} catch (IOException | ScriptException | ConnException e) {
+			throw new SQLException(e);
 		}
 	}
 
@@ -129,7 +114,7 @@ class SQResultSet implements ResultSet {
 	 * instead of waiting for this to happen when it is automatically closed
 	 */
 	@Override
-	public void close() {
+	public void close() throws SQLException {
 		isClosed = true;
 		if (!empty) {  // Empty result sets don't start with a Client
 			try {
@@ -140,7 +125,7 @@ class SQResultSet implements ResultSet {
 					client.closeConnection();
 				}
 			} catch (IOException | ConnException | ScriptException e) {
-				e.printStackTrace();
+				throw new SQLException(e);
 			}
 			isClosed = true;
 		}
@@ -180,22 +165,20 @@ class SQResultSet implements ResultSet {
 			isNull = res == null;
 			return (res == null) ? false : res;
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}
 	}
 
 	@Override
-	public boolean getBoolean(int columnIndex) {
-		Boolean res = null;
+	public boolean getBoolean(int columnIndex) throws SQLException {
 		try {
-			res = client.getBoolean(columnIndex);
+			Boolean res = client.getBoolean(columnIndex);
 			isNull = res == null;
+			return (res == null) ? false : res;
 		} catch (ConnException e) {
-			e.printStackTrace();
+			throw new SQLException(e);
 		}
-		return (res == null) ? false : res;
 	}
 
 	@Override
@@ -205,82 +188,63 @@ class SQResultSet implements ResultSet {
 			isNull = res == null;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
 					+ "' not found");
 		}
 	}
 
 	@Override
-	public byte getByte(int columnIndex) {
-
-		Byte res = null;
+	public byte getByte(int columnIndex) throws SQLException {
 		try {
-			res = client.get_ubyte(columnIndex);
+			Byte res = client.get_ubyte(columnIndex);
 			isNull = res == null;
+			return (res == null) ? 0 : res;
 		} catch (ConnException e) {
-			e.printStackTrace();
+			throw new SQLException(e);
 		}
-		return (res == null) ? 0 : res;
 	}
 
 	@Override
-	public short getShort(String columnLabel) {
-		Short res = null;
-		columnLabel = columnLabel.toLowerCase();
+	public short getShort(String columnLabel) throws SQLException {
 		try {
-			res = client.get_short(columnLabel);
-			isNull = res == null;
-		} 
-		catch (ConnException e) {
-			e.printStackTrace();
+			columnLabel = columnLabel.toLowerCase();
+			Short res = client.get_short(columnLabel);
+			return (isNull = res == null) ? 0 : res;
+		} catch (ConnException e) {
+			throw new SQLException(e);
 		}
-		return (res == null) ? 0 : res;
 	}
 	
 	@Override
-	public short getShort(int columnIndex) {
-		Short res = null;
+	public short getShort(int columnIndex) throws SQLException {
 		try {
-			res = client.get_short(columnIndex);
-			
-			isNull = res == null;
-		} 
-		catch (ConnException e) {
-			e.printStackTrace();
+			Short res = client.get_short(columnIndex);
+			return (isNull = res == null) ? 0 : res;
+		} catch (ConnException e) {
+			throw new SQLException(e);
 		}
-		
-		return (res == null) ? 0 : res;
 	}
 	
 	
 	@Override
-	public int getInt(String columnLabel) {
-		Integer res = null;
-		columnLabel = columnLabel.toLowerCase();
+	public int getInt(String columnLabel) throws SQLException {
 		try {
-			res = client.get_int(columnLabel.toLowerCase());
-			
-			isNull = res == null;
+			columnLabel = columnLabel.toLowerCase();
+			Integer res = client.get_int(columnLabel.toLowerCase());
+			return (isNull = res == null) ? 0 : res;
+		} catch (Exception e) {
+			throw new SQLException(e);
 		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return (res == null) ? 0 : res;
 	}
 
 	@Override
-	public int getInt(int columnIndex) {
-		Integer res = null;
+	public int getInt(int columnIndex) throws SQLException {
 		try {
-			res = client.get_int(columnIndex);
-			isNull = res == null;
-		} 
-		catch (ConnException e) {
-			e.printStackTrace();
+			Integer res = client.get_int(columnIndex);
+			return (isNull = res == null) ? 0 : res;
+		} catch (ConnException e) {
+			throw new SQLException(e);
 		}
-		return (res == null) ? 0 : res;
 	}
 
 	@Override
@@ -290,8 +254,7 @@ class SQResultSet implements ResultSet {
 			isNull = res == null;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new SQLException("Exception on getLong:" + e.toString());
+			throw new SQLException("Exception on getLong:" + e.toString(), e);
 		}
 	}
 
@@ -302,9 +265,8 @@ class SQResultSet implements ResultSet {
 			isNull = res == null;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnIndex
-					+ "' not found");
+					+ "' not found", e);
 		}
 	}
 	
@@ -315,49 +277,42 @@ class SQResultSet implements ResultSet {
 			isNull = res == null;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
+					+ "' not found", e);
 		}
 	}
 
 	@Override
-	public float getFloat(int columnIndex) {
-		Float res = null;
+	public float getFloat(int columnIndex) throws SQLException {
 		try {
-			res = client.get_float(columnIndex);
-			isNull = res == null;
+			Float res = client.get_float(columnIndex);
+			return (isNull = res == null) ? 0 : res;
 		} catch (ConnException e) {
-			e.printStackTrace();
+			throw new SQLException(e);
 		}
-		return (res == null) ? 0 : res;
 	}
 	
 	@Override
-	public double getDouble(String columnLabel) {
-		Double res = null;
-		columnLabel = columnLabel.toLowerCase();
+	public double getDouble(String columnLabel) throws SQLException {
 		try {
-			res = client.get_double(columnLabel);
-			isNull = res == null;
+			columnLabel = columnLabel.toLowerCase();
+			Double res = client.get_double(columnLabel);
+			return (isNull = res == null) ? 0 : res;
 		} 
 		catch (ConnException e) {
-			e.printStackTrace();
+			throw new SQLException(e);
 		}
-		return (res == null) ? 0 : res;
 	}
 
 	@Override
-	public double getDouble(int columnIndex) {
-		Double res = null;
+	public double getDouble(int columnIndex) throws SQLException {
 		try {
-			res = client.get_double(columnIndex);
-			isNull = res == null;
+			Double res = client.get_double(columnIndex);
+			return (isNull = res == null) ? 0 : res;
 		} 
 		catch (ConnException e) {
-			e.printStackTrace();
+			throw new SQLException(e);
 		}
-		return (res == null) ? 0 : res;
 	}
 	
 	@Override
@@ -367,8 +322,7 @@ class SQResultSet implements ResultSet {
 			isNull = res == null;
 			return res;
 		} catch (ConnException e) {
-			e.printStackTrace();
-			throw new SQLException("");
+			throw new SQLException(e);
 		}
 	}
 
@@ -379,9 +333,7 @@ class SQResultSet implements ResultSet {
 			isNull = res == null;
 			return res;
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
+			throw new SQLException(MessageFormat.format("columnLabel [{0}] not found", columnLabel.trim()), e);
 		}
 	}
 
@@ -392,8 +344,7 @@ class SQResultSet implements ResultSet {
 			isNull = res == null;
 			return res;
 		} catch (ConnException e) {
-			e.printStackTrace();
-			throw new SQLException("");
+			throw new SQLException(e);
 		}
 	}
 	
@@ -404,9 +355,7 @@ class SQResultSet implements ResultSet {
 			isNull = res == null;
 			return res;
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new SQLException("columnLabel '" + columnLabel.trim()
-					+ "' not found");
+			throw new SQLException(MessageFormat.format("columnLabel [{0}] not found", columnLabel.trim()), e);
 		}
 	}
 	

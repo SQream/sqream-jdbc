@@ -443,7 +443,7 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public Boolean close() throws IOException, ConnException {
+    public void close() throws IOException, ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format("Close statement: openStatement=[{0}], statementType=[{1}]]", openStatement, statement_type));
 
     	if (isOpen()) {
@@ -456,13 +456,7 @@ public class ConnectorImpl implements Connector {
                 messenger.closeStatement();
                 openStatement = false;  // set to true in execute()
             }
-            else {
-                return false;
-            }
-        } else {
-            return false;
         }
-        return true;
     }
 
     @Override

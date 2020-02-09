@@ -79,7 +79,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(), conn.getParams().getService());
 		client.execute(sql);
 		
-		return new SQResultSet(client, dbName, true);
+		return new SQResultSet(client, dbName);
 	}
 
 	@Override

@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public interface Connector {
+public interface Connector extends AutoCloseable {
 
     int connect(String _database, String _user, String _password, String _service) throws IOException, ScriptException, ConnException;
 
@@ -20,7 +20,7 @@ public interface Connector {
 
     boolean next() throws ConnException, IOException, ScriptException;
 
-    Boolean close() throws IOException, ScriptException, ConnException;
+    void close() throws IOException, ScriptException, ConnException;
 
     boolean closeConnection() throws IOException, ScriptException, ConnException;
 

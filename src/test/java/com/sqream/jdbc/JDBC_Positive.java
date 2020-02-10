@@ -3,10 +3,7 @@ package com.sqream.jdbc;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
-//import org.junit.Assert;
-//import org.junit.Test;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -661,6 +658,53 @@ public class JDBC_Positive {
         }
     }
 
+    @Test
+    public void insertTextTest() throws SQLException {
+        String TEST_STRING = "some test string with space at the end   ";
+        String CREATE_TABLE_SQL = "create or replace table test_text_table (col1 text);";
+        String INSERT_SQL = String.format("insert into test_text_table values('%s');", TEST_STRING);
+        String SELECT_SQL = "select * from test_text_table";
+
+        String result;
+	    try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.executeUpdate(CREATE_TABLE_SQL);
+            stmt.executeUpdate(INSERT_SQL);
+            ResultSet rs = stmt.executeQuery(SELECT_SQL);
+            rs.next();
+            result = rs.getString(1);
+        }
+
+	    assertEquals(TEST_STRING, result);
+    }
+
+    @Test
+    public void insertTextUsingPreparedStatementBatchTest() throws SQLException {
+        String TEST_STRING = "some test string with space at the end   ";
+        String CREATE_TABLE_SQL = "create or replace table test_text_table (col1 text);";
+        String INSERT_SQL = "insert into test_text_table values(?);";
+        String SELECT_SQL = "select * from test_text_table";
+
+        String result;
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(CREATE_TABLE_SQL);
+            }
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
+                ps.setString(1, TEST_STRING);
+                ps.addBatch();
+                ps.executeBatch();
+            }
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(SELECT_SQL);
+                rs.next();
+                result = rs.getString(1);
+            }
+        }
+
+        assertEquals(TEST_STRING, result);
+    }
 
     private void insert(String table_type) throws IOException, SQLException {
 

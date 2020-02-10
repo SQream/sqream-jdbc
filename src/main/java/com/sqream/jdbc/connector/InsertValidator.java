@@ -20,7 +20,7 @@ public class InsertValidator {
         if (index <0 || index >= metadata.getRowLength()) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "Illegal index [{0}] on get/set\nAllowed indices are [0-{1}]",
-                    index, (metadata.getRowLength() - 1)));
+                    index + 1, (metadata.getRowLength() - 1)));
         }
     }
 

@@ -3,6 +3,8 @@ package com.sqream.jdbc;
 import org.junit.Test;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static com.sqream.jdbc.TestEnvironment.*;
@@ -147,6 +149,139 @@ public class SQPreparedStatementTest {
         assertFalse(insertResult);
         assertTrue(selectResult);
         assertFalse(deleteResult);
+    }
+
+    @Test
+    public void setValueAsObjectTest() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table test_set_values_as_object " +
+                "(col1 bool, col2 tinyint, col3 smallint, col4 int, " +
+                "col5 bigint, col6 real, col7 double, " +
+                "col11 date, col12 datetime);";
+        String INSERT_SQL = "insert into test_set_values_as_object values (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        String SELECT_ALL_SQL = "select * from test_set_values_as_object";
+        List<Object> testValues = new ArrayList<>();
+
+        Boolean booleanValue = true;
+        byte byteValue = (byte) 5;
+        short shortValue = (short) 10;
+        int intValue = 42;
+        long longValue = 42L;
+        float floatValue = 42f;
+        double doubleValue = 42d;
+        String stringValue = "42";
+        Date dateValue = new Date(System.currentTimeMillis());
+        Timestamp timestampValue = new Timestamp(System.currentTimeMillis());
+
+        testValues.add(booleanValue);
+        testValues.add(byteValue);
+        testValues.add(shortValue);
+        testValues.add(intValue);
+        testValues.add(longValue);
+        testValues.add(floatValue);
+        testValues.add(doubleValue);
+        testValues.add(dateValue);
+        testValues.add(timestampValue);
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(CREATE_TABLE_SQL);
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
+                for (int i = 0; i < testValues.size(); i++) {
+                    ps.setObject(i + 1, testValues.get(i));
+                }
+                ps.addBatch();
+                ps.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(SELECT_ALL_SQL);
+                while (rs.next()) {
+                    assertEquals(booleanValue, rs.getBoolean(1));
+                    assertEquals(byteValue, rs.getByte(2), 0);
+                    assertEquals(shortValue, rs.getShort(3), 0);
+                    assertEquals(intValue, rs.getInt(4), 0);
+                    assertEquals(longValue, rs.getLong(5), 0);
+                    assertEquals(floatValue, rs.getFloat(6), 0);
+                    assertEquals(doubleValue, rs.getDouble(7), 0);
+                    assertEquals(dateValue.toString(), rs.getDate(8).toString());
+                    assertEquals(timestampValue, rs.getTimestamp(9));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void setVarcharAsObjectTest() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table test_set_values_as_object " +
+                "(col1 varchar(10), col2 nvarchar(10));";
+        String INSERT_SQL = "insert into test_set_values_as_object values (?, ?);";
+        String SELECT_ALL_SQL = "select * from test_set_values_as_object";
+        List<Object> testValues = new ArrayList<>();
+
+        String stringValue = "42";
+        testValues.add(stringValue);
+        testValues.add(stringValue);
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(CREATE_TABLE_SQL);
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
+                for (int i = 0; i < testValues.size(); i++) {
+                    ps.setObject(i + 1, testValues.get(i));
+                }
+                ps.addBatch();
+                ps.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(SELECT_ALL_SQL);
+                while (rs.next()) {
+                    assertEquals(stringValue, rs.getString(1));
+                    assertEquals(stringValue, rs.getString(2));
+                }
+            }
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void setNullAsObject() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table test_set_null_as_object (col1 int);";
+        String INSERT_SQL = "insert into test_set_null_as_object values (?);";
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(CREATE_TABLE_SQL);
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
+                ps.setObject(1,null);
+            }
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void setUnsupportedTypeAsObject() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table test_set_null_as_object (col1 int);";
+        String INSERT_SQL = "insert into test_set_null_as_object values (?);";
+        class UnsupportedType{};
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(CREATE_TABLE_SQL);
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
+                ps.setObject(1,new UnsupportedType());
+            }
+        }
     }
 
     private Connection createConnection() {

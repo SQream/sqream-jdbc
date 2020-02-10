@@ -249,17 +249,17 @@ public class SQPreparedStatement implements PreparedStatement {
     }
     
     @Override
-    public void setString(int colIndex, String value) throws SQLException {
-        String type = getMetaData().getColumnTypeName(colIndex);
+    public void setString(int colNum, String value) throws SQLException {
+        String type = getMetaData().getColumnTypeName(colNum);
         try {
             if ("Varchar".equals(type)) {
-                Client.set_varchar(colIndex, value);
+                Client.set_varchar(colNum, value);
             } else if ("NVarchar".equals(type)) {
-                Client.set_nvarchar(colIndex, value);
+                Client.set_nvarchar(colNum, value);
             } else {
                 throw new IllegalArgumentException(
                         MessageFormat.format("Trying to set [{0}] on a column number [{1}] of type [{2}]",
-                                type, colIndex + 1, type));
+                                type, colNum, type));
             }
         } catch (ConnException | UnsupportedEncodingException e) {
             throw new SQLException(e);
@@ -329,30 +329,31 @@ public class SQPreparedStatement implements PreparedStatement {
     }
 
     @Override
-    public void setObject(int colIndex, Object value) throws SQLException {
+    public void setObject(int colNum, Object value) throws SQLException {
 
         if (value instanceof Boolean) {
-            setBoolean(colIndex, (Boolean) value);
+            setBoolean(colNum, (Boolean) value);
         } else if (value instanceof Byte) {
-            setByte(colIndex, (Byte) value);
+            setByte(colNum, (Byte) value);
         } else if (value instanceof Short) {
-            setShort(colIndex, (Short) value);
+            setShort(colNum, (Short) value);
         } else if (value instanceof Integer) {
-            setInt(colIndex, (Integer) value);
+            setInt(colNum, (Integer) value);
         } else if (value instanceof Long) {
-            setLong(colIndex, (Long) value);
+            setLong(colNum, (Long) value);
         } else if (value instanceof Float) {
-            setFloat(colIndex, (Float) value);
+            setFloat(colNum, (Float) value);
         } else if (value instanceof Double) {
-            setDouble(colIndex, (Double) value);
+            setDouble(colNum, (Double) value);
         }  else if (value instanceof Date) {
-            setDate(colIndex, (Date) value);
+            setDate(colNum, (Date) value);
         } else if (value instanceof Timestamp) {
-            setTimestamp(colIndex, (Timestamp) value);
+            setTimestamp(colNum, (Timestamp) value);
         } else if (value instanceof String) {
-            setString(colIndex, (String) value);
+            setString(colNum, (String) value);
         } else 
-            throw new SQLException("Type for setObject not supported");
+            throw new SQLException(MessageFormat.format(
+                    "Type [{0}] for setObject not supported", value != null ? value.getClass().getName() : null));
     }
     
     

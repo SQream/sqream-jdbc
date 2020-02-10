@@ -471,14 +471,6 @@ public class ConnectorImpl implements Connector {
         return true;
     }
 
-    private boolean _validate_index(int col_num) throws ConnException {
-        if (col_num <0 || col_num >= row_length) {
-            throw new ConnException(MessageFormat.format(
-                    "Illegal index [{0}] on get/set\nAllowed indices are [0-{1}]", col_num, (row_length - 1)));
-        }
-    	return true;
-    }
-
     // Gets
     // ----
 

@@ -28,9 +28,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.internal.verification.Times;
 
 import static com.sqream.jdbc.TestEnvironment.*;
 import static java.sql.Types.*;
@@ -704,6 +706,61 @@ public class JDBC_Positive {
         }
 
         assertEquals(TEST_STRING, result);
+    }
+
+    @Test
+    public void getSetValuesAsObjectsTest() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table test_get_set_objects " +
+                "(t_bool bool, t_ubyte tinyint, t_short smallint, t_int int, t_long bigint, " +
+                "t_double double, t_varchar varchar(10), t_nvarchar nvarchar(10), " +
+                "t_real real, t_date date, t_datetime datetime);";
+        String INSERT_SQL = "insert into test_get_set_objects values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        String SELECT_SQL = "select * from test_get_set_objects;";
+
+        List<Object> objects = new ArrayList<>();
+        objects.add(true);
+        objects.add((byte) 5);
+        objects.add((short) 10);
+        objects.add(42);
+        objects.add(42L);
+        objects.add(42d);
+        objects.add("42");
+        objects.add("42");
+        objects.add(42f);
+        objects.add(new Date(System.currentTimeMillis()));
+        objects.add(new Timestamp(System.currentTimeMillis()));
+
+
+	    try (Connection conn = createConnection()) {
+
+	        try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(CREATE_TABLE_SQL);
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_SQL)) {
+                for (int i = 0; i < objects.size(); i++) {
+                    ps.setObject(i + 1, objects.get(i));
+                }
+                ps.addBatch();
+                ps.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(SELECT_SQL);
+                assertTrue(rs.next());
+                assertEquals(Boolean.class, rs.getObject(1).getClass());
+                assertEquals(Byte.class, rs.getObject(2).getClass());
+                assertEquals(Short.class, rs.getObject(3).getClass());
+                assertEquals(Integer.class, rs.getObject(4).getClass());
+                assertEquals(Long.class, rs.getObject(5).getClass());
+                assertEquals(Double.class, rs.getObject(6).getClass());
+                assertEquals(String.class, rs.getObject(7).getClass());
+                assertEquals(String.class, rs.getObject(8).getClass());
+                assertEquals(Float.class, rs.getObject(9).getClass());
+                assertEquals(Date.class, rs.getObject(10).getClass());
+                assertEquals(Timestamp.class, rs.getObject(11).getClass());
+            }
+        }
     }
 
     private void insert(String table_type) throws IOException, SQLException {

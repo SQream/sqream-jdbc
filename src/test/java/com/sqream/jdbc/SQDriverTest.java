@@ -1,21 +1,35 @@
 package com.sqream.jdbc;
 
+import com.sqream.jdbc.connector.Connector;
+import com.sqream.jdbc.connector.ConnectorFactory;
+import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+import javax.script.ScriptException;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Level;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.powermock.api.mockito.PowerMockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ConnectorFactory.class})
 public class SQDriverTest {
     private static final String CORRECT_URI =
-            "jdbc:Sqream://192.168.0.158:5000/master;user=sqream;password=sqream;ssl=true";
+            "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;ssl=true";
     private static final String LOWER_CASE_PROVIDER_URI =
             "jdbc:sqream://127.0.0.1:5000/master;user=sqream;password=sqream";
     private static final String ANOTHER_PROVIDER_URI =
@@ -103,12 +117,14 @@ public class SQDriverTest {
 
     @Test
     public void whenPropertiesDoNotContainUserOrPasswordConnectReturnConnectionTest() throws SQLException {
+        mockConnector();
         Connection connection = driver.connect(CORRECT_URI, new Properties());
         assertNotNull(connection);
     }
 
     @Test
     public void loggerLevelIsOffTest() throws SQLException {
+        mockConnector();
         driver.connect(CORRECT_URI, new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.OFF);
@@ -116,13 +132,15 @@ public class SQDriverTest {
 
     @Test
     public void loggerLevelDebugTest() throws SQLException {
+        mockConnector();
         driver.connect(CORRECT_URI + ";loggerLevel=DEBUG", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.FINE);
     }
 
     @Test
-    public void loggerLevelTraceTest() throws SQLException {
+    public void loggerLevelTraceTest() throws SQLException, IOException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
+        mockConnector();
         driver.connect(CORRECT_URI + ";loggerLevel=TRACE", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.FINEST);
@@ -130,6 +148,7 @@ public class SQDriverTest {
 
     @Test
     public void loggerLevelWrongParamKeyIgnoredTest() throws SQLException {
+        mockConnector();
         driver.connect(CORRECT_URI + ";loggerWrongKeyLevel=DEBUG", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.OFF);
@@ -138,5 +157,17 @@ public class SQDriverTest {
     @Test(expected = IllegalArgumentException.class)
     public void loggerLevelUnsupportedLevel() throws SQLException {
         driver.connect(CORRECT_URI + ";loggerLevel=UNSUPPORTED_LEVEL", new Properties());
+    }
+
+    private void mockConnector() {
+        Connector connectorMock = Mockito.mock(ConnectorImpl.class);
+        PowerMockito.mockStatic(ConnectorFactory.class);
+        try {
+            when(ConnectorFactory.initConnector(
+                    any(String.class), any(Integer.class), any(Boolean.class), any(Boolean.class)))
+                    .thenReturn(connectorMock);
+        } catch (KeyManagementException | ScriptException | NoSuchAlgorithmException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

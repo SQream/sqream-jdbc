@@ -10,8 +10,8 @@ import java.util.logging.*;
 import java.lang.reflect.Field;
 import javax.script.ScriptException;
 
-import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.logging.LoggingService;
 import com.sqream.jdbc.propsParser.PropsParser;
 
@@ -78,7 +78,7 @@ public class SQDriver implements java.sql.Driver {
 				props.getProperty(LOG_FILE_PATH.toString()));
 
 		try {
-			return new SQConnection(props, ConnectorFactory.getFactory());
+			return new SQConnection(props);
 		} catch (NumberFormatException | ScriptException | IOException | NoSuchAlgorithmException |
 		KeyManagementException | ConnException e) {
 			throw new SQLException(e);

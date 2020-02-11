@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.script.ScriptException;
 
 import com.sqream.jdbc.connector.Connector;
-import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.connector.ConnectorFactory;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +29,6 @@ public class SQConnection implements Connection {
 	private static final int[] RESULTSET_HOLDABILITY =
 			new int[]{ResultSet.HOLD_CURSORS_OVER_COMMIT, ResultSet.CLOSE_CURSORS_AT_COMMIT};
 
-	private ConnectorFactory connectorFactory;
 	private Vector<SQStatement> Statement_list = new Vector<>();
 	private Connector globalClient;
 	private boolean printouts = false;
@@ -41,14 +40,12 @@ public class SQConnection implements Connection {
 		globalClient = client;
 	}
 	
-	SQConnection(Properties connectionInfo, ConnectorFactory connectorFactory)
+	SQConnection(Properties connectionInfo)
 			throws ScriptException, SQLException, NumberFormatException, IOException, NoSuchAlgorithmException, KeyManagementException, ConnException {
 		if (Level.FINE == LOGGER.getParent().getLevel()) {
 			LOGGER.log(Level.FINE,"Construct SQConnection with properties");
 			logProperties(connectionInfo);
 		}
-
-		this.connectorFactory = connectorFactory;
 
 		this.params = ConnectionParams.builder()
 				.cluster(connectionInfo.getProperty("cluster"))
@@ -62,7 +59,7 @@ public class SQConnection implements Connection {
 				.useSsl(connectionInfo.getProperty("ssl"))
 				.build();
 
-		globalClient = this.connectorFactory.initConnector(
+		globalClient = ConnectorFactory.initConnector(
 				params.getIp(), params.getPort(), params.getCluster(), params.getUseSsl());
 
 		globalClient.connect(params.getDbName(), params.getUser(), params.getPassword(), params.getService());
@@ -87,7 +84,7 @@ public class SQConnection implements Connection {
 
 		SQStatement SQS;
 		try {
-			SQS = new SQStatement(this, params.getDbName(), this.connectorFactory);
+			SQS = new SQStatement(this, params.getDbName());
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -109,7 +106,7 @@ public class SQConnection implements Connection {
 
 		SQStatement SQS = null;
 		try {
-			SQS = new SQStatement(this, params.getDbName(), this.connectorFactory);
+			SQS = new SQStatement(this, params.getDbName());
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -147,7 +144,7 @@ public class SQConnection implements Connection {
 
 		SQStatement SQS;
 		try {
-			SQS = new SQStatement(this, params.getDbName(), this.connectorFactory);
+			SQS = new SQStatement(this, params.getDbName());
 			Statement_list.addElement(SQS);
 			
 		} catch (Exception e) {

@@ -15,9 +15,8 @@ public class SQConnectionTest {
     @Test
     public void getSchemaByDefaultTest() throws SQLException {
         String DEFAULT_SCHEMA = "public";
-        final String url = URL;
         Driver driver = new SQDriver();
-        Connection conn = driver.connect(url, new Properties());
+        Connection conn = driver.connect(URL, new Properties());
 
         String schema = conn.getSchema();
 

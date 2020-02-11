@@ -5,12 +5,10 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-public abstract class ConnectorFactory {
+public class ConnectorFactory {
 
-    public static ConnectorFactory getFactory() {
-        return new ConnectorFactoryImpl();
+    public static Connector initConnector(String ip, int port, boolean cluster, boolean ssl) throws KeyManagementException, ScriptException,
+            NoSuchAlgorithmException, IOException {
+        return new ConnectorImpl(ip, port, cluster, ssl);
     }
-
-    abstract public Connector initConnector(String ip, int port, boolean cluster, boolean ssl) throws
-            KeyManagementException, ScriptException, NoSuchAlgorithmException, ConnException, IOException;
 }

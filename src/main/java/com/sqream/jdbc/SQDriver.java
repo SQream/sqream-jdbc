@@ -22,6 +22,9 @@ import static com.sqream.jdbc.enums.DriverProperties.*;
 public class SQDriver implements java.sql.Driver {
 	private static final Logger LOGGER = Logger.getLogger(SQDriver.class.getName());
 
+	//FIXME: remove it. Just for test.
+	private static final String JDBC_VERSION = "JDBC 4.1 Demo";
+
 	private static final String PREFIX = "jdbc:Sqream";
 	private static final int MAJOR_VERSION = 4;
 	private static final int MINOR_VERSION = 0;
@@ -76,6 +79,10 @@ public class SQDriver implements java.sql.Driver {
 		loggingService.set(
 				props.getProperty(LOGGER_LEVEL.toString()),
 				props.getProperty(LOG_FILE_PATH.toString()));
+
+		//FIXME: remove it. Just for test.
+		System.out.println("JDBC version: " + JDBC_VERSION);
+		LOGGER.info("JDBC version: " + JDBC_VERSION);
 
 		try {
 			return new SQConnection(props);

@@ -1007,8 +1007,9 @@ public class JDBC_Positive {
 
     private Connection createConnection() {
         try {
+            Class.forName("com.sqream.jdbc.SQDriver");
             return DriverManager.getConnection(URL,USER,PASS);
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

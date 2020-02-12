@@ -536,7 +536,8 @@ class SQResultSet implements ResultSet {
 		if (type.equals("ftBool")) 
 			res = getBoolean(columnIndex);
 		else if (type.equals("ftUByte"))
-			res = getByte(columnIndex);
+			// cast to short because UByte (0-255))
+			res = getShort(columnIndex);
 		else if (type.equals("ftShort"))
 			res = getShort(columnIndex);
 		else if (type.equals("ftInt"))

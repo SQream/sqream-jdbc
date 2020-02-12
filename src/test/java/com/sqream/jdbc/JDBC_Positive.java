@@ -749,7 +749,7 @@ public class JDBC_Positive {
                 ResultSet rs = stmt.executeQuery(SELECT_SQL);
                 assertTrue(rs.next());
                 assertEquals(Boolean.class, rs.getObject(1).getClass());
-                assertEquals(Byte.class, rs.getObject(2).getClass());
+                assertEquals(Short.class, rs.getObject(2).getClass());
                 assertEquals(Short.class, rs.getObject(3).getClass());
                 assertEquals(Integer.class, rs.getObject(4).getClass());
                 assertEquals(Long.class, rs.getObject(5).getClass());

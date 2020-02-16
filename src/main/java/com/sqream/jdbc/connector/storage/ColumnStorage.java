@@ -1,6 +1,7 @@
 package com.sqream.jdbc.connector.storage;
 
 import com.sqream.jdbc.connector.BlockDto;
+import com.sqream.jdbc.connector.MemoryAllocationService;
 import com.sqream.jdbc.connector.TableMetadata;
 import com.sqream.jdbc.connector.byteReaders.ByteReaderFactory;
 
@@ -22,8 +23,8 @@ public class ColumnStorage {
     private static final Logger LOGGER = Logger.getLogger(ColumnStorage.class.getName());
 
     private ByteBuffer[] dataColumns;
-    private ByteBuffer[] null_columns;
-    private ByteBuffer[] nvarc_len_columns;
+    private ByteBuffer[] nullColumns;
+    private ByteBuffer[] nvarcLenColumns;
     private TableMetadata metadata;
     private int blockSize;
 
@@ -37,73 +38,59 @@ public class ColumnStorage {
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Start to init storage for block size = [{0}}", blockSize));
 
-        initArrays(metadata, blockSize);
-        // Initiate buffers for each column using the metadata
-        for (int idx = 0; idx < metadata.getRowLength(); idx++) {
-            initDataColumns(idx, metadata.getSize(idx) * blockSize);
-            if (metadata.isNullable(idx)) {
-                initNullColumns(idx, blockSize);
-            } else {
-                null_columns[idx] = null;
-            }
-            if (metadata.isTruVarchar(idx)) {
-                initNvarcLenColumns(idx, blockSize);
-            } else {
-                nvarc_len_columns[idx] = null;
-            }
-        }
+        BlockDto block = new MemoryAllocationService().buildBlock(metadata, blockSize);
+        this.metadata = metadata;
+        this.blockSize = blockSize;
+        this.dataColumns = block.getDataBuffers();
+        this.nullColumns = block.getNullBuffers();
+        this.nvarcLenColumns = block.getNvarcLenBuffers();
 
         if (LOGGER.getParent().getLevel() == Level.FINE) {
             LOGGER.log(Level.FINE, MessageFormat.format("Initialized block. Allocated [{0}] mb.",
-                    calculateAllocation(dataColumns, null_columns, nvarc_len_columns) / 1_000_000));
+                    calculateAllocation(dataColumns, nullColumns, nvarcLenColumns) / 1_000_000));
         }
     }
 
     void initFromFetch(ByteBuffer[] fetchBuffers, TableMetadata metadata, int blockSize) {
-        initArrays(metadata, blockSize);
-        // Sort buffers to appropriate arrays (row_length determied during _query_type())
-        for (int idx=0, buf_idx = 0; idx < metadata.getRowLength(); idx++, buf_idx++) {
-            if(metadata.isNullable(idx)) {
-                null_columns[idx] = fetchBuffers[buf_idx];
+        init(metadata, blockSize);
+        copyFromFetchedBuffers(fetchBuffers);
+    }
+
+    private void copyFromFetchedBuffers(ByteBuffer[] fetchBuffers) {
+        for (int idx = 0, buf_idx = 0; idx < metadata.getRowLength(); idx++, buf_idx++) {
+            if (metadata.isNullable(idx)) {
+                nullColumns[idx] = fetchBuffers[buf_idx];
                 buf_idx++;
             } else {
-                null_columns[idx] = null;
+                nullColumns[idx] = null;
             }
-            if(metadata.isTruVarchar(idx)) {
-                nvarc_len_columns[idx] = fetchBuffers[buf_idx];
+            if (metadata.isTruVarchar(idx)) {
+                nvarcLenColumns[idx] = fetchBuffers[buf_idx];
                 buf_idx++;
             } else {
-                nvarc_len_columns[idx] = null;
+                nvarcLenColumns[idx] = null;
             }
             dataColumns[idx] = fetchBuffers[buf_idx];
         }
     }
 
-    private void initArrays(TableMetadata metadata, int blockSize) {
-        this.metadata = metadata;
-        this.blockSize = blockSize;
-        dataColumns = new ByteBuffer[metadata.getRowLength()];
-        null_columns = new ByteBuffer[metadata.getRowLength()];
-        nvarc_len_columns = new ByteBuffer[metadata.getRowLength()];
-    }
-
     public void loadBlock(BlockDto block) {
         this.dataColumns = block.getDataBuffers();
-        this.null_columns = block.getNullBuffers();
-        this.nvarc_len_columns = block.getNvarcLenBuffers();
+        this.nullColumns = block.getNullBuffers();
+        this.nvarcLenColumns = block.getNvarcLenBuffers();
     }
 
     public void clearBuffers(int row_length) {
         for(int idx=0; idx < row_length; idx++) {
-            if (null_columns[idx] != null) {
+            if (nullColumns[idx] != null) {
                 // Clear doesn't actually nullify/reset the data
-                null_columns[idx].clear();
+                nullColumns[idx].clear();
                 //TODO: Alex K 13.01.2020 Check why previously allocated DirectByteBuffer and reset with HeapByteBuffer
-                null_columns[idx].put(ByteBuffer.allocate(blockSize));
-                null_columns[idx].clear();
+                nullColumns[idx].put(ByteBuffer.allocate(blockSize));
+                nullColumns[idx].clear();
             }
-            if(nvarc_len_columns[idx] != null)
-                nvarc_len_columns[idx].clear();
+            if(nvarcLenColumns[idx] != null)
+                nvarcLenColumns[idx].clear();
             dataColumns[idx].clear();
         }
     }
@@ -111,8 +98,8 @@ public class ColumnStorage {
     public int getTotalLengthForHeader(int row_length, int row_counter) {
         int total_bytes = 0;
         for(int idx=0; idx < row_length; idx++) {
-            total_bytes += (null_columns[idx] != null) ? row_counter : 0;
-            total_bytes += (nvarc_len_columns[idx] != null) ? 4 * row_counter : 0;
+            total_bytes += (nullColumns[idx] != null) ? row_counter : 0;
+            total_bytes += (nvarcLenColumns[idx] != null) ? 4 * row_counter : 0;
             total_bytes += dataColumns[idx].position();
         }
         return total_bytes;
@@ -120,16 +107,16 @@ public class ColumnStorage {
 
     public void setBlock(BlockDto block) {
         dataColumns = block.getDataBuffers();
-        null_columns = block.getNullBuffers();
-        nvarc_len_columns = block.getNvarcLenBuffers();
+        nullColumns = block.getNullBuffers();
+        nvarcLenColumns = block.getNvarcLenBuffers();
     }
 
     public BlockDto getBlock() {
-        return new BlockDto(dataColumns, null_columns, nvarc_len_columns);
+        return new BlockDto(dataColumns, nullColumns, nvarcLenColumns);
     }
 
     public boolean isNotNull(int colIndex, int rowIndex) {
-        return null_columns[colIndex] == null || null_columns[colIndex].get(rowIndex) == 0;
+        return nullColumns[colIndex] == null || nullColumns[colIndex].get(rowIndex) == 0;
     }
 
     public void setBoolean(int index, Boolean value) {
@@ -210,7 +197,7 @@ public class ColumnStorage {
 
     public void setNvarchar(int index, byte[] stringBytes, String originalString) {
         // Add string length to lengths column
-        nvarc_len_columns[index].putInt(stringBytes.length);
+        nvarcLenColumns[index].putInt(stringBytes.length);
         // Set actual value
         if (stringBytes.length > dataColumns[index].remaining()) {
             increaseBuffer(index, stringBytes.length);
@@ -325,7 +312,7 @@ public class ColumnStorage {
     }
 
     public String getNvarchar(int colIndex, int rowIndex, Charset varcharEncoding, boolean repeatedly) {
-        int nvarcLen = nvarc_len_columns[colIndex].getInt(rowIndex * 4);
+        int nvarcLen = nvarcLenColumns[colIndex].getInt(rowIndex * 4);
         if (repeatedly) {
             dataColumns[colIndex].position(dataColumns[colIndex].position() - nvarcLen);
         }
@@ -335,20 +322,8 @@ public class ColumnStorage {
                         .readNvarchar(dataColumns[colIndex], nvarcLen, varcharEncoding) : null;
     }
 
-    private void initDataColumns(int index, int size) {
-        dataColumns[index] = ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
-    private void initNullColumns(int index, int size) {
-        null_columns[index] = ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
-    private void initNvarcLenColumns(int index, int size) {
-        nvarc_len_columns[index] = ByteBuffer.allocateDirect(4 * size).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
     private void markAsNull(int index) {
-        null_columns[index].put((byte) 1);
+        nullColumns[index].put((byte) 1);
     }
 
     private void increaseBuffer(int index, int puttingStringLength) {

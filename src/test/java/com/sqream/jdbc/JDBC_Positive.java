@@ -763,6 +763,81 @@ public class JDBC_Positive {
         }
     }
 
+    @Test
+    public void setUbyteTest() throws SQLException {
+        try (Connection conn = DriverManager.getConnection(url)) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("create or replace table ubyte_test (col1 tinyint);");
+            }
+            try(PreparedStatement ps = conn.prepareStatement("insert into ubyte_test values(?);")) {
+                ps.setByte(1, (byte) 100);
+                ps.addBatch();
+                ps.executeBatch();
+            }
+            try(PreparedStatement ps = conn.prepareStatement("insert into ubyte_test values(?);")) {
+                ps.setObject(1, (byte) 101);
+                ps.addBatch();
+                ps.executeBatch();
+            }
+            try(PreparedStatement ps = conn.prepareStatement("insert into ubyte_test values(?);")) {
+                ps.setShort(1, (short) 200);
+                ps.addBatch();
+                ps.executeBatch();
+            }
+            try(PreparedStatement ps = conn.prepareStatement("insert into ubyte_test values(?);")) {
+                ps.setObject(1, (short) 201);
+                ps.addBatch();
+                ps.executeBatch();
+            }
+            try(PreparedStatement ps = conn.prepareStatement("insert into ubyte_test values(?);")) {
+                ps.setObject(1, (byte) -1);
+                ps.addBatch();
+                ps.executeBatch();
+            } catch (IllegalArgumentException e) {
+                if (!e.getMessage().contains("Trying to set a negative byte value on an unsigned byte column")) {
+                    throw new RuntimeException(
+                            "Wrong exception when set a negative byte");
+                }
+            }
+            try(PreparedStatement ps = conn.prepareStatement("insert into ubyte_test values(?);")) {
+                ps.setObject(1, (short) -1);
+                ps.addBatch();
+                ps.executeBatch();
+            } catch (IllegalArgumentException e) {
+                if (!e.getMessage().contains("Trying to set wrong value")) {
+                    throw new RuntimeException(
+                            "Wrong exception when set a negative short");
+                }
+            }
+            try(PreparedStatement ps = conn.prepareStatement("insert into ubyte_test values(?);")) {
+                ps.setObject(1, (short) 256);
+                ps.addBatch();
+                ps.executeBatch();
+            } catch (IllegalArgumentException e) {
+                if (!e.getMessage().contains("Trying to set wrong value")) {
+                    throw new RuntimeException(
+                            "Wrong exception when set too big short");
+                }
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery("select * from ubyte_test;");
+                assertTrue(rs.next());
+                assertEquals((short) 100, rs.getByte(1));
+                assertEquals((short) 100, rs.getObject(1));
+                assertTrue(rs.next());
+                assertEquals((short) 101, rs.getByte(1));
+                assertEquals((short) 101, rs.getObject(1));
+                assertTrue(rs.next());
+                assertEquals((short) 200, rs.getShort(1));
+                assertEquals((short) 200, rs.getObject(1));
+                assertTrue(rs.next());
+                assertEquals((short) 201, rs.getShort(1));
+                assertEquals((short) 201, rs.getObject(1));
+            }
+        }
+    }
+
     private void insert(String table_type) throws IOException, SQLException {
 
         String table_name = table_type.contains("varchar(100)") ?  table_type.substring(0,7) : table_type;

@@ -648,8 +648,14 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean set_ubyte(int colNum, Byte value) throws ConnException {
+        return setUbyte(colNum, value, true);
+    }
+
+    private boolean setUbyte(int colNum, Byte value, boolean validateValue) {
         validator.validateSet(colNum - 1, value, "ftUByte");
-        validator.validateUbyte(value);
+        if (validateValue) {
+            validator.validateUbyte(value);
+        }
         colStorage.setUbyte(colNum - 1, value);
         // Mark column as set (BitSet at location col_num set to true
         columns_set.set(colNum - 1);
@@ -658,10 +664,18 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean set_short(int colNum, Short value) throws ConnException {
-        validator.validateSet(colNum - 1, value, "ftShort");
-        colStorage.setShort(colNum - 1, value);
-        // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(colNum - 1);
+        if ("ftUByte".equals(tableMetadata.getType(colNum - 1))) {
+            if (value < 0 || value > 255) {
+                throw new IllegalArgumentException(MessageFormat.format(
+                        "Trying to set wrong value [{0}] on an unsigned byte column", value));
+            }
+            setUbyte(colNum, value.byteValue(), false);
+        } else {
+            validator.validateSet(colNum - 1, value, "ftShort");
+            colStorage.setShort(colNum - 1, value);
+            // Mark column as set (BitSet at location col_num set to true
+            columns_set.set(colNum - 1);
+        }
 
         return true;
     }

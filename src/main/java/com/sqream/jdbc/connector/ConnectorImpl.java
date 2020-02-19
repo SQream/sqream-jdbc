@@ -75,7 +75,6 @@ public class ConnectorImpl implements Connector {
 
     // Binary data related
     int ROWS_PER_FLUSH = 100000;
-    private int rows_per_flush;
 
     // Column metadata
     private StatementType statement_type;
@@ -94,9 +93,6 @@ public class ConnectorImpl implements Connector {
 
     // Get / Set related
     private int rowCounter, totalRowCounter;
-    private BitSet columns_set;
-
-    private byte[] string_bytes; // Storing converted string to be set
 
     private int[] col_calls;
 
@@ -161,7 +157,7 @@ public class ConnectorImpl implements Connector {
 
     // ()  /* Unpack the json of column data arriving via queryType/(named). Called by prepare()  */
     //@SuppressWarnings("rawtypes") // "Map is a raw type" @ col_data = (Map)query_type.get(idx);
-    private void parseQueryType(List<ColumnMetadataDto> columnsMetadata) throws IOException, ScriptException{
+    private void parseQueryType(List<ColumnMetadataDto> columnsMetadata) {
 
         row_length = columnsMetadata.size();
         if(row_length ==0) {
@@ -180,11 +176,8 @@ public class ConnectorImpl implements Connector {
 
         // Create Storage for insert / select operations
         if (statement_type.equals(INSERT)) {
-            rows_per_flush = ROWS_PER_FLUSH;
-
             // Instantiate flags for managing network insert operations
             rowCounter = 0;
-            columns_set = new BitSet(row_length); // defaults to false
 
             // Initiate buffers for each column using the metadata
             colStorage = ColumnStorage.builder()
@@ -195,14 +188,9 @@ public class ConnectorImpl implements Connector {
             byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL, ROWS_PER_FLUSH, tableMetadata);
         }
         if (statement_type.equals(SELECT)) {
-
             // Instantiate select counters, Initial storage same as insert
             rowCounter = -1;
             totalRowCounter = 0;
-            int total_rows_fetched = -1;
-
-            // Get the maximal string size (or size fo another type if strings are very small)
-            string_bytes = new byte[tableMetadata.getMaxSize()];
         }
     }
 
@@ -385,14 +373,8 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean next() throws ConnException, IOException, ScriptException {
-        /* See that all needed buffers were set, flush if needed, nullify relevant
-           counters */
-
+    public boolean next() throws ConnException, IOException{
         if (statement_type.equals(INSERT)) {
-
-            // Nullify column flags and update counter
-            columns_set.clear();
             rowCounter++;
 
             // Flush and clean if needed
@@ -662,7 +644,6 @@ public class ConnectorImpl implements Connector {
         } else {
             validator.validateSet(colNum - 1, value, "ftShort");
             colStorage.setShort(colNum - 1, value);
-            columns_set.set(colNum - 1);
         }
 
         return true;

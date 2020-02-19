@@ -1,10 +1,12 @@
 package com.sqream.jdbc.connector.storage;
 
 import com.sqream.jdbc.connector.BlockDto;
+import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.MemoryAllocationService;
 import com.sqream.jdbc.connector.TableMetadata;
 import com.sqream.jdbc.connector.byteReaders.ByteReaderFactory;
 
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -14,6 +16,7 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,11 +25,15 @@ import static com.sqream.jdbc.utils.Utils.*;
 public class ColumnStorage {
     private static final Logger LOGGER = Logger.getLogger(ColumnStorage.class.getName());
 
+    private static final int INIT_ROW_INDEX = 0;
+
     private ByteBuffer[] dataColumns;
     private ByteBuffer[] nullColumns;
     private ByteBuffer[] nvarcLenColumns;
     private TableMetadata metadata;
     private int blockSize;
+    private BitSet columns_set;
+    private int curRowIndex;
 
     ColumnStorage() { }
 
@@ -41,6 +48,7 @@ public class ColumnStorage {
         BlockDto block = new MemoryAllocationService().buildBlock(metadata, blockSize);
         this.metadata = metadata;
         this.blockSize = blockSize;
+        resetCounters();
         this.dataColumns = block.getDataBuffers();
         this.nullColumns = block.getNullBuffers();
         this.nvarcLenColumns = block.getNvarcLenBuffers();
@@ -51,9 +59,26 @@ public class ColumnStorage {
         }
     }
 
+    private void resetCounters() {
+        this.columns_set = new BitSet(metadata.getRowLength());
+        this.curRowIndex = INIT_ROW_INDEX;
+    }
+
     void initFromFetch(ByteBuffer[] fetchBuffers, TableMetadata metadata, int blockSize) {
         init(metadata, blockSize);
         copyFromFetchedBuffers(fetchBuffers);
+    }
+
+    public boolean next() throws ConnException {
+        if (columns_set.cardinality() < metadata.getRowLength()) {
+            throw new ConnException(MessageFormat.format(
+                    "All columns must be set before calling next(). Set [{0}] columns out of [{1}]",
+                    columns_set.cardinality(), metadata.getRowLength()));
+        }
+        boolean hasNext = curRowIndex < blockSize - 1;
+        columns_set.clear();
+        curRowIndex++;
+        return hasNext;
     }
 
     private void copyFromFetchedBuffers(ByteBuffer[] fetchBuffers) {
@@ -72,12 +97,6 @@ public class ColumnStorage {
             }
             dataColumns[idx] = fetchBuffers[buf_idx];
         }
-    }
-
-    public void loadBlock(BlockDto block) {
-        this.dataColumns = block.getDataBuffers();
-        this.nullColumns = block.getNullBuffers();
-        this.nvarcLenColumns = block.getNvarcLenBuffers();
     }
 
     public void clearBuffers(int row_length) {
@@ -106,6 +125,7 @@ public class ColumnStorage {
     }
 
     public void setBlock(BlockDto block) {
+        resetCounters();
         dataColumns = block.getDataBuffers();
         nullColumns = block.getNullBuffers();
         nvarcLenColumns = block.getNvarcLenBuffers();
@@ -119,112 +139,123 @@ public class ColumnStorage {
         return nullColumns[colIndex] == null || nullColumns[colIndex].get(rowIndex) == 0;
     }
 
-    public void setBoolean(int index, Boolean value) {
+    public void setBoolean(int colIndex, Boolean value) {
         if (value != null) {
-            dataColumns[index].put((byte) ((value) ? 1 : 0));
+            dataColumns[colIndex].put((byte) ((value) ? 1 : 0));
         } else {
-            dataColumns[index].put((byte) 0);
-            markAsNull(index);
+            dataColumns[colIndex].put((byte) 0);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setUbyte(int index, Byte value) {
+    public void setUbyte(int colIndex, Byte value) {
         if (value != null) {
-            dataColumns[index].put(value);
+            dataColumns[colIndex].put(value);
         } else {
-            dataColumns[index].put((byte) 0);
-            markAsNull(index);
+            dataColumns[colIndex].put((byte) 0);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setShort(int index, Short value) {
+    public void setShort(int colIndex, Short value) {
         if (value != null) {
-            dataColumns[index].putShort(value);
+            dataColumns[colIndex].putShort(value);
         } else {
-            dataColumns[index].putShort((short) 0);
-            markAsNull(index);
+            dataColumns[colIndex].putShort((short) 0);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setInt(int index, Integer value) {
+    public void setInt(int colIndex, Integer value) {
         if (value != null) {
-            dataColumns[index].putInt(value);
+            dataColumns[colIndex].putInt(value);
         } else {
-            dataColumns[index].putInt(0);
-            markAsNull(index);
+            dataColumns[colIndex].putInt(0);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setLong(int index, Long value) {
+    public void setLong(int colIndex, Long value) {
         if (value != null) {
-            dataColumns[index].putLong(value);
+            dataColumns[colIndex].putLong(value);
         } else {
-            dataColumns[index].putLong(0L);
-            markAsNull(index);
+            dataColumns[colIndex].putLong(0L);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setFloat(int index, Float value) {
+    public void setFloat(int colIndex, Float value) {
         if (value != null) {
-            dataColumns[index].putFloat(value);
+            dataColumns[colIndex].putFloat(value);
         } else {
-            dataColumns[index].putFloat(0f);
-            markAsNull(index);
+            dataColumns[colIndex].putFloat(0f);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setDouble(int index, Double value) {
+    public void setDouble(int colIndex, Double value) {
         if (value != null) {
-            dataColumns[index].putDouble(value);
+            dataColumns[colIndex].putDouble(value);
         } else {
-            dataColumns[index].putDouble(0d);
-            markAsNull(index);
+            dataColumns[colIndex].putDouble(0d);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setVarchar(int index, byte[] stringBytes, String originalString) {
+    public void setVarchar(int colIndex, byte[] stringBytes, String originalString) {
         // Generate missing spaces to fill up to size
-        byte [] spaces = new byte[metadata.getSize(index) - stringBytes.length];
+        byte [] spaces = new byte[metadata.getSize(colIndex) - stringBytes.length];
         Arrays.fill(spaces, (byte) 32);  // ascii value of space
         // Set value and added spaces if needed
-        dataColumns[index].put(stringBytes);
-        dataColumns[index].put(spaces);
+        dataColumns[colIndex].put(stringBytes);
+        dataColumns[colIndex].put(spaces);
 
         if (originalString == null) {
-            markAsNull(index);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setNvarchar(int index, byte[] stringBytes, String originalString) {
+    public void setNvarchar(int colIndex, byte[] stringBytes, String originalString) {
         // Add string length to lengths column
-        nvarcLenColumns[index].putInt(stringBytes.length);
+        nvarcLenColumns[colIndex].putInt(stringBytes.length);
         // Set actual value
-        if (stringBytes.length > dataColumns[index].remaining()) {
-            increaseBuffer(index, stringBytes.length);
+        if (stringBytes.length > dataColumns[colIndex].remaining()) {
+            increaseBuffer(colIndex, stringBytes.length);
         }
-        dataColumns[index].put(stringBytes);
+        dataColumns[colIndex].put(stringBytes);
 
         if (originalString == null) {
-            markAsNull(index);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setDate(int index, Date date, ZoneId zone) {
+    public void setDate(int colIndex, Date date, ZoneId zone) {
         if (date != null) {
-            dataColumns[index].putInt(dateToInt(date, zone));
+            dataColumns[colIndex].putInt(dateToInt(date, zone));
         } else {
-            dataColumns[index].putInt(0);
-            markAsNull(index);
+            dataColumns[colIndex].putInt(0);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
-    public void setDatetime(int index, Timestamp timestamp, ZoneId zone) {
+    public void setDatetime(int colIndex, Timestamp timestamp, ZoneId zone) {
         if (timestamp != null) {
-            dataColumns[index].putLong(dtToLong(timestamp, zone));
+            dataColumns[colIndex].putLong(dtToLong(timestamp, zone));
         } else {
-            dataColumns[index].putLong(0L);
-            markAsNull(index);
+            dataColumns[colIndex].putLong(0L);
+            markAsNull(colIndex);
         }
+        columns_set.set(colIndex);
     }
 
     public Boolean getBoolean(int colIndex, int rowIndex) {

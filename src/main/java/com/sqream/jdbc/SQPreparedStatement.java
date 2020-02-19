@@ -110,7 +110,7 @@ public class SQPreparedStatement implements PreparedStatement {
         try {
             Client.next();
             // Update nextRow counter
-            rowsInBatch++;  
+            rowsInBatch++;
             // Remember how many set commands were issued for this row in case it comes handy
             setsPerBatch.add(setCounter);  
             setCounter = 0;

@@ -180,8 +180,6 @@ public class ConnectorImpl implements Connector {
 
         // Create Storage for insert / select operations
         if (statement_type.equals(INSERT)) {
-            // Calculate number of rows to flush at
-            int row_size = tableMetadata.getSizesSum() + tableMetadata.getAmountNullablleColumns();    // not calculating nvarc lengths for now
             rows_per_flush = ROWS_PER_FLUSH;
 
             // Instantiate flags for managing network insert operations
@@ -393,17 +391,12 @@ public class ConnectorImpl implements Connector {
 
         if (statement_type.equals(INSERT)) {
 
-            // Were all columns set
-            //if (!IntStream.range(0, columns_set.length).allMatch(i -> columns_set[i]))
-            if (columns_set.cardinality() < row_length)
-                throw new ConnException ("All columns must be set before calling next(). Set " + columns_set.cardinality() +  " columns out of "  + row_length);
-
             // Nullify column flags and update counter
             columns_set.clear();
             rowCounter++;
 
             // Flush and clean if needed
-            if (rowCounter == rows_per_flush) {
+            if (!colStorage.next()) {
                 _flush(rowCounter, true);
 
                 // After flush, clear row counter and all buffers
@@ -424,7 +417,7 @@ public class ConnectorImpl implements Connector {
 
                 // Set new active buffer to be reading data from
                 rows_in_current_batch = rows_per_batch.get(0);
-                colStorage.loadBlock(queue.get(0));
+                colStorage.setBlock(queue.get(0));
 
                 // Remove active buffer from list
                 queue.remove(0);
@@ -641,8 +634,6 @@ public class ConnectorImpl implements Connector {
     public boolean set_boolean(int colNum, Boolean value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftBool");
         colStorage.setBoolean(colNum - 1, value);
-        // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(colNum - 1);
         return true;
     }
 
@@ -657,8 +648,6 @@ public class ConnectorImpl implements Connector {
             validator.validateUbyte(value);
         }
         colStorage.setUbyte(colNum - 1, value);
-        // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(colNum - 1);
         return true;
     }
 
@@ -673,7 +662,6 @@ public class ConnectorImpl implements Connector {
         } else {
             validator.validateSet(colNum - 1, value, "ftShort");
             colStorage.setShort(colNum - 1, value);
-            // Mark column as set (BitSet at location col_num set to true
             columns_set.set(colNum - 1);
         }
 
@@ -684,8 +672,6 @@ public class ConnectorImpl implements Connector {
     public boolean set_int(int colNum, Integer value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftInt");
         colStorage.setInt(colNum - 1, value);
-        // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(colNum - 1);
         return true;
     }
 
@@ -693,8 +679,6 @@ public class ConnectorImpl implements Connector {
     public boolean set_long(int colNum, Long value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftLong");
         colStorage.setLong(colNum - 1, value);
-        // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(colNum - 1);
         return true;
     }
 
@@ -702,8 +686,6 @@ public class ConnectorImpl implements Connector {
     public boolean set_float(int colNum, Float value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftFloat");
         colStorage.setFloat(colNum - 1, value);
-        // Mark column as set (BitSet at location col_num set to true
-        columns_set.set(colNum - 1);
         return true;
     }
 
@@ -711,8 +693,6 @@ public class ConnectorImpl implements Connector {
     public boolean set_double(int colNum, Double value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftDouble");
         colStorage.setDouble(colNum - 1, value);
-        // Mark column as set
-        columns_set.set(colNum - 1);
         return true;
     }
 
@@ -723,8 +703,6 @@ public class ConnectorImpl implements Connector {
         byte[] stringBytes = value == null ? "".getBytes(varchar_encoding) : value.getBytes(varchar_encoding);
         validator.validateVarchar(colNum - 1, stringBytes.length);
         colStorage.setVarchar(colNum - 1, stringBytes, value);
-        // Mark column as set
-        columns_set.set(colNum -1);
         return true;
     }
 
@@ -734,8 +712,6 @@ public class ConnectorImpl implements Connector {
         // Convert string to bytes
         byte[] stringBytes = value == null ? "".getBytes(UTF8) : value.getBytes(UTF8);
         colStorage.setNvarchar(colNum - 1, stringBytes, value);
-        // Mark column as set
-        columns_set.set(colNum - 1);
         return true;
     }
 
@@ -743,8 +719,6 @@ public class ConnectorImpl implements Connector {
     public boolean set_date(int colNum, Date date, ZoneId zone) throws ConnException, UnsupportedEncodingException {
         validator.validateSet(colNum - 1, date, "ftDate");
         colStorage.setDate(colNum - 1, date, zone);
-        // Mark column as set
-        columns_set.set(colNum - 1);
         return true;
     }
 
@@ -752,8 +726,6 @@ public class ConnectorImpl implements Connector {
     public boolean set_datetime(int colNum, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException {
         validator.validateSet(colNum - 1, ts, "ftDateTime");
         colStorage.setDatetime(colNum - 1, ts, zone);
-        // Mark column as set
-        columns_set.set(colNum - 1);
         return true;
     }
 

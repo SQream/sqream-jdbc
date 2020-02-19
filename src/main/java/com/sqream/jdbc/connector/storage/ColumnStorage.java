@@ -5,8 +5,9 @@ import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.MemoryAllocationService;
 import com.sqream.jdbc.connector.TableMetadata;
 import com.sqream.jdbc.connector.byteReaders.ByteReaderFactory;
+import com.sqream.jdbc.connector.storage.storageIterator.InsertRowIterator;
+import com.sqream.jdbc.connector.storage.storageIterator.RowIterator;
 
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -25,15 +26,13 @@ import static com.sqream.jdbc.utils.Utils.*;
 public class ColumnStorage {
     private static final Logger LOGGER = Logger.getLogger(ColumnStorage.class.getName());
 
-    private static final int INIT_ROW_INDEX = 0;
-
     private ByteBuffer[] dataColumns;
     private ByteBuffer[] nullColumns;
     private ByteBuffer[] nvarcLenColumns;
     private TableMetadata metadata;
     private int blockSize;
     private BitSet columns_set;
-    private int curRowIndex;
+    private RowIterator rowIterator;
 
     ColumnStorage() { }
 
@@ -48,10 +47,11 @@ public class ColumnStorage {
         BlockDto block = new MemoryAllocationService().buildBlock(metadata, blockSize);
         this.metadata = metadata;
         this.blockSize = blockSize;
-        resetCounters();
         this.dataColumns = block.getDataBuffers();
         this.nullColumns = block.getNullBuffers();
         this.nvarcLenColumns = block.getNvarcLenBuffers();
+        this.rowIterator = new InsertRowIterator(blockSize);
+        resetCounters();
 
         if (LOGGER.getParent().getLevel() == Level.FINE) {
             LOGGER.log(Level.FINE, MessageFormat.format("Initialized block. Allocated [{0}] mb.",
@@ -61,7 +61,7 @@ public class ColumnStorage {
 
     private void resetCounters() {
         this.columns_set = new BitSet(metadata.getRowLength());
-        this.curRowIndex = INIT_ROW_INDEX;
+        this.rowIterator.reset();
     }
 
     void initFromFetch(ByteBuffer[] fetchBuffers, TableMetadata metadata, int blockSize) {
@@ -75,10 +75,8 @@ public class ColumnStorage {
                     "All columns must be set before calling next(). Set [{0}] columns out of [{1}]",
                     columns_set.cardinality(), metadata.getRowLength()));
         }
-        boolean hasNext = curRowIndex < blockSize - 1;
         columns_set.clear();
-        curRowIndex++;
-        return hasNext;
+        return rowIterator.next();
     }
 
     private void copyFromFetchedBuffers(ByteBuffer[] fetchBuffers) {

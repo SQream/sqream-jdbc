@@ -265,23 +265,17 @@ public class ConnectorImpl implements Connector {
 
 
     private int _flush(int row_counter, boolean isAsyncFlush) throws IOException, ConnException {
-        /* Send columnar data buffers to SQream. Called by next() and close() */
-
         if (!statement_type.equals(INSERT) || row_counter == 0) {  // Not an insert statement
             return 0;
         }
-
         BlockDto blockAfterFlush = flushService.process(
-                row_length,
                 rowCounter,
                 tableMetadata,
                 colStorage.getBlock(),
-                colStorage.getTotalLengthForHeader(row_length, row_counter),
+                colStorage.getTotalLengthForHeader(tableMetadata.getRowLength(), row_counter),
                 byteBufferPool,
                 isAsyncFlush);
-
         colStorage.setBlock(blockAfterFlush);
-
         return row_counter;  // counter nullified by next()
     }
 

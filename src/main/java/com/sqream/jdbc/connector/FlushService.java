@@ -27,11 +27,10 @@ public class FlushService {
         return  new FlushService(socket, messenger);
     }
 
-    public BlockDto process(int rowLength, int rowCounter, TableMetadata metadata,
+    public BlockDto process(int rowCounter, TableMetadata metadata,
                         BlockDto block, int totalLengthForHeader, ByteBufferPool byteBufferPool, boolean async) {
         LOGGER.log(Level.FINE, MessageFormat.format(
-                "Process block: rowLength=[{0}], rowCounter=[{1}], asynchronous=[{2}]",
-                rowLength, rowCounter, async));
+                "Process block: rowCounter=[{1}], asynchronous=[{2}]", rowCounter, async));
 
         if (async) {
             if (executorService.isShutdown()) {
@@ -50,8 +49,7 @@ public class FlushService {
             executorService.submit(() -> {
                 try {
                     Thread.currentThread().setName("flush-service");
-                    flush(rowLength,
-                            rowCounter,
+                    flush(rowCounter,
                             metadata,
                             blockForFlush,
                             totalLengthForHeader);
@@ -64,7 +62,7 @@ public class FlushService {
             return blockFromPool;
         } else {
             try {
-                flush(rowLength, rowCounter, metadata, block, totalLengthForHeader);
+                flush(rowCounter, metadata, block, totalLengthForHeader);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -89,12 +87,12 @@ public class FlushService {
         }
     }
 
-    private void flush(int rowLength, int rowCounter, TableMetadata metadata,
+    private void flush(int rowCounter, TableMetadata metadata,
                        BlockDto block, int totalLengthForHeader) throws IOException, ConnException {
 
         LOGGER.log(Level.FINE, MessageFormat.format("Flush data: rowLength=[{0}], rowCounter=[{1}], " +
                 "metadata=[{2}], block=[{3}], totalLengthForHeader=[{4}]",
-                rowLength, rowCounter, metadata, block, totalLengthForHeader));
+                metadata.getRowLength(), rowCounter, metadata, block, totalLengthForHeader));
 
         // Send put message
         messenger.put(rowCounter);
@@ -104,7 +102,7 @@ public class FlushService {
         socket.sendData(header_buffer, false);
 
         // Send available columns
-        sendDataToSocket(rowLength, rowCounter, metadata, socket, block);
+        sendDataToSocket(metadata.getRowLength(), rowCounter, metadata, socket, block);
         messenger.isPutted();
     }
 

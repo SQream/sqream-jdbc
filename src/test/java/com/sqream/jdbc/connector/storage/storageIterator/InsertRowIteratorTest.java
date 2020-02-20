@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 public class InsertRowIteratorTest {
 
     @Test
-    public void nextTes() {
+    public void nextTest() {
         int rowAmount = 10;
         RowIterator itr = new InsertRowIterator(rowAmount);
 
@@ -45,7 +45,7 @@ public class InsertRowIteratorTest {
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
-    public void whenRowPointerMoreMaxIndexThenThrowException() {
+    public void whenRowPointerMoreMaxIndexThenThrowExceptionTest() {
         int rowAmount = 10;
         RowIterator itr = new InsertRowIterator(rowAmount);
 

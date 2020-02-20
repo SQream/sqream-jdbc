@@ -24,7 +24,7 @@ public class SelectRowIteratorTest {
         while (itr.next()) {}
 
         itr.reset();
-        int rowAmountAfterReset = 0;
+        int rowAmountAfterReset = 1;
         while (itr.next()) {
             rowAmountAfterReset++;
         }

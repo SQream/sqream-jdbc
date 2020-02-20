@@ -4,21 +4,32 @@ import java.text.MessageFormat;
 
 public class SelectRowIterator implements RowIterator {
     private static final int INIT_ROW_INDEX = -1;
+    private static final int RESET_ROW_INDEX = 0;
+
     private int rowIndex = INIT_ROW_INDEX;
     private int rowAmount;
+    private boolean firstIteration = true;
 
     public SelectRowIterator(int rowAmount) {
         this.rowAmount = rowAmount;
     }
 
+    /**
+     * Initially the cursor is positioned before the first row. \
+     * After call reset method the cursor is positioned on the first row.
+     */
     @Override
     public boolean next() {
-        return ++rowIndex < rowAmount;
+        if (firstIteration) {
+            return ++rowIndex < rowAmount;
+        } else {
+            return rowIndex < rowAmount;
+        }
     }
 
     @Override
     public void reset() {
-        rowIndex = INIT_ROW_INDEX;
+        rowIndex = RESET_ROW_INDEX;
     }
 
     @Override

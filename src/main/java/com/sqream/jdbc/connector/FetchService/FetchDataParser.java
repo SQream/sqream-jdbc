@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 
 public class FetchDataParser {
 
-    public static BlockDto parse(ByteBuffer[] fetchBuffers, TableMetadata metadata) {
+    public static BlockDto parse(ByteBuffer[] fetchBuffers, TableMetadata metadata, int rowsFetched) {
         ByteBuffer[] dataColumns = new ByteBuffer[metadata.getRowLength()];
         ByteBuffer[] nullColumns = new ByteBuffer[metadata.getRowLength()];
         ByteBuffer[] nvarcLenColumns = new ByteBuffer[metadata.getRowLength()];
@@ -26,6 +26,8 @@ public class FetchDataParser {
             }
             dataColumns[idx] = fetchBuffers[buf_idx];
         }
-        return new BlockDto(dataColumns, nullColumns, nvarcLenColumns);
+        BlockDto resultBlock = new BlockDto(dataColumns, nullColumns, nvarcLenColumns);
+        resultBlock.setFillSize(rowsFetched);
+        return resultBlock;
     }
 }

@@ -231,7 +231,7 @@ public class ConnectorImpl implements Connector {
                 .build();
 
         // Add buffers to buffer list
-        queue.add(FetchDataParser.parse(fetch_buffers, tableMetadata));
+        queue.add(FetchDataParser.parse(fetch_buffers, tableMetadata, fetchMeta.getNewRowsFetched()));
 
         return fetchMeta.getNewRowsFetched();  // counter nullified by next()
     }
@@ -389,12 +389,16 @@ public class ConnectorImpl implements Connector {
         	// If all data has been read, try to fetch more
         	if (rowCounter == (rows_in_current_batch -1)) {
         		rowCounter = -1;
-        		if (rows_per_batch.size() == 0)
+        		if (queue.size() == 0) {
                     return false; // No more data and we've read all we have
-
+                }
                 // Set new active buffer to be reading data from
                 rows_in_current_batch = rows_per_batch.get(0);
-                colStorage.setBlock(queue.get(0));
+                BlockDto block = queue.get(0);
+                if (block.getFillSize() == 0) {
+                    return false;
+                }
+                colStorage.setBlock(block);
 
                 // Remove active buffer from list
                 queue.remove(0);

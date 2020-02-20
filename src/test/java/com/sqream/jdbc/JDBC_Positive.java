@@ -127,7 +127,7 @@ public class JDBC_Positive {
         String insertSql = "insert into test_fetch values (?)";
         String selectSql = "select * from test_fetch";
         int randomInt = 8;
-        int times = 100_000_000;  // Assuming chunk size is around 1 million, giving X10 more
+        int times = 100_000_001;  // Assuming chunk size is around 1 million, giving X10 more
         int fetchCounter = 0;
 
 	    try (Connection conn = createConnection();

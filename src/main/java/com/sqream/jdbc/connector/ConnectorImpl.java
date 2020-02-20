@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 // More SSL shite
 
 // JSON parsing library
+import com.sqream.jdbc.connector.FetchService.FetchDataParser;
 import com.sqream.jdbc.connector.enums.StatementType;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
@@ -230,7 +231,7 @@ public class ConnectorImpl implements Connector {
                 .build();
 
         // Add buffers to buffer list
-        queue.add(colStorage.getBlock());
+        queue.add(FetchDataParser.parse(fetch_buffers, tableMetadata));
 
         return fetchMeta.getNewRowsFetched();  // counter nullified by next()
     }

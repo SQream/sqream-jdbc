@@ -37,7 +37,7 @@ public class FlushService {
                 executorService = Executors.newSingleThreadExecutor();
             }
 
-            BlockDto blockForFlush = new BlockDto(block.getDataBuffers(), block.getNullBuffers(), block.getNvarcLenBuffers());
+            BlockDto blockForFlush = new BlockDto(block.getDataBuffers(), block.getNullBuffers(), block.getNvarcLenBuffers(), block.getCapacity());
 
             BlockDto blockFromPool = null;
             try {

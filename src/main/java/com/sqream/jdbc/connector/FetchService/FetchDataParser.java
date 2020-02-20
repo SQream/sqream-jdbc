@@ -26,7 +26,7 @@ public class FetchDataParser {
             }
             dataColumns[idx] = fetchBuffers[buf_idx];
         }
-        BlockDto resultBlock = new BlockDto(dataColumns, nullColumns, nvarcLenColumns);
+        BlockDto resultBlock = new BlockDto(dataColumns, nullColumns, nvarcLenColumns, rowsFetched);
         resultBlock.setFillSize(rowsFetched);
         return resultBlock;
     }

@@ -25,7 +25,7 @@ public class ByteBufferCopier {
         for (int i = 0; i < block.getNvarcLenBuffers().length; i++) {
             targetNvarcLenBuffers[i] = copyByteBuffer(nvarcLenBuffers[i]);
         }
-        return new BlockDto(targetDataBuffers, targetNullBuffers, targetNvarcLenBuffers);
+        return new BlockDto(targetDataBuffers, targetNullBuffers, targetNvarcLenBuffers, block.getCapacity());
     }
 
     public ByteBuffer copyByteBuffer(ByteBuffer original) {

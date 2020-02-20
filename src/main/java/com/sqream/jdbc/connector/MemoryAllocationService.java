@@ -29,7 +29,7 @@ public class MemoryAllocationService {
                 nvarcLenColumns[idx] = null;
             }
         }
-        return new BlockDto(dataColumns, nullColumns, nvarcLenColumns);
+        return new BlockDto(dataColumns, nullColumns, nvarcLenColumns, blockSize);
     }
 
     private void initArrays(TableMetadata metadata, int blockSize) {

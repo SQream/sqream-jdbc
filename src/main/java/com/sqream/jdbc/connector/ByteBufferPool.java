@@ -92,7 +92,7 @@ public class ByteBufferPool {
         ByteBuffer[] dataColumns = new ByteBuffer[metadata.getRowLength()];
         ByteBuffer[] nullColumns = new ByteBuffer[metadata.getRowLength()];
         ByteBuffer[] nvarcLenColumns = new ByteBuffer[metadata.getRowLength()];
-        return new BlockDto(dataColumns, nullColumns, nvarcLenColumns);
+        return new BlockDto(dataColumns, nullColumns, nvarcLenColumns, blockSize);
     }
 
     private ByteBuffer initDataColumns(int size) {

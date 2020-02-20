@@ -29,6 +29,7 @@ public class ColumnStorage {
     private ByteBuffer[] dataColumns;
     private ByteBuffer[] nullColumns;
     private ByteBuffer[] nvarcLenColumns;
+    private int blockCapacity;
     private TableMetadata metadata;
     private int blockSize;
     private BitSet columns_set;
@@ -123,14 +124,15 @@ public class ColumnStorage {
     }
 
     public void setBlock(BlockDto block) {
-        resetCounters();
         dataColumns = block.getDataBuffers();
         nullColumns = block.getNullBuffers();
         nvarcLenColumns = block.getNvarcLenBuffers();
+        blockCapacity = block.getCapacity();
+        resetCounters();
     }
 
     public BlockDto getBlock() {
-        return new BlockDto(dataColumns, nullColumns, nvarcLenColumns);
+        return new BlockDto(dataColumns, nullColumns, nvarcLenColumns, blockCapacity);
     }
 
     public boolean isNotNull(int colIndex, int rowIndex) {

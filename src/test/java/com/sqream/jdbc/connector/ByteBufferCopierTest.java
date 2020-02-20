@@ -114,14 +114,14 @@ public class ByteBufferCopierTest {
         ByteBuffer[] dataBuffers = prepareDirectByteBufferArray(ARRAY_LENGTH);
         ByteBuffer[] nullBuffers = prepareDirectByteBufferArray(ARRAY_LENGTH);
         ByteBuffer[] nvarcLenBuffers = prepareDirectByteBufferArray(ARRAY_LENGTH);
-        return new BlockDto(dataBuffers, nullBuffers, nvarcLenBuffers);
+        return new BlockDto(dataBuffers, nullBuffers, nvarcLenBuffers, CAPACITY);
     }
 
     private BlockDto prepareHeapByteBuffersBlock() {
         ByteBuffer[] dataBuffers = prepareHeapByteBufferArray(ARRAY_LENGTH);
         ByteBuffer[] nullBuffers = prepareHeapByteBufferArray(ARRAY_LENGTH);
         ByteBuffer[] nvarcLenBuffers = prepareHeapByteBufferArray(ARRAY_LENGTH);
-        return new BlockDto(dataBuffers, nullBuffers, nvarcLenBuffers);
+        return new BlockDto(dataBuffers, nullBuffers, nvarcLenBuffers, CAPACITY);
     }
 
     private ByteBuffer[] prepareDirectByteBufferArray(int length) {

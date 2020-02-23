@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 public class FlushServiceTest {
 
     @Test
-    public void asyncProcessDoesNotAffectReturnedBlockTest() {
+    public void asyncProcessDoesNotAffectReturnedBlockTest() throws InterruptedException {
         int rowLength = 5;
         int rowCounter = 10;
 
@@ -30,16 +30,18 @@ public class FlushServiceTest {
         SQSocketConnector socketConnector = Mockito.mock(SQSocketConnector.class);
         ByteBufferPool bufferPool = new ByteBufferPool(1, rowCounter, metadata);
         FlushService flushService = FlushService.getInstance(socketConnector, MessengerImpl.getInstance(socketConnector));
-        BlockDto returnedBlock = flushService.process(metadata, block,
+        flushService.process(metadata, block,
                 storage.getTotalLengthForHeader(rowLength, rowCounter), bufferPool, true);
 
+        ByteBufferPool pool = new ByteBufferPool(2, rowCounter, metadata);
+        BlockDto blockFromPool = pool.getBlock();
 
         changeBuffer(block.getDataBuffers());
         changeBuffer(block.getNullBuffers());
         changeBuffer(block.getNvarcLenBuffers());
 
 
-        compareBlocks(block, returnedBlock);
+        compareBlocks(block, blockFromPool);
     }
 
     private List<ColumnMetadataDto> createColumnMetadataList(int rowLength) {

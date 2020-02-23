@@ -27,7 +27,7 @@ public class FlushService {
         return  new FlushService(socket, messenger);
     }
 
-    public BlockDto process(TableMetadata metadata,
+    public void process(TableMetadata metadata,
                         BlockDto block, int totalLengthForHeader, ByteBufferPool byteBufferPool, boolean async) {
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Process block: block=[{1}], asynchronous=[{2}]", block, async));
@@ -37,14 +37,8 @@ public class FlushService {
                 executorService = Executors.newSingleThreadExecutor();
             }
 
-            BlockDto blockForFlush = new BlockDto(block.getDataBuffers(), block.getNullBuffers(), block.getNvarcLenBuffers(), block.getCapacity());
-
-            BlockDto blockFromPool = null;
-            try {
-                blockFromPool = byteBufferPool.getBlock();
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Interrupted when getting block from byteBuffer pool", e);
-            }
+            BlockDto blockForFlush =
+                    new BlockDto(block.getDataBuffers(), block.getNullBuffers(), block.getNvarcLenBuffers(), block.getCapacity());
 
             executorService.submit(() -> {
                 try {
@@ -54,21 +48,41 @@ public class FlushService {
                             blockForFlush,
                             totalLengthForHeader);
 
+                    clearBuffers(blockForFlush);
+
                     byteBufferPool.releaseBlock(blockForFlush);
                 } catch (Exception e) {
                     throw new RuntimeException("Exception when flush data", e);
                 }
             });
-            return blockFromPool;
         } else {
             try {
                 flush(block.getFillSize(), metadata, block, totalLengthForHeader);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            return block;
         }
     }
+
+    private void clearBuffers(BlockDto block) {
+        for (ByteBuffer dataBuffer : block.getDataBuffers()) {
+            dataBuffer.clear();
+        }
+        for (ByteBuffer nullBuffer : block.getNullBuffers()) {
+            if (nullBuffer != null) {
+                nullBuffer.clear();
+                //TODO: Alex K 13.01.2020 Check why previously allocated DirectByteBuffer and reset with HeapByteBuffer
+                nullBuffer.put(ByteBuffer.allocate(block.getCapacity()));
+                nullBuffer.clear();
+            }
+        }
+        for (ByteBuffer nvarcLenBuffer : block.getNvarcLenBuffers()) {
+            if (nvarcLenBuffer != null) {
+                nvarcLenBuffer.clear();
+            }
+        }
+    }
+
 
     public void awaitTermination() {
         LOGGER.log(Level.FINE, "Wait for termination");

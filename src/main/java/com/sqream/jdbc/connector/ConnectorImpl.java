@@ -245,13 +245,17 @@ public class ConnectorImpl implements Connector {
         if (!statement_type.equals(INSERT) || rowsFlush == 0) {  // Not an insert statement
             return 0;
         }
-        BlockDto blockAfterFlush = flushService.process(
+        flushService.process(
                 tableMetadata,
                 blockForFlush,
                 flushStorage.getTotalLengthForHeader(tableMetadata.getRowLength(), rowsFlush),
                 byteBufferPool,
                 isAsyncFlush);
-        flushStorage.setBlock(blockAfterFlush);
+        try {
+            flushStorage.setBlock(byteBufferPool.getBlock());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return rowsFlush;  // counter nullified by next()
     }
 
@@ -351,8 +355,6 @@ public class ConnectorImpl implements Connector {
             // Flush and clean if needed
             if (!flushStorage.next()) {
                 _flush(true);
-                // After flush, clear row counter and all buffers
-                flushStorage.setBlock(new MemoryAllocationService().buildBlock(tableMetadata, ROWS_PER_FLUSH));
             }
         } else if (statement_type.equals(SELECT)) {
         	if (fetch_limit !=0 && totalRowCounter == fetch_limit) {

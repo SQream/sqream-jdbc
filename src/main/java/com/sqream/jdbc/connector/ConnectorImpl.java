@@ -242,8 +242,6 @@ public class ConnectorImpl implements Connector {
     	return total_fetched;
     }
 
-
-
     private int _flush(boolean isAsyncFlush) {
         BlockDto blockForFlush = colStorage.getBlock();
         int rowsFlush = blockForFlush.getFillSize();
@@ -359,13 +357,11 @@ public class ConnectorImpl implements Connector {
                 // After flush, clear row counter and all buffers
                 colStorage.clearBuffers(row_length);
             }
-        }
-        else if (statement_type.equals(SELECT)) {
-            //print ("select row counter: " + row_counter + " total: " + total_rows_fetched);
+        } else if (statement_type.equals(SELECT)) {
         	Arrays.fill(col_calls, 0); // calls in the same fetch - for varchar / nvarchar
-        	if (fetch_limit !=0 && totalRowCounter == fetch_limit)
-        		return false;  // MaxRow limit reached, stop even if more data was fetched
-        	// If all data has been read, try to fetch more
+        	if (fetch_limit !=0 && totalRowCounter == fetch_limit) {
+                return false;  // MaxRow limit reached, stop even if more data was fetched
+            }
         	if (!colStorage.next()) {
         		if (queue.size() == 0) {
                     return false; // No more data and we've read all we have
@@ -379,13 +375,11 @@ public class ConnectorImpl implements Connector {
                 colStorage.next();
             }
             totalRowCounter++;
+        } else if (statement_type.equals(DML)) {
+            throw new ConnException("Calling next() on a non insert / select query");
+        } else {
+            throw new ConnException("Calling next() on a statement type different than INSERT / SELECT / DML: " + statement_type.getValue());
         }
-        else if (statement_type.equals(DML))
-            throw new ConnException ("Calling next() on a non insert / select query");
-
-        else
-            throw new ConnException ("Calling next() on a statement type different than INSERT / SELECT / DML: " + statement_type.getValue());
-
         return true;
     }
 

@@ -284,6 +284,30 @@ public class SQPreparedStatementTest {
         }
     }
 
+    @Test
+    public void getStringRepeatedlyTest() throws SQLException {
+        String CREATE_TABLE_SQL =
+                "create or replace table test_get_string_repeatedly (col1 varchar(10), col2 nvarchar(10));";
+        String INSERT_SQL = "insert into test_get_string_repeatedly values ('test_var', 'test_nvar');";
+        String SELECT_SQL = "select * from test_get_string_repeatedly;";
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(CREATE_TABLE_SQL);
+            stmt.executeUpdate(INSERT_SQL);
+            ResultSet rs = stmt.executeQuery(SELECT_SQL);
+
+            if (rs.next()) {
+                for (int i = 0; i < 10; i++) {
+                    assertEquals("test_var", rs.getString(1));
+                    assertEquals("test_nvar", rs.getString(2));
+                }
+            } else {
+                fail("Could not read data from table");
+            }
+        }
+    }
+
     private Connection createConnection() {
         try {
             return DriverManager.getConnection(URL,USER,PASS);

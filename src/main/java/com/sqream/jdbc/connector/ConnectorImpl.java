@@ -87,12 +87,10 @@ public class ConnectorImpl implements Connector {
 
     // Column Storage
     private List<BlockDto> queue = new ArrayList<>();
-    private List<Integer> rows_per_batch = new ArrayList<>();
-    private int rows_in_current_batch;
     private int fetch_limit = 0;
 
     // Get / Set related
-    private int rowCounter, totalRowCounter;
+    private int totalRowCounter;
 
     private int[] col_calls;
 
@@ -103,7 +101,8 @@ public class ConnectorImpl implements Connector {
     private FlushService flushService;
     private ByteBufferPool byteBufferPool;
 
-    public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl)
+            throws IOException, NoSuchAlgorithmException, KeyManagementException {
         /* JSON parsing engine setup, initial socket connection */
         useSsl = ssl;
         socket = SQSocketConnector.connect(ip, port, useSsl);
@@ -176,9 +175,6 @@ public class ConnectorImpl implements Connector {
 
         // Create Storage for insert / select operations
         if (statement_type.equals(INSERT)) {
-            // Instantiate flags for managing network insert operations
-            rowCounter = 0;
-
             // Initiate buffers for each column using the metadata
             BlockDto block = new MemoryAllocationService().buildBlock(tableMetadata, ROWS_PER_FLUSH);
             colStorage = new FlushStorage(tableMetadata, block);
@@ -186,8 +182,6 @@ public class ConnectorImpl implements Connector {
             byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL, ROWS_PER_FLUSH, tableMetadata);
         }
         if (statement_type.equals(SELECT)) {
-            // Instantiate select counters, Initial storage same as insert
-            rowCounter = -1;
             totalRowCounter = 0;
         }
     }
@@ -210,8 +204,6 @@ public class ConnectorImpl implements Connector {
         for (int i=0; i < fetchMeta.colAmount(); i++) {
             fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);
         }
-
-        rows_per_batch.add(fetchMeta.getNewRowsFetched());
 
         // Initial naive implememntation - Get all socket data in advance
         int bytes_read = socket.getParseHeader();   // Get header out of the way
@@ -247,9 +239,6 @@ public class ConnectorImpl implements Connector {
     		}
     	}
     	close();
-
-    	rows_in_current_batch = 0;
-
     	return total_fetched;
     }
 
@@ -362,16 +351,12 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean next() throws ConnException, IOException{
+    public boolean next() throws ConnException {
         if (statement_type.equals(INSERT)) {
-            rowCounter++;
-
             // Flush and clean if needed
             if (!colStorage.next()) {
                 _flush(true);
-
                 // After flush, clear row counter and all buffers
-                rowCounter = 0;
                 colStorage.clearBuffers(row_length);
             }
         }
@@ -382,22 +367,17 @@ public class ConnectorImpl implements Connector {
         		return false;  // MaxRow limit reached, stop even if more data was fetched
         	// If all data has been read, try to fetch more
         	if (!colStorage.next()) {
-        		rowCounter = -1;
         		if (queue.size() == 0) {
                     return false; // No more data and we've read all we have
                 }
                 // Set new active buffer to be reading data from
-                rows_in_current_batch = rows_per_batch.get(0);
                 BlockDto block = queue.remove(0);
                 if (block.getFillSize() == 0) {
                     return false;
                 }
                 colStorage.setBlock(block);
                 colStorage.next();
-
-                rows_per_batch.remove(0);
             }
-            rowCounter++;
             totalRowCounter++;
         }
         else if (statement_type.equals(DML))

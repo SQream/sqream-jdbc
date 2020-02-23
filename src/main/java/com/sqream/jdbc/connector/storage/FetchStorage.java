@@ -9,16 +9,22 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.BitSet;
 
 import static com.sqream.jdbc.utils.Utils.intToDate;
 import static com.sqream.jdbc.utils.Utils.longToDt;
 
-public class FetchStorage extends BaseStorage implements Storage {
+public class FetchStorage {
+    private TableMetadata metadata;
+    private BlockDto curBlock;
+    private RowIterator rowIterator;
     private int[] col_calls;
 
     public FetchStorage(TableMetadata metadata, BlockDto block) {
-        super(metadata, block);
+        this.metadata = metadata;
+        this.curBlock = block;
         col_calls = new int[metadata.getRowLength()];
+        initIterator(block);
     }
 
     public boolean next() {
@@ -26,69 +32,60 @@ public class FetchStorage extends BaseStorage implements Storage {
         return rowIterator.next();
     }
 
-    @Override
     public void setBlock(BlockDto block) {
-        rowIterator = new RowIterator(block.getFillSize());
-        super.setBlock(block);
+        curBlock = block;
+        initIterator(block);
     }
 
-    @Override
     public Boolean getBoolean(int colIndex) {
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
-                        .readBoolean(dataColumns[colIndex], rowIterator.getRowIndex()) : null;
+                        .readBoolean(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex()) : null;
     }
 
-    @Override
     public Byte getUbyte(int colIndex) {
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
-                        .readUbyte(dataColumns[colIndex], rowIterator.getRowIndex()) : null;
+                        .readUbyte(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex()) : null;
     }
 
-    @Override
     public Short getShort(int colIndex) {
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
-                        .readShort(dataColumns[colIndex], rowIterator.getRowIndex()) : null;
+                        .readShort(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex()) : null;
     }
 
-    @Override
     public Integer getInt(int colIndex) {
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
-                        .readInt(dataColumns[colIndex], rowIterator.getRowIndex()) : null;
+                        .readInt(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex()) : null;
     }
 
-    @Override
     public Long getLong(int colIndex) {
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
-                        .readLong(dataColumns[colIndex], rowIterator.getRowIndex()) : null;
+                        .readLong(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex()) : null;
     }
 
-    @Override
     public Float getFloat(int colIndex) {
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
-                        .readFloat(dataColumns[colIndex], rowIterator.getRowIndex()) : null;
+                        .readFloat(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex()) : null;
     }
 
-    @Override
     public Double getDouble(int colIndex) {
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
-                        .readDouble(dataColumns[colIndex], rowIterator.getRowIndex()) : null;
+                        .readDouble(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex()) : null;
     }
 
-    @Override
     public Date getDate(int colIndex, ZoneId zoneId) {
         if (!isNotNull(colIndex, rowIterator.getRowIndex())) {
             return null;
@@ -96,12 +93,11 @@ public class FetchStorage extends BaseStorage implements Storage {
 
         int dateAsInt = ByteReaderFactory
                 .getReader(metadata.getType(colIndex))
-                .readDate(dataColumns[colIndex], rowIterator.getRowIndex());
+                .readDate(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex());
 
         return intToDate(dateAsInt, zoneId);
     }
 
-    @Override
     public Timestamp getTimestamp(int colIndex, ZoneId zoneId) {
         if (!isNotNull(colIndex, rowIterator.getRowIndex())) {
             return null;
@@ -109,39 +105,41 @@ public class FetchStorage extends BaseStorage implements Storage {
 
         long dateTimeAsLong = ByteReaderFactory
                 .getReader(metadata.getType(colIndex))
-                .readDateTime(dataColumns[colIndex], rowIterator.getRowIndex());
+                .readDateTime(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex());
 
         return longToDt(dateTimeAsLong, zoneId);
     }
 
-    @Override
     public String getVarchar(int colIndex, String varcharEncoding) {
         int colSize = metadata.getSize(colIndex);
         boolean repeatedly = col_calls[colIndex]++ > 0;
         if (repeatedly) {
-            dataColumns[colIndex].position(dataColumns[colIndex].position() - colSize);
+            curBlock.getDataBuffers()[colIndex].position(curBlock.getDataBuffers()[colIndex].position() - colSize);
         }
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
-                        .readVarchar(dataColumns[colIndex], colSize, varcharEncoding) : null;
+                        .readVarchar(curBlock.getDataBuffers()[colIndex], colSize, varcharEncoding) : null;
     }
 
-    @Override
     public String getNvarchar(int colIndex, Charset varcharEncoding) {
-        int nvarcLen = nvarcLenColumns[colIndex].getInt(rowIterator.getRowIndex() * 4);
+        int nvarcLen = curBlock.getNvarcLenBuffers()[colIndex].getInt(rowIterator.getRowIndex() * 4);
         boolean repeatedly = col_calls[colIndex]++ > 0;
         if (repeatedly) {
-            dataColumns[colIndex].position(dataColumns[colIndex].position() - nvarcLen);
+            curBlock.getDataBuffers()[colIndex].position(curBlock.getDataBuffers()[colIndex].position() - nvarcLen);
         }
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
-                        .readNvarchar(dataColumns[colIndex], nvarcLen, varcharEncoding) : null;
+                        .readNvarchar(curBlock.getDataBuffers()[colIndex], nvarcLen, varcharEncoding) : null;
+    }
+
+    private void initIterator(BlockDto block) {
+        this.rowIterator = new RowIterator(block.getFillSize());
     }
 
     private boolean isNotNull(int colIndex, int rowIndex) {
-        return nullColumns[colIndex] == null || nullColumns[colIndex].get(rowIndex) == 0;
+        return curBlock.getNullBuffers()[colIndex] == null || curBlock.getNullBuffers()[colIndex].get(rowIndex) == 0;
     }
 
 

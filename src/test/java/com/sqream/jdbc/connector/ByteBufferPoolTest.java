@@ -1,7 +1,6 @@
 package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.enums.StatementType;
-import com.sqream.jdbc.connector.storage.BaseStorage;
 import com.sqream.jdbc.connector.storage.FlushStorage;
 import org.junit.Test;
 
@@ -21,7 +20,7 @@ public class ByteBufferPoolTest {
 
         TableMetadata metadata = createTableMetadata(rowLength);
 
-        BaseStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize));
+        FlushStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize));
 
         BlockDto blockFromStorage = storage.getBlock();
 
@@ -41,7 +40,7 @@ public class ByteBufferPoolTest {
 
         TableMetadata metadata = createTableMetadata(rowLength);
 
-        BaseStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize));
+        FlushStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize));
 
         BlockDto blockFromStorage = storage.getBlock();
         int blockFromStorageHashCode = blockFromStorage.hashCode();

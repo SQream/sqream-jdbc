@@ -81,7 +81,8 @@ public class ConnectorImpl implements Connector {
     private int row_length;
 
     private TableMetadata tableMetadata;
-    private Storage colStorage;
+    private FetchStorage fetchStorage;
+    private FlushStorage flushStorage;
 
     private boolean openStatement = false;
 
@@ -173,7 +174,7 @@ public class ConnectorImpl implements Connector {
         if (statement_type.equals(INSERT)) {
             // Initiate buffers for each column using the metadata
             BlockDto block = new MemoryAllocationService().buildBlock(tableMetadata, ROWS_PER_FLUSH);
-            colStorage = new FlushStorage(tableMetadata, block);
+            flushStorage = new FlushStorage(tableMetadata, block);
 
             byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL, ROWS_PER_FLUSH, tableMetadata);
         }
@@ -239,7 +240,7 @@ public class ConnectorImpl implements Connector {
     }
 
     private int _flush(boolean isAsyncFlush) {
-        BlockDto blockForFlush = colStorage.getBlock();
+        BlockDto blockForFlush = flushStorage.getBlock();
         int rowsFlush = blockForFlush.getFillSize();
         if (!statement_type.equals(INSERT) || rowsFlush == 0) {  // Not an insert statement
             return 0;
@@ -247,10 +248,10 @@ public class ConnectorImpl implements Connector {
         BlockDto blockAfterFlush = flushService.process(
                 tableMetadata,
                 blockForFlush,
-                colStorage.getTotalLengthForHeader(tableMetadata.getRowLength(), rowsFlush),
+                flushStorage.getTotalLengthForHeader(tableMetadata.getRowLength(), rowsFlush),
                 byteBufferPool,
                 isAsyncFlush);
-        colStorage.setBlock(blockAfterFlush);
+        flushStorage.setBlock(blockAfterFlush);
         return rowsFlush;  // counter nullified by next()
     }
 
@@ -336,7 +337,7 @@ public class ConnectorImpl implements Connector {
         if (statement_type.equals(SELECT)) {
             int total_rows_fetched = _fetch(fetch_limit); // 0 - prefetch all data
             if (total_rows_fetched > 0) {
-                colStorage = new FetchStorage(tableMetadata, queue.remove(0));
+                fetchStorage = new FetchStorage(tableMetadata, queue.remove(0));
             }
             //if (total_rows_fetched < (chunk_size == 0 ? 1 : chunk_size)) {
         }
@@ -348,16 +349,16 @@ public class ConnectorImpl implements Connector {
     public boolean next() throws ConnException {
         if (statement_type.equals(INSERT)) {
             // Flush and clean if needed
-            if (!colStorage.next()) {
+            if (!flushStorage.next()) {
                 _flush(true);
                 // After flush, clear row counter and all buffers
-                colStorage.clearBuffers(row_length);
+                flushStorage.setBlock(new MemoryAllocationService().buildBlock(tableMetadata, ROWS_PER_FLUSH));
             }
         } else if (statement_type.equals(SELECT)) {
         	if (fetch_limit !=0 && totalRowCounter == fetch_limit) {
                 return false;  // MaxRow limit reached, stop even if more data was fetched
             }
-        	if (!colStorage.next()) {
+        	if (!fetchStorage.next()) {
         		if (queue.size() == 0) {
                     return false; // No more data and we've read all we have
                 }
@@ -366,8 +367,8 @@ public class ConnectorImpl implements Connector {
                 if (block.getFillSize() == 0) {
                     return false;
                 }
-                colStorage.setBlock(block);
-                colStorage.next();
+                fetchStorage.setBlock(block);
+                fetchStorage.next();
             }
             totalRowCounter++;
         } else if (statement_type.equals(DML)) {
@@ -414,69 +415,69 @@ public class ConnectorImpl implements Connector {
     @Override
     public Boolean getBoolean(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getBoolean(colNum - 1);
+        return fetchStorage.getBoolean(colNum - 1);
     }
 
     @Override
     public Byte get_ubyte(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getUbyte(colNum - 1);
+        return fetchStorage.getUbyte(colNum - 1);
     }
 
     @Override
     public Short get_short(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getShort(colNum - 1);
+        return fetchStorage.getShort(colNum - 1);
     }
 
     @Override
     public Integer get_int(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getInt(colNum - 1);
+        return fetchStorage.getInt(colNum - 1);
     }
 
     @Override
     public Long get_long(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getLong(colNum - 1);
+        return fetchStorage.getLong(colNum - 1);
     }
 
     @Override
     public Float get_float(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getFloat(colNum - 1);
+        return fetchStorage.getFloat(colNum - 1);
     }
 
     @Override
     public Double get_double(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getDouble(colNum - 1);
+        return fetchStorage.getDouble(colNum - 1);
     }
 
     @Override
     public String get_varchar(int colNum) {
         int colIndex = colNum - 1;
         validator.validateColumnIndex(colIndex);
-        return colStorage.getVarchar(colIndex, varchar_encoding);
+        return fetchStorage.getVarchar(colIndex, varchar_encoding);
     }
 
     @Override
     public String get_nvarchar(int colNum) throws ConnException {
         int colIndex = colNum - 1;
         validator.validateColumnIndex(colIndex);
-        return colStorage.getNvarchar(colIndex, UTF8);
+        return fetchStorage.getNvarchar(colIndex, UTF8);
     }
 
     @Override
     public Date get_date(int colNum, ZoneId zone) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getDate(colNum - 1, zone);
+        return fetchStorage.getDate(colNum - 1, zone);
     }
 
     @Override
     public Timestamp get_datetime(int colNum, ZoneId zone) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getTimestamp(colNum - 1, zone);
+        return fetchStorage.getTimestamp(colNum - 1, zone);
     }
 
     @Override
@@ -574,7 +575,7 @@ public class ConnectorImpl implements Connector {
     @Override
     public boolean set_boolean(int colNum, Boolean value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftBool");
-        colStorage.setBoolean(colNum - 1, value);
+        flushStorage.setBoolean(colNum - 1, value);
         return true;
     }
 
@@ -588,7 +589,7 @@ public class ConnectorImpl implements Connector {
         if (validateValue) {
             validator.validateUbyte(value);
         }
-        colStorage.setUbyte(colNum - 1, value);
+        flushStorage.setUbyte(colNum - 1, value);
         return true;
     }
 
@@ -602,7 +603,7 @@ public class ConnectorImpl implements Connector {
             setUbyte(colNum, value.byteValue(), false);
         } else {
             validator.validateSet(colNum - 1, value, "ftShort");
-            colStorage.setShort(colNum - 1, value);
+            flushStorage.setShort(colNum - 1, value);
         }
 
         return true;
@@ -611,28 +612,28 @@ public class ConnectorImpl implements Connector {
     @Override
     public boolean set_int(int colNum, Integer value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftInt");
-        colStorage.setInt(colNum - 1, value);
+        flushStorage.setInt(colNum - 1, value);
         return true;
     }
 
     @Override
     public boolean set_long(int colNum, Long value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftLong");
-        colStorage.setLong(colNum - 1, value);
+        flushStorage.setLong(colNum - 1, value);
         return true;
     }
 
     @Override
     public boolean set_float(int colNum, Float value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftFloat");
-        colStorage.setFloat(colNum - 1, value);
+        flushStorage.setFloat(colNum - 1, value);
         return true;
     }
 
     @Override
     public boolean set_double(int colNum, Double value) throws ConnException {
         validator.validateSet(colNum - 1, value, "ftDouble");
-        colStorage.setDouble(colNum - 1, value);
+        flushStorage.setDouble(colNum - 1, value);
         return true;
     }
 
@@ -642,7 +643,7 @@ public class ConnectorImpl implements Connector {
         // converting to byte array before validation
         byte[] stringBytes = value == null ? "".getBytes(varchar_encoding) : value.getBytes(varchar_encoding);
         validator.validateVarchar(colNum - 1, stringBytes.length);
-        colStorage.setVarchar(colNum - 1, stringBytes, value);
+        flushStorage.setVarchar(colNum - 1, stringBytes, value);
         return true;
     }
 
@@ -651,21 +652,21 @@ public class ConnectorImpl implements Connector {
         validator.validateSet(colNum - 1, value, "ftBlob");
         // Convert string to bytes
         byte[] stringBytes = value == null ? "".getBytes(UTF8) : value.getBytes(UTF8);
-        colStorage.setNvarchar(colNum - 1, stringBytes, value);
+        flushStorage.setNvarchar(colNum - 1, stringBytes, value);
         return true;
     }
 
     @Override
     public boolean set_date(int colNum, Date date, ZoneId zone) throws ConnException, UnsupportedEncodingException {
         validator.validateSet(colNum - 1, date, "ftDate");
-        colStorage.setDate(colNum - 1, date, zone);
+        flushStorage.setDate(colNum - 1, date, zone);
         return true;
     }
 
     @Override
     public boolean set_datetime(int colNum, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException {
         validator.validateSet(colNum - 1, ts, "ftDateTime");
-        colStorage.setDatetime(colNum - 1, ts, zone);
+        flushStorage.setDatetime(colNum - 1, ts, zone);
         return true;
     }
 

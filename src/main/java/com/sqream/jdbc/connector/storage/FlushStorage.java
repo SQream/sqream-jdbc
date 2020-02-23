@@ -16,16 +16,19 @@ import java.util.BitSet;
 
 import static com.sqream.jdbc.utils.Utils.*;
 
-public class FlushStorage extends BaseStorage implements Storage {
-
+public class FlushStorage {
+    private TableMetadata metadata;
+    private BlockDto curBlock;
     private BitSet columns_set;
+    private RowIterator rowIterator;
 
     public FlushStorage(TableMetadata metadata, BlockDto block) {
-        super(metadata, block);
-        rowIterator.next();
+        this.metadata = metadata;
+        this.curBlock = block;
+        columns_set = new BitSet(metadata.getRowLength());
+        initIterator(block);
     }
 
-    @Override
     public boolean next() throws ConnException {
         if (columns_set.cardinality() < metadata.getRowLength()) {
             throw new ConnException(MessageFormat.format(
@@ -33,28 +36,37 @@ public class FlushStorage extends BaseStorage implements Storage {
                     columns_set.cardinality(), metadata.getRowLength()));
         }
         columns_set.clear();
-        return super.next();
+        return rowIterator.next();
     }
 
-    @Override
     public void setBlock(BlockDto block) {
+        curBlock = block;
         rowIterator = new RowIterator(block.getCapacity());
         columns_set = new BitSet(metadata.getRowLength());
-        super.setBlock(block);
+        initIterator(block);
     }
 
-    @Override
     public BlockDto getBlock() {
-        BlockDto resultBlock = new BlockDto(dataColumns, nullColumns, nvarcLenColumns, curBlockCapacity);
-        resultBlock.setFillSize(rowIterator.getRowIndex());
-        return resultBlock;
+        curBlock.setFillSize(rowIterator.getRowIndex());
+        return curBlock;
     }
+
+    public int getTotalLengthForHeader(int row_length, int row_counter) {
+        int total_bytes = 0;
+        for(int idx=0; idx < row_length; idx++) {
+            total_bytes += (curBlock.getNullBuffers()[idx] != null) ? row_counter : 0;
+            total_bytes += (curBlock.getNvarcLenBuffers()[idx] != null) ? 4 * row_counter : 0;
+            total_bytes += curBlock.getDataBuffers()[idx].position();
+        }
+        return total_bytes;
+    }
+
 
     public void setBoolean(int colIndex, Boolean value) {
         if (value != null) {
-            dataColumns[colIndex].put((byte) ((value) ? 1 : 0));
+            curBlock.getDataBuffers()[colIndex].put((byte) ((value) ? 1 : 0));
         } else {
-            dataColumns[colIndex].put((byte) 0);
+            curBlock.getDataBuffers()[colIndex].put((byte) 0);
             markAsNull(colIndex);
         }
         columns_set.set(colIndex);
@@ -62,9 +74,9 @@ public class FlushStorage extends BaseStorage implements Storage {
 
     public void setUbyte(int colIndex, Byte value) {
         if (value != null) {
-            dataColumns[colIndex].put(value);
+            curBlock.getDataBuffers()[colIndex].put(value);
         } else {
-            dataColumns[colIndex].put((byte) 0);
+            curBlock.getDataBuffers()[colIndex].put((byte) 0);
             markAsNull(colIndex);
         }
         columns_set.set(colIndex);
@@ -72,9 +84,9 @@ public class FlushStorage extends BaseStorage implements Storage {
 
     public void setShort(int colIndex, Short value) {
         if (value != null) {
-            dataColumns[colIndex].putShort(value);
+            curBlock.getDataBuffers()[colIndex].putShort(value);
         } else {
-            dataColumns[colIndex].putShort((short) 0);
+            curBlock.getDataBuffers()[colIndex].putShort((short) 0);
             markAsNull(colIndex);
         }
         columns_set.set(colIndex);
@@ -82,9 +94,9 @@ public class FlushStorage extends BaseStorage implements Storage {
 
     public void setInt(int colIndex, Integer value) {
         if (value != null) {
-            dataColumns[colIndex].putInt(value);
+            curBlock.getDataBuffers()[colIndex].putInt(value);
         } else {
-            dataColumns[colIndex].putInt(0);
+            curBlock.getDataBuffers()[colIndex].putInt(0);
             markAsNull(colIndex);
         }
         columns_set.set(colIndex);
@@ -92,9 +104,9 @@ public class FlushStorage extends BaseStorage implements Storage {
 
     public void setLong(int colIndex, Long value) {
         if (value != null) {
-            dataColumns[colIndex].putLong(value);
+            curBlock.getDataBuffers()[colIndex].putLong(value);
         } else {
-            dataColumns[colIndex].putLong(0L);
+            curBlock.getDataBuffers()[colIndex].putLong(0L);
             markAsNull(colIndex);
         }
         columns_set.set(colIndex);
@@ -102,9 +114,9 @@ public class FlushStorage extends BaseStorage implements Storage {
 
     public void setFloat(int colIndex, Float value) {
         if (value != null) {
-            dataColumns[colIndex].putFloat(value);
+            curBlock.getDataBuffers()[colIndex].putFloat(value);
         } else {
-            dataColumns[colIndex].putFloat(0f);
+            curBlock.getDataBuffers()[colIndex].putFloat(0f);
             markAsNull(colIndex);
         }
         columns_set.set(colIndex);
@@ -112,9 +124,9 @@ public class FlushStorage extends BaseStorage implements Storage {
 
     public void setDouble(int colIndex, Double value) {
         if (value != null) {
-            dataColumns[colIndex].putDouble(value);
+            curBlock.getDataBuffers()[colIndex].putDouble(value);
         } else {
-            dataColumns[colIndex].putDouble(0d);
+            curBlock.getDataBuffers()[colIndex].putDouble(0d);
             markAsNull(colIndex);
         }
         columns_set.set(colIndex);
@@ -125,8 +137,8 @@ public class FlushStorage extends BaseStorage implements Storage {
         byte [] spaces = new byte[metadata.getSize(colIndex) - stringBytes.length];
         Arrays.fill(spaces, (byte) 32);  // ascii value of space
         // Set value and added spaces if needed
-        dataColumns[colIndex].put(stringBytes);
-        dataColumns[colIndex].put(spaces);
+        curBlock.getDataBuffers()[colIndex].put(stringBytes);
+        curBlock.getDataBuffers()[colIndex].put(spaces);
 
         if (originalString == null) {
             markAsNull(colIndex);
@@ -136,12 +148,12 @@ public class FlushStorage extends BaseStorage implements Storage {
 
     public void setNvarchar(int colIndex, byte[] stringBytes, String originalString) {
         // Add string length to lengths column
-        nvarcLenColumns[colIndex].putInt(stringBytes.length);
+        curBlock.getNvarcLenBuffers()[colIndex].putInt(stringBytes.length);
         // Set actual value
-        if (stringBytes.length > dataColumns[colIndex].remaining()) {
+        if (stringBytes.length > curBlock.getDataBuffers()[colIndex].remaining()) {
             increaseBuffer(colIndex, stringBytes.length);
         }
-        dataColumns[colIndex].put(stringBytes);
+        curBlock.getDataBuffers()[colIndex].put(stringBytes);
 
         if (originalString == null) {
             markAsNull(colIndex);
@@ -151,9 +163,9 @@ public class FlushStorage extends BaseStorage implements Storage {
 
     public void setDate(int colIndex, Date date, ZoneId zone) {
         if (date != null) {
-            dataColumns[colIndex].putInt(dateToInt(date, zone));
+            curBlock.getDataBuffers()[colIndex].putInt(dateToInt(date, zone));
         } else {
-            dataColumns[colIndex].putInt(0);
+            curBlock.getDataBuffers()[colIndex].putInt(0);
             markAsNull(colIndex);
         }
         columns_set.set(colIndex);
@@ -161,23 +173,28 @@ public class FlushStorage extends BaseStorage implements Storage {
 
     public void setDatetime(int colIndex, Timestamp timestamp, ZoneId zone) {
         if (timestamp != null) {
-            dataColumns[colIndex].putLong(dtToLong(timestamp, zone));
+            curBlock.getDataBuffers()[colIndex].putLong(dtToLong(timestamp, zone));
         } else {
-            dataColumns[colIndex].putLong(0L);
+            curBlock.getDataBuffers()[colIndex].putLong(0L);
             markAsNull(colIndex);
         }
         columns_set.set(colIndex);
     }
 
+    private void initIterator(BlockDto block) {
+        rowIterator = new RowIterator(block.getCapacity());
+        rowIterator.next();
+    }
+
     private void markAsNull(int index) {
-        nullColumns[index].put((byte) 1);
+        curBlock.getNullBuffers()[index].put((byte) 1);
     }
 
     private void increaseBuffer(int index, int puttingStringLength) {
-        ByteBuffer new_text_buf = ByteBuffer.allocateDirect((dataColumns[index].capacity() + puttingStringLength) * 2)
+        ByteBuffer new_text_buf = ByteBuffer.allocateDirect((curBlock.getDataBuffers()[index].capacity() + puttingStringLength) * 2)
                 .order(ByteOrder.LITTLE_ENDIAN);
-        new_text_buf.put(dataColumns[index]);
-        dataColumns[index] = new_text_buf;
+        new_text_buf.put(curBlock.getDataBuffers()[index]);
+        curBlock.getDataBuffers()[index] = new_text_buf;
     }
 
     private static long dtToLong(Timestamp ts, ZoneId zone) {  // ZonedDateTime

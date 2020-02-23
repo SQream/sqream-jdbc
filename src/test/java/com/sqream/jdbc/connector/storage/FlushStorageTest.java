@@ -14,7 +14,7 @@ public class FlushStorageTest {
 
     @Test
     public void nextTest() throws ConnException {
-        Storage storage = prepareStorage();
+        FlushStorage storage = prepareStorage();
         int testInt = 1;
 
         storage.setInt(0, testInt);
@@ -22,7 +22,7 @@ public class FlushStorageTest {
         storage.setInt(0, testInt);
         assertFalse(storage.next());
 
-        storage.clearBuffers(ROW_LENGTH);
+        storage.setBlock(createBlock());
 
         storage.setInt(0, testInt);
         assertTrue(storage.next());
@@ -32,14 +32,14 @@ public class FlushStorageTest {
 
     @Test(expected = ConnException.class)
     public void whenCallNextWithoutSettingAllColumnsThenThrowExceptionTest() throws ConnException {
-        Storage storage = prepareStorage();
+        FlushStorage storage = prepareStorage();
 
         assertTrue(storage.next());
     }
 
     @Test
     public void getBlockTest() throws ConnException {
-        Storage storage = prepareStorage();
+        FlushStorage storage = prepareStorage();
         int testInt = 1;
         storage.setInt(0, testInt);
         assertTrue(storage.next());
@@ -74,7 +74,7 @@ public class FlushStorageTest {
                 .buildBlock(createMetadata(), BLOCK_SIZE);
     }
 
-    private Storage prepareStorage() {
+    private FlushStorage prepareStorage() {
         TableMetadata metadata = createMetadata();
         BlockDto block = createBlock();
         return new FlushStorage(metadata, block);

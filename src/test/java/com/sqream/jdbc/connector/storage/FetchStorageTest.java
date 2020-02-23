@@ -12,16 +12,9 @@ public class FetchStorageTest {
     private static final int ROW_LENGTH = 1;
     private static final int BLOCK_SIZE = 2;
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void getBlockTest() {
-        Storage storage = prepareStorage();
-
-        storage.getBlock();
-    }
-
     @Test
     public void nextTest() throws ConnException {
-        Storage storage = prepareStorage();
+        FetchStorage storage = prepareStorage();
         BlockDto secondBlock = createBlock();
 
         assertTrue(storage.next());
@@ -59,7 +52,7 @@ public class FetchStorageTest {
         return block;
     }
 
-    private Storage prepareStorage() {
+    private FetchStorage prepareStorage() {
         TableMetadata metadata = createMetadata();
         BlockDto block = createBlock();
         return new FetchStorage(metadata, block);

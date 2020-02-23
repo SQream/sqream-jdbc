@@ -1,9 +1,7 @@
 package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.enums.StatementType;
-import com.sqream.jdbc.connector.storage.BaseStorage;
 import com.sqream.jdbc.connector.storage.FlushStorage;
-import com.sqream.jdbc.connector.storage.Storage;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -33,7 +31,7 @@ public class ColumnStorageTest {
                 .statementType(StatementType.INSERT)
                 .build();
 
-        Storage storage =
+        FlushStorage storage =
                 new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, rowsPerFlush));
 
         storage.setInt(0, 42);
@@ -58,7 +56,7 @@ public class ColumnStorageTest {
                 .statementType(StatementType.INSERT)
                 .build();
 
-        Storage storage =
+        FlushStorage storage =
                 new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize));
 
         String sampleText = "1";

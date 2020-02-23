@@ -2,7 +2,8 @@ package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.enums.StatementType;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
-import com.sqream.jdbc.connector.storage.ColumnStorage;
+import com.sqream.jdbc.connector.storage.BaseStorage;
+import com.sqream.jdbc.connector.storage.FlushStorage;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -25,10 +26,7 @@ public class FlushServiceTest {
                 .fromColumnsMetadata(columnMetadataList)
                 .statementType(StatementType.INSERT)
                 .build();
-        ColumnStorage storage = ColumnStorage.builder()
-                .metadata(metadata)
-                .blockSize(rowCounter)
-                .build();
+        BaseStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, rowCounter));
         BlockDto block = storage.getBlock();
         SQSocketConnector socketConnector = Mockito.mock(SQSocketConnector.class);
         ByteBufferPool bufferPool = new ByteBufferPool(1, rowCounter, metadata);

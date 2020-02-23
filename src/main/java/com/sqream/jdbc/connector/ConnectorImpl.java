@@ -13,14 +13,13 @@ import com.sqream.jdbc.connector.FetchService.FetchDataParser;
 import com.sqream.jdbc.connector.enums.StatementType;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
-import com.sqream.jdbc.connector.storage.ColumnStorage;
+import com.sqream.jdbc.connector.storage.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
 import java.text.MessageFormat;
 
 // Datatypes for building columns and other
-import java.util.BitSet;
 
 // Unicode related
 import java.nio.charset.Charset;
@@ -82,7 +81,7 @@ public class ConnectorImpl implements Connector {
     private int row_length;
 
     private TableMetadata tableMetadata;
-    private ColumnStorage colStorage;
+    private Storage colStorage;
 
     private boolean openStatement = false;
 
@@ -181,10 +180,8 @@ public class ConnectorImpl implements Connector {
             rowCounter = 0;
 
             // Initiate buffers for each column using the metadata
-            colStorage = ColumnStorage.builder()
-                    .metadata(tableMetadata)
-                    .blockSize(ROWS_PER_FLUSH)
-                    .build();
+            BlockDto block = new MemoryAllocationService().buildBlock(tableMetadata, ROWS_PER_FLUSH);
+            colStorage = new FlushStorage(tableMetadata, block);
 
             byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL, ROWS_PER_FLUSH, tableMetadata);
         }
@@ -222,13 +219,6 @@ public class ConnectorImpl implements Connector {
             socket.readData(fetched, fetched.capacity());
             //Arrays.stream(fetch_buffers).forEach(fetched -> fetched.flip());
         }
-
-        // Sort buffers to appropriate arrays (row_length determied during _query_type())
-        colStorage = ColumnStorage.builder()
-                .metadata(tableMetadata)
-                .blockSize(ROWS_PER_FLUSH)
-                .fromFetchBuffers(fetch_buffers)
-                .build();
 
         // Add buffers to buffer list
         queue.add(FetchDataParser.parse(fetch_buffers, tableMetadata, fetchMeta.getNewRowsFetched()));
@@ -361,6 +351,9 @@ public class ConnectorImpl implements Connector {
         // First fetch on the house, auto close statement if no data returned
         if (statement_type.equals(SELECT)) {
             int total_rows_fetched = _fetch(fetch_limit); // 0 - prefetch all data
+            if (total_rows_fetched > 0) {
+                colStorage = new FetchStorage(tableMetadata, queue.remove(0));
+            }
             //if (total_rows_fetched < (chunk_size == 0 ? 1 : chunk_size)) {
         }
 
@@ -387,21 +380,20 @@ public class ConnectorImpl implements Connector {
         	if (fetch_limit !=0 && totalRowCounter == fetch_limit)
         		return false;  // MaxRow limit reached, stop even if more data was fetched
         	// If all data has been read, try to fetch more
-        	if (rowCounter == (rows_in_current_batch -1)) {
+        	if (!colStorage.next()) {
         		rowCounter = -1;
         		if (queue.size() == 0) {
                     return false; // No more data and we've read all we have
                 }
                 // Set new active buffer to be reading data from
                 rows_in_current_batch = rows_per_batch.get(0);
-                BlockDto block = queue.get(0);
+                BlockDto block = queue.remove(0);
                 if (block.getFillSize() == 0) {
                     return false;
                 }
                 colStorage.setBlock(block);
+                colStorage.next();
 
-                // Remove active buffer from list
-                queue.remove(0);
                 rows_per_batch.remove(0);
             }
             rowCounter++;
@@ -452,43 +444,43 @@ public class ConnectorImpl implements Connector {
     @Override
     public Boolean getBoolean(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getBoolean(colNum - 1, rowCounter);
+        return colStorage.getBoolean(colNum - 1);
     }
 
     @Override
     public Byte get_ubyte(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getUbyte(colNum - 1, rowCounter);
+        return colStorage.getUbyte(colNum - 1);
     }
 
     @Override
     public Short get_short(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getShort(colNum - 1, rowCounter);
+        return colStorage.getShort(colNum - 1);
     }
 
     @Override
     public Integer get_int(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getInt(colNum - 1, rowCounter);
+        return colStorage.getInt(colNum - 1);
     }
 
     @Override
     public Long get_long(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getLong(colNum - 1, rowCounter);
+        return colStorage.getLong(colNum - 1);
     }
 
     @Override
     public Float get_float(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getFloat(colNum - 1, rowCounter);
+        return colStorage.getFloat(colNum - 1);
     }
 
     @Override
     public Double get_double(int colNum) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getDouble(colNum - 1, rowCounter);
+        return colStorage.getDouble(colNum - 1);
     }
 
     @Override
@@ -496,7 +488,7 @@ public class ConnectorImpl implements Connector {
         int colIndex = colNum - 1;
         validator.validateColumnIndex(colIndex);
         boolean repeatedly = col_calls[colIndex]++ > 0;
-        return colStorage.getVarchar(colIndex, rowCounter, varchar_encoding, repeatedly);
+        return colStorage.getVarchar(colIndex, varchar_encoding, repeatedly);
     }
 
     @Override
@@ -504,19 +496,19 @@ public class ConnectorImpl implements Connector {
         int colIndex = colNum - 1;
         validator.validateColumnIndex(colIndex);
         boolean repeatedly = col_calls[colIndex]++ > 0;
-        return colStorage.getNvarchar(colIndex, rowCounter, UTF8, repeatedly);
+        return colStorage.getNvarchar(colIndex, UTF8, repeatedly);
     }
 
     @Override
     public Date get_date(int colNum, ZoneId zone) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getDate(colNum - 1, rowCounter, zone);
+        return colStorage.getDate(colNum - 1, zone);
     }
 
     @Override
     public Timestamp get_datetime(int colNum, ZoneId zone) throws ConnException {
         validator.validateColumnIndex(colNum - 1);
-        return colStorage.getTimestamp(colNum - 1, rowCounter, zone);
+        return colStorage.getTimestamp(colNum - 1, zone);
     }
 
     @Override

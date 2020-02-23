@@ -135,20 +135,20 @@ public class TableMetadata {
         }
     }
 
-    interface WithRowLength {
+    public interface WithRowLength {
         WithColumnMetadataList rowLength(int rowLength);
     }
 
-    interface WithColumnMetadataList {
+    public interface WithColumnMetadataList {
 
         WithStatementType fromColumnsMetadata(List<ColumnMetadataDto> metadataDtos);
     }
 
-    interface WithStatementType {
+    public interface WithStatementType {
         TableMetadataCreator statementType(StatementType statementType);
     }
 
-    interface TableMetadataCreator {
+    public interface TableMetadataCreator {
         TableMetadata build();
     }
 }

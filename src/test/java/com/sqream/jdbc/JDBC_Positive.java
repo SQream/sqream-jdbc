@@ -151,7 +151,7 @@ public class JDBC_Positive {
                 fetchCounter++;
             }
         }
-        assertEquals(fetchCounter, times);
+        assertEquals(times, fetchCounter);
 	}
 	
 	@Test

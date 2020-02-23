@@ -255,18 +255,20 @@ public class ConnectorImpl implements Connector {
 
 
 
-    private int _flush(int row_counter, boolean isAsyncFlush) throws IOException, ConnException {
-        if (!statement_type.equals(INSERT) || row_counter == 0) {  // Not an insert statement
+    private int _flush(boolean isAsyncFlush) {
+        BlockDto blockForFlush = colStorage.getBlock();
+        int rowsFlush = blockForFlush.getFillSize();
+        if (!statement_type.equals(INSERT) || rowsFlush == 0) {  // Not an insert statement
             return 0;
         }
         BlockDto blockAfterFlush = flushService.process(
                 tableMetadata,
-                colStorage.getBlock(),
-                colStorage.getTotalLengthForHeader(tableMetadata.getRowLength(), row_counter),
+                blockForFlush,
+                colStorage.getTotalLengthForHeader(tableMetadata.getRowLength(), rowsFlush),
                 byteBufferPool,
                 isAsyncFlush);
         colStorage.setBlock(blockAfterFlush);
-        return row_counter;  // counter nullified by next()
+        return rowsFlush;  // counter nullified by next()
     }
 
     // User API Functions
@@ -366,7 +368,7 @@ public class ConnectorImpl implements Connector {
 
             // Flush and clean if needed
             if (!colStorage.next()) {
-                _flush(rowCounter, true);
+                _flush(true);
 
                 // After flush, clear row counter and all buffers
                 rowCounter = 0;
@@ -415,7 +417,7 @@ public class ConnectorImpl implements Connector {
     		if (openStatement) {
                 flushService.awaitTermination();
     			if (statement_type!= null && statement_type.equals(INSERT)) {
-    	            _flush(rowCounter, false);
+    	            _flush(false);
     	        }
     	            // Statement is finished so no need to reset row_counter etc
                 messenger.closeStatement();

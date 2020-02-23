@@ -8,17 +8,21 @@ import java.nio.charset.Charset;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.ZoneId;
+import java.util.Arrays;
 
 import static com.sqream.jdbc.utils.Utils.intToDate;
 import static com.sqream.jdbc.utils.Utils.longToDt;
 
 public class FetchStorage extends BaseStorage implements Storage {
+    private int[] col_calls;
 
     public FetchStorage(TableMetadata metadata, BlockDto block) {
         super(metadata, block);
+        col_calls = new int[metadata.getRowLength()];
     }
 
     public boolean next() {
+        Arrays.fill(col_calls, 0); // calls in the same fetch - for varchar / nvarchar
         return rowIterator.next();
     }
 
@@ -111,8 +115,9 @@ public class FetchStorage extends BaseStorage implements Storage {
     }
 
     @Override
-    public String getVarchar(int colIndex, String varcharEncoding, boolean repeatedly) {
+    public String getVarchar(int colIndex, String varcharEncoding) {
         int colSize = metadata.getSize(colIndex);
+        boolean repeatedly = col_calls[colIndex]++ > 0;
         if (repeatedly) {
             dataColumns[colIndex].position(dataColumns[colIndex].position() - colSize);
         }
@@ -123,8 +128,9 @@ public class FetchStorage extends BaseStorage implements Storage {
     }
 
     @Override
-    public String getNvarchar(int colIndex, Charset varcharEncoding, boolean repeatedly) {
+    public String getNvarchar(int colIndex, Charset varcharEncoding) {
         int nvarcLen = nvarcLenColumns[colIndex].getInt(rowIterator.getRowIndex() * 4);
+        boolean repeatedly = col_calls[colIndex]++ > 0;
         if (repeatedly) {
             dataColumns[colIndex].position(dataColumns[colIndex].position() - nvarcLen);
         }

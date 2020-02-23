@@ -92,8 +92,6 @@ public class ConnectorImpl implements Connector {
     // Get / Set related
     private int totalRowCounter;
 
-    private int[] col_calls;
-
     // Managing stop_statement
     private AtomicBoolean IsCancelStatement = new AtomicBoolean(false);
 
@@ -170,8 +168,6 @@ public class ConnectorImpl implements Connector {
                 .build();
 
         validator = new InsertValidator(tableMetadata);
-
-        col_calls = new int[row_length];
 
         // Create Storage for insert / select operations
         if (statement_type.equals(INSERT)) {
@@ -358,7 +354,6 @@ public class ConnectorImpl implements Connector {
                 colStorage.clearBuffers(row_length);
             }
         } else if (statement_type.equals(SELECT)) {
-        	Arrays.fill(col_calls, 0); // calls in the same fetch - for varchar / nvarchar
         	if (fetch_limit !=0 && totalRowCounter == fetch_limit) {
                 return false;  // MaxRow limit reached, stop even if more data was fetched
             }
@@ -462,16 +457,14 @@ public class ConnectorImpl implements Connector {
     public String get_varchar(int colNum) {
         int colIndex = colNum - 1;
         validator.validateColumnIndex(colIndex);
-        boolean repeatedly = col_calls[colIndex]++ > 0;
-        return colStorage.getVarchar(colIndex, varchar_encoding, repeatedly);
+        return colStorage.getVarchar(colIndex, varchar_encoding);
     }
 
     @Override
     public String get_nvarchar(int colNum) throws ConnException {
         int colIndex = colNum - 1;
         validator.validateColumnIndex(colIndex);
-        boolean repeatedly = col_calls[colIndex]++ > 0;
-        return colStorage.getNvarchar(colIndex, UTF8, repeatedly);
+        return colStorage.getNvarchar(colIndex, UTF8);
     }
 
     @Override

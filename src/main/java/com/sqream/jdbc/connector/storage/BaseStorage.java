@@ -158,11 +158,11 @@ public abstract class BaseStorage implements Storage {
         throw new UnsupportedOperationException();
     }
 
-    public String getVarchar(int colIndex, String varcharEncoding, boolean repeatedly) {
+    public String getVarchar(int colIndex, String varcharEncoding) {
         throw new UnsupportedOperationException();
     }
 
-    public String getNvarchar(int colIndex, Charset varcharEncoding, boolean repeatedly) {
+    public String getNvarchar(int colIndex, Charset varcharEncoding) {
         throw new UnsupportedOperationException();
     }
 

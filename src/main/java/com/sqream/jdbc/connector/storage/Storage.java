@@ -58,9 +58,9 @@ public interface Storage {
 
     Timestamp getTimestamp(int colIndex, ZoneId zoneId);
 
-    String getVarchar(int colIndex, String varcharEncoding, boolean repeatedly);
+    String getVarchar(int colIndex, String varcharEncoding);
 
-    String getNvarchar(int colIndex, Charset varcharEncoding, boolean repeatedly);
+    String getNvarchar(int colIndex, Charset varcharEncoding);
 
     int getTotalLengthForHeader(int row_length, int row_counter);
 }

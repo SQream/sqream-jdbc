@@ -1,6 +1,7 @@
 package com.sqream.jdbc.connector;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class BlockDto {
 
@@ -55,5 +56,16 @@ public class BlockDto {
 
     public void setFillSize(int fillSize) {
         this.fillSize = fillSize;
+    }
+
+    @Override
+    public String toString() {
+        return "BlockDto{" +
+                "dataBuffers=" + Arrays.toString(dataBuffers) +
+                ", nullBuffers=" + Arrays.toString(nullBuffers) +
+                ", nvarcLenBuffers=" + Arrays.toString(nvarcLenBuffers) +
+                ", capacity=" + capacity +
+                ", fillSize=" + fillSize +
+                '}';
     }
 }

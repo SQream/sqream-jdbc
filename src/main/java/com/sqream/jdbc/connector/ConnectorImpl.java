@@ -260,7 +260,6 @@ public class ConnectorImpl implements Connector {
             return 0;
         }
         BlockDto blockAfterFlush = flushService.process(
-                rowCounter,
                 tableMetadata,
                 colStorage.getBlock(),
                 colStorage.getTotalLengthForHeader(tableMetadata.getRowLength(), row_counter),

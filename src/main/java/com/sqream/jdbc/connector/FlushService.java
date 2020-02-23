@@ -27,10 +27,10 @@ public class FlushService {
         return  new FlushService(socket, messenger);
     }
 
-    public BlockDto process(int rowCounter, TableMetadata metadata,
+    public BlockDto process(TableMetadata metadata,
                         BlockDto block, int totalLengthForHeader, ByteBufferPool byteBufferPool, boolean async) {
         LOGGER.log(Level.FINE, MessageFormat.format(
-                "Process block: rowCounter=[{1}], asynchronous=[{2}]", rowCounter, async));
+                "Process block: block=[{1}], asynchronous=[{2}]", block, async));
 
         if (async) {
             if (executorService.isShutdown()) {
@@ -49,7 +49,7 @@ public class FlushService {
             executorService.submit(() -> {
                 try {
                     Thread.currentThread().setName("flush-service");
-                    flush(rowCounter,
+                    flush(block.getFillSize(),
                             metadata,
                             blockForFlush,
                             totalLengthForHeader);
@@ -62,7 +62,7 @@ public class FlushService {
             return blockFromPool;
         } else {
             try {
-                flush(rowCounter, metadata, block, totalLengthForHeader);
+                flush(block.getFillSize(), metadata, block, totalLengthForHeader);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

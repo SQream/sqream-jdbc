@@ -40,10 +40,7 @@ public class FlushService {
             executorService.submit(() -> {
                 try {
                     Thread.currentThread().setName("flush-service");
-                    flush(block.getFillSize(),
-                            metadata,
-                            block,
-                            totalLengthForHeader);
+                    flush(metadata, block, totalLengthForHeader);
 
                     clearBuffers(block);
 
@@ -54,7 +51,7 @@ public class FlushService {
             });
         } else {
             try {
-                flush(block.getFillSize(), metadata, block, totalLengthForHeader);
+                flush(metadata, block, totalLengthForHeader);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -98,22 +95,21 @@ public class FlushService {
         }
     }
 
-    private void flush(int rowCounter, TableMetadata metadata,
-                       BlockDto block, int totalLengthForHeader) throws IOException, ConnException {
+    private void flush(TableMetadata metadata, BlockDto block, int totalLengthForHeader) throws IOException, ConnException {
 
-        LOGGER.log(Level.FINE, MessageFormat.format("Flush data: rowLength=[{0}], rowCounter=[{1}], " +
-                "metadata=[{2}], block=[{3}], totalLengthForHeader=[{4}]",
-                metadata.getRowLength(), rowCounter, metadata, block, totalLengthForHeader));
+        LOGGER.log(Level.FINE, MessageFormat.format(
+                "Flush data: rowLength=[{0}], metadata=[{2}], block=[{3}], totalLengthForHeader=[{4}]",
+                metadata.getRowLength(), metadata, block, totalLengthForHeader));
 
         // Send put message
-        messenger.put(rowCounter);
+        messenger.put(block.getFillSize());
 
         // Send header with total binary insert
         ByteBuffer header_buffer = socket.generateHeaderedBuffer(totalLengthForHeader, false);
         socket.sendData(header_buffer, false);
 
         // Send available columns
-        sendDataToSocket(metadata.getRowLength(), rowCounter, metadata, socket, block);
+        sendDataToSocket(metadata.getRowLength(), block.getFillSize(), metadata, socket, block);
         messenger.isPutted();
     }
 

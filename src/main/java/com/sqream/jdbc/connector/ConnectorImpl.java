@@ -370,7 +370,6 @@ public class ConnectorImpl implements Connector {
                     return false;
                 }
                 fetchStorage.setBlock(block);
-                fetchStorage.next();
             }
             totalRowCounter++;
         } else if (statement_type.equals(DML)) {

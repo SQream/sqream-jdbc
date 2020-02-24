@@ -35,6 +35,7 @@ public class FetchStorage {
     public void setBlock(BlockDto block) {
         curBlock = block;
         initIterator(block);
+        rowIterator.next();
     }
 
     public Boolean getBoolean(int colIndex) {

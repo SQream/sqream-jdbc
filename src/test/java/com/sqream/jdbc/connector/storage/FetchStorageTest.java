@@ -25,7 +25,6 @@ public class FetchStorageTest {
 
         storage.setBlock(secondBlock);
 
-        assertTrue(storage.next());
         assertEquals(1, storage.getInt(0), 0);
         assertTrue(storage.next());
         assertEquals(1, storage.getInt(0), 0);

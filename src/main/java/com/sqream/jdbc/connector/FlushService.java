@@ -37,20 +37,17 @@ public class FlushService {
                 executorService = Executors.newSingleThreadExecutor();
             }
 
-            BlockDto blockForFlush =
-                    new BlockDto(block.getDataBuffers(), block.getNullBuffers(), block.getNvarcLenBuffers(), block.getCapacity());
-
             executorService.submit(() -> {
                 try {
                     Thread.currentThread().setName("flush-service");
                     flush(block.getFillSize(),
                             metadata,
-                            blockForFlush,
+                            block,
                             totalLengthForHeader);
 
-                    clearBuffers(blockForFlush);
+                    clearBuffers(block);
 
-                    byteBufferPool.releaseBlock(blockForFlush);
+                    byteBufferPool.releaseBlock(block);
                 } catch (Exception e) {
                     throw new RuntimeException("Exception when flush data", e);
                 }

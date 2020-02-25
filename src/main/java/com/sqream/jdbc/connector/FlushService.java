@@ -24,38 +24,26 @@ public class FlushService {
     }
 
     public static FlushService getInstance(SQSocketConnector socket, Messenger messenger) {
-        return  new FlushService(socket, messenger);
+        return new FlushService(socket, messenger);
     }
 
     public void process(TableMetadata metadata,
-                        BlockDto block, int totalLengthForHeader, ByteBufferPool byteBufferPool, boolean async) {
+                        BlockDto block, int totalLengthForHeader, ByteBufferPool byteBufferPool) {
         LOGGER.log(Level.FINE, MessageFormat.format(
-                "Process block: block=[{1}], asynchronous=[{2}]", block, async));
+                "Process block: block=[{1}], asynchronous=[{2}]", block));
 
-        if (async) {
-            if (executorService.isShutdown()) {
-                executorService = Executors.newSingleThreadExecutor();
-            }
-
-            executorService.submit(() -> {
-                try {
-                    Thread.currentThread().setName("flush-service");
-                    flush(metadata, block, totalLengthForHeader);
-
-                    clearBuffers(block);
-
-                    byteBufferPool.releaseBlock(block);
-                } catch (Exception e) {
-                    throw new RuntimeException("Exception when flush data", e);
-                }
-            });
-        } else {
+        executorService.submit(() -> {
             try {
+                Thread.currentThread().setName("flush-service");
                 flush(metadata, block, totalLengthForHeader);
+
+                clearBuffers(block);
+
+                byteBufferPool.releaseBlock(block);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Exception when flush data", e);
             }
-        }
+        });
     }
 
     private void clearBuffers(BlockDto block) {
@@ -78,16 +66,16 @@ public class FlushService {
     }
 
 
-    public void awaitTermination() {
-        LOGGER.log(Level.FINE, "Wait for termination");
+    public void close() {
+        LOGGER.log(Level.FINE, "Close flush service");
         if (!executorService.isTerminated()) {
-            LOGGER.log(Level.FINE, "Shutdown flush service");
+            LOGGER.log(Level.FINE, "Shutdown executor service");
             executorService.shutdown();
             try {
-                if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                if (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
                     throw new RuntimeException("Could not send data to SQream server");
                 }
-                LOGGER.log(Level.FINE, "Async flush successfully completed");
+                LOGGER.log(Level.FINE, "Executor service terminated");
             } catch (InterruptedException e) {
                 executorService.shutdownNow();
                 Thread.currentThread().interrupt();

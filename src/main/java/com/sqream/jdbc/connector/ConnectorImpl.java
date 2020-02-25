@@ -33,7 +33,6 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.ArrayList;
 // Aux
-import java.util.Arrays;   //  To allow debug prints via Arrays.toString
 
 //Exceptions
 import javax.script.ScriptException;
@@ -110,7 +109,6 @@ public class ConnectorImpl implements Connector {
             reconnectToNode();
         }
         this.messenger = MessengerImpl.getInstance(socket);
-        this.flushService = FlushService.getInstance(socket, messenger);
     }
 
     private void reconnectToNode() throws NoSuchAlgorithmException, IOException, KeyManagementException {
@@ -174,6 +172,7 @@ public class ConnectorImpl implements Connector {
         if (statement_type.equals(INSERT)) {
             // Initiate buffers for each column using the metadata
             BlockDto block = new MemoryAllocationService().buildBlock(tableMetadata, ROWS_PER_FLUSH);
+            flushService = FlushService.getInstance(socket, messenger);
             flushStorage = new FlushStorage(tableMetadata, block);
 
             byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL, ROWS_PER_FLUSH, tableMetadata);
@@ -239,7 +238,7 @@ public class ConnectorImpl implements Connector {
     	return total_fetched;
     }
 
-    private int _flush(boolean isAsyncFlush) {
+    private int flush() {
         BlockDto blockForFlush = flushStorage.getBlock();
         int rowsFlush = blockForFlush.getFillSize();
         if (!statement_type.equals(INSERT) || rowsFlush == 0) {  // Not an insert statement
@@ -249,8 +248,7 @@ public class ConnectorImpl implements Connector {
                 tableMetadata,
                 blockForFlush,
                 flushStorage.getTotalLengthForHeader(tableMetadata.getRowLength(), rowsFlush),
-                byteBufferPool,
-                isAsyncFlush);
+                byteBufferPool);
         try {
             flushStorage.setBlock(byteBufferPool.getBlock());
         } catch (InterruptedException e) {
@@ -354,7 +352,7 @@ public class ConnectorImpl implements Connector {
         if (statement_type.equals(INSERT)) {
             // Flush and clean if needed
             if (!flushStorage.next()) {
-                _flush(true);
+                flush();
             }
         } else if (statement_type.equals(SELECT)) {
         	if (fetch_limit !=0 && totalRowCounter == fetch_limit) {
@@ -386,9 +384,9 @@ public class ConnectorImpl implements Connector {
 
     	if (isOpen()) {
     		if (openStatement) {
-                flushService.awaitTermination();
     			if (statement_type!= null && statement_type.equals(INSERT)) {
-    	            _flush(false);
+    	            flush();
+    	            flushService.close();
     	        }
     	            // Statement is finished so no need to reset row_counter etc
                 messenger.closeStatement();

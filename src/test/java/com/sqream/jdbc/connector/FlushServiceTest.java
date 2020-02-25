@@ -31,7 +31,7 @@ public class FlushServiceTest {
         ByteBufferPool bufferPool = new ByteBufferPool(1, rowCounter, metadata);
         FlushService flushService = FlushService.getInstance(socketConnector, MessengerImpl.getInstance(socketConnector));
         flushService.process(metadata, block,
-                storage.getTotalLengthForHeader(rowLength, rowCounter), bufferPool, true);
+                storage.getTotalLengthForHeader(rowLength, rowCounter), bufferPool);
 
         ByteBufferPool pool = new ByteBufferPool(2, rowCounter, metadata);
         BlockDto blockFromPool = pool.getBlock();

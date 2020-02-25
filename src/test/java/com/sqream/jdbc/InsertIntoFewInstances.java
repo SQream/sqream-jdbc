@@ -18,8 +18,11 @@ import static junit.framework.TestCase.*;
 
 public class InsertIntoFewInstances {
 
-    private static final String SQL_CREATE_TABLE = "create or replace table public.perf (   bools bool null check('CS \"flat\"'),   bytes tinyint null check('CS \"flat\"'),   shorts smallint null check('CS \"flat\"'),   ints int null check('CS \"flat\"'),   bigints bigint null check('CS \"flat\"'),   floats real null check('CS \"flat\"'),   doubles double null check('CS \"flat\"'),   strings varchar(10) null check('CS \"flat\"'),   strangs text(10) null check('CS \"flat\"'),   dates date null check('CS \"flat\"'),   dts datetime null check('CS \"flat\"') )  ;";
-    private static final String SQL_INSERT = "insert into perf values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    private static final String SQL_CREATE_TABLE = "create or replace table public.perf (   " +
+            "bools bool null,   bytes tinyint null,   shorts smallint null,   ints int null,   bigints bigint null,   " +
+            "floats real null,   doubles double null,   strings varchar(10) null,   dates date null,   dts datetime null )  ;";
+    private static final String SQL_INSERT = "insert into perf values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String SQL_SELECT_COUNT = "select count(*) from perf;";
     private static final int AMOUNT = 10_000_000;
     private static final int[] PORTS = new int[]{5000, 5001, 5002};
@@ -87,9 +90,8 @@ public class InsertIntoFewInstances {
                     ps.setFloat(6, (float) 56.0);
                     ps.setDouble(7, 57.0);
                     ps.setString(8, "bla");
-                    ps.setString(9, "bla2");
-                    ps.setDate(10, date_from_tuple(2019, 11, 26));
-                    ps.setTimestamp(11, datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45));
+                    ps.setDate(9, date_from_tuple(2019, 11, 26));
+                    ps.setTimestamp(10, datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45));
                     ps.addBatch();
                 }
                 ps.executeBatch();

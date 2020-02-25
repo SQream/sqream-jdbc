@@ -14,18 +14,20 @@ public class ByteBufferPool {
     private static final Logger LOGGER = Logger.getLogger(ByteBufferPool.class.getName());
 
     private BlockingQueue<BlockDto> queue;
-    private int blockSize;
 
     public ByteBufferPool(int queueSize, int blockSize, TableMetadata metadata) {
         this.queue = new ArrayBlockingQueue<>(queueSize);
-        this.blockSize = blockSize;
         initByteBuffers(metadata, blockSize, queueSize);
     }
 
-    public BlockDto getBlock() throws InterruptedException {
+    public BlockDto getBlock() {
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Getting block from ByteBuffer pool. Blocks in the pool [{0}] (before taking)", queue.size()));
-        return queue.take();
+        try {
+            return queue.take();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void releaseBlock(BlockDto block) throws InterruptedException {

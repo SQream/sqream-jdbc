@@ -241,16 +241,11 @@ public class ConnectorImpl implements Connector {
     private int flush() {
         BlockDto blockForFlush = flushStorage.getBlock();
         int rowsFlush = blockForFlush.getFillSize();
-        if (!statement_type.equals(INSERT) || rowsFlush == 0) {  // Not an insert statement
-            return 0;
-        }
-        flushService.process(tableMetadata, blockForFlush, byteBufferPool);
-        try {
+        if (rowsFlush > 0) {
+            flushService.process(tableMetadata, blockForFlush, byteBufferPool);
             flushStorage.setBlock(byteBufferPool.getBlock());
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
-        return rowsFlush;  // counter nullified by next()
+        return rowsFlush;
     }
 
     // User API Functions

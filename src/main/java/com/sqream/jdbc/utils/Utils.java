@@ -1,6 +1,7 @@
 package com.sqream.jdbc.utils;
 
 import com.sqream.jdbc.connector.BlockDto;
+import com.sqream.jdbc.connector.TableMetadata;
 
 import java.nio.ByteBuffer;
 import java.sql.Date;
@@ -106,6 +107,16 @@ public class Utils {
             totalAllocated += calculateBuffersSize(arrays[i]);
         }
         return totalAllocated;
+    }
+
+    public static int totalLengthForHeader(TableMetadata metadata, BlockDto block) {
+        int total_bytes = 0;
+        for(int idx=0; idx < metadata.getRowLength(); idx++) {
+            total_bytes += (block.getNullBuffers()[idx] != null) ? block.getFillSize() : 0;
+            total_bytes += (block.getNvarcLenBuffers()[idx] != null) ? 4 * block.getFillSize() : 0;
+            total_bytes += block.getDataBuffers()[idx].position();
+        }
+        return total_bytes;
     }
 
     private static long calculateBuffersSize(ByteBuffer[] array) {

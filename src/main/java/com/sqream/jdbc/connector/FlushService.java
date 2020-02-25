@@ -1,6 +1,7 @@
 package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.messenger.Messenger;
+import com.sqream.jdbc.utils.Utils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -27,15 +28,14 @@ public class FlushService {
         return new FlushService(socket, messenger);
     }
 
-    public void process(TableMetadata metadata,
-                        BlockDto block, int totalLengthForHeader, ByteBufferPool byteBufferPool) {
+    public void process(TableMetadata metadata, BlockDto block, ByteBufferPool byteBufferPool) {
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Process block: block=[{1}], asynchronous=[{2}]", block));
 
         executorService.submit(() -> {
             try {
                 Thread.currentThread().setName("flush-service");
-                flush(metadata, block, totalLengthForHeader);
+                flush(metadata, block);
 
                 clearBuffers(block);
 
@@ -73,7 +73,7 @@ public class FlushService {
             executorService.shutdown();
             try {
                 if (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
-                    throw new RuntimeException("Could not send data to SQream server");
+                    throw new RuntimeException("Could not stop executor service");
                 }
                 LOGGER.log(Level.FINE, "Executor service terminated");
             } catch (InterruptedException e) {
@@ -83,17 +83,17 @@ public class FlushService {
         }
     }
 
-    private void flush(TableMetadata metadata, BlockDto block, int totalLengthForHeader) throws IOException, ConnException {
+    private void flush(TableMetadata metadata, BlockDto block) throws IOException, ConnException {
 
         LOGGER.log(Level.FINE, MessageFormat.format(
-                "Flush data: rowLength=[{0}], metadata=[{2}], block=[{3}], totalLengthForHeader=[{4}]",
-                metadata.getRowLength(), metadata, block, totalLengthForHeader));
+                "Flush data: rowLength=[{0}], metadata=[{2}], block=[{3}]",
+                metadata.getRowLength(), metadata, block));
 
         // Send put message
         messenger.put(block.getFillSize());
 
         // Send header with total binary insert
-        ByteBuffer header_buffer = socket.generateHeaderedBuffer(totalLengthForHeader, false);
+        ByteBuffer header_buffer = socket.generateHeaderedBuffer(Utils.totalLengthForHeader(metadata, block), false);
         socket.sendData(header_buffer, false);
 
         // Send available columns

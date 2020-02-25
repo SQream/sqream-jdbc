@@ -244,11 +244,7 @@ public class ConnectorImpl implements Connector {
         if (!statement_type.equals(INSERT) || rowsFlush == 0) {  // Not an insert statement
             return 0;
         }
-        flushService.process(
-                tableMetadata,
-                blockForFlush,
-                flushStorage.getTotalLengthForHeader(tableMetadata.getRowLength(), rowsFlush),
-                byteBufferPool);
+        flushService.process(tableMetadata, blockForFlush, byteBufferPool);
         try {
             flushStorage.setBlock(byteBufferPool.getBlock());
         } catch (InterruptedException e) {

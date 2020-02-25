@@ -13,37 +13,6 @@ import static org.junit.Assert.*;
 
 public class ColumnStorageTest {
 
-
-    @Test
-    public void getTotalLengthForHeaderTest() {
-        int rowsPerFlush = 10;
-
-        List<ColumnMetadataDto> columnMetadataList = new ArrayList<>();
-        columnMetadataList.add(new ColumnMetadataDto(true, "testColName0", true, "ftInt", 4));
-        columnMetadataList.add(new ColumnMetadataDto(false, "testColName1", false, "ftBool", 1));
-        columnMetadataList.add(new ColumnMetadataDto(true, "testColName1", false, "ftLong", 8));
-
-        int rowLength = columnMetadataList.size();
-
-        TableMetadata metadata = TableMetadata.builder()
-                .rowLength(rowLength)
-                .fromColumnsMetadata(columnMetadataList)
-                .statementType(StatementType.INSERT)
-                .build();
-
-        FlushStorage storage =
-                new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, rowsPerFlush));
-
-        storage.setInt(0, 42);
-        storage.setBoolean(0, true);
-        storage.setLong(0, 123L);
-
-        int expectedTotalLength = 103;
-        int actualTotalLength = storage.getTotalLengthForHeader(rowLength, rowsPerFlush);
-
-        assertEquals(expectedTotalLength, actualTotalLength);
-    }
-
     @Test
     public void increaseBufferTextBufferTest() {
         int rowLength = 1;

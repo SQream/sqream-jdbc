@@ -32,7 +32,6 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.internal.verification.Times;
 
 import static com.sqream.jdbc.TestEnvironment.*;
 import static java.sql.Types.*;
@@ -42,8 +41,6 @@ import static org.junit.Assert.*;
 public class JDBC_Positive {
 
     private static final Logger log = Logger.getLogger(JDBC_Positive.class.toString());
-
-    //public ConnectionHandle Client =null;
     
     // Test data
     Random r = new Random();    

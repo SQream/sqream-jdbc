@@ -51,17 +51,6 @@ public class FlushStorage {
         return curBlock;
     }
 
-    public int getTotalLengthForHeader(int row_length, int row_counter) {
-        int total_bytes = 0;
-        for(int idx=0; idx < row_length; idx++) {
-            total_bytes += (curBlock.getNullBuffers()[idx] != null) ? row_counter : 0;
-            total_bytes += (curBlock.getNvarcLenBuffers()[idx] != null) ? 4 * row_counter : 0;
-            total_bytes += curBlock.getDataBuffers()[idx].position();
-        }
-        return total_bytes;
-    }
-
-
     public void setBoolean(int colIndex, Boolean value) {
         if (value != null) {
             curBlock.getDataBuffers()[colIndex].put((byte) ((value) ? 1 : 0));

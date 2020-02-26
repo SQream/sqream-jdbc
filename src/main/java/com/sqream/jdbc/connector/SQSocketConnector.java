@@ -38,7 +38,7 @@ public class SQSocketConnector extends SQSocket {
     }
 
     // (3)  /* Used by _send_data()  (merge if only one )  */
-    int getParseHeader() throws IOException, ConnException {
+    public int getParseHeader() throws IOException, ConnException {
 
         this.header.clear();
         readData(header, HEADER_SIZE);
@@ -90,7 +90,7 @@ public class SQSocketConnector extends SQSocket {
         return sendData(messageBuffer, getResponse);
     }
 
-    int readData(ByteBuffer response, int msgLen) throws IOException, ConnException {
+    public int readData(ByteBuffer response, int msgLen) throws IOException, ConnException {
         /* Read either a specific amount of data, or until socket is empty if msg_len is 0.
          * response ByteBuffer of a fitting size should be supplied.
          */

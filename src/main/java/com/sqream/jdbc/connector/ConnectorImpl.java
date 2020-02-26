@@ -9,8 +9,8 @@ import java.nio.ByteOrder;
 // More SSL shite
 
 // JSON parsing library
-import com.sqream.jdbc.connector.FetchService.FetchDataParser;
 import com.sqream.jdbc.connector.enums.StatementType;
+import com.sqream.jdbc.connector.fetchService.FetchService;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
 import com.sqream.jdbc.connector.storage.*;
@@ -86,7 +86,7 @@ public class ConnectorImpl implements Connector {
     private boolean openStatement = false;
 
     // Column Storage
-    private List<BlockDto> queue = new ArrayList<>();
+    private List<BlockDto> fetchedBlocks = new ArrayList<>();
     private int fetch_limit = 0;
 
     // Get / Set related
@@ -97,6 +97,7 @@ public class ConnectorImpl implements Connector {
 
     private InsertValidator validator;
     private FlushService flushService;
+    private FetchService fetchService;
     private ByteBufferPool byteBufferPool;
 
     public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl)
@@ -178,64 +179,9 @@ public class ConnectorImpl implements Connector {
             byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL, ROWS_PER_FLUSH, tableMetadata);
         }
         if (statement_type.equals(SELECT)) {
+            fetchService = FetchService.getInstance(socket, messenger, tableMetadata);
             totalRowCounter = 0;
         }
-    }
-
-    private int _fetch() throws IOException, ScriptException, ConnException {
-        /* Request and get data from SQream following a SELECT query */
-
-        // Send fetch request and get metadata on data to be received
-
-        FetchMetadataDto fetchMeta = messenger.fetch();
-
-        if (fetchMeta.getNewRowsFetched() == 0) {
-            close();  // Auto closing statement if done fetching
-            return fetchMeta.getNewRowsFetched();
-        }
-        // Initiate storage columns using the "colSzs" returned by SQream
-        // All buffers in a single array to use SocketChannel's read(ByteBuffer[] dsts)
-        ByteBuffer[] fetch_buffers = new ByteBuffer[fetchMeta.colAmount()];
-
-        for (int i=0; i < fetchMeta.colAmount(); i++) {
-            fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);
-        }
-
-        // Initial naive implememntation - Get all socket data in advance
-        int bytes_read = socket.getParseHeader();   // Get header out of the way
-        for (ByteBuffer fetched : fetch_buffers) {
-            socket.readData(fetched, fetched.capacity());
-            //Arrays.stream(fetch_buffers).forEach(fetched -> fetched.flip());
-        }
-
-        // Add buffers to buffer list
-        queue.add(FetchDataParser.parse(fetch_buffers, tableMetadata, fetchMeta.getNewRowsFetched()));
-
-        return fetchMeta.getNewRowsFetched();  // counter nullified by next()
-    }
-
-
-    private int _fetch(int row_amount) throws IOException, ScriptException, ConnException {
-    	int total_fetched = 0;
-    	int new_rows_fetched;
-
-    	if (row_amount < -1) {
-    		throw new ConnException("row_amount should be positive, got " + row_amount);
-    	}
-    	if (row_amount == -1) {
-    		// Place for adding logic for previos fetching behavior - per
-    		// requirement fetch
-    	}
-    	else {  // positive row amount
-    		while (row_amount == 0 || total_fetched < row_amount) {
-    			new_rows_fetched = _fetch();
-    			if (new_rows_fetched ==0)
-    				break;
-    			total_fetched += new_rows_fetched;
-    		}
-    	}
-    	close();
-    	return total_fetched;
     }
 
     private int flush() {
@@ -328,11 +274,11 @@ public class ConnectorImpl implements Connector {
         }
         // First fetch on the house, auto close statement if no data returned
         if (statement_type.equals(SELECT)) {
-            int total_rows_fetched = _fetch(fetch_limit); // 0 - prefetch all data
-            if (total_rows_fetched > 0) {
-                fetchStorage = new FetchStorage(tableMetadata, queue.remove(0));
+            fetchedBlocks = fetchService.process(fetch_limit);
+            if (fetchedBlocks.size() > 0) {
+                fetchStorage = new FetchStorage(tableMetadata, fetchedBlocks.remove(0));
             }
-            //if (total_rows_fetched < (chunk_size == 0 ? 1 : chunk_size)) {
+            close();
         }
 
         return statementId;
@@ -350,11 +296,11 @@ public class ConnectorImpl implements Connector {
                 return false;  // MaxRow limit reached, stop even if more data was fetched
             }
         	if (!fetchStorage.next()) {
-        		if (queue.size() == 0) {
+        		if (fetchedBlocks.size() == 0) {
                     return false; // No more data and we've read all we have
                 }
                 // Set new active buffer to be reading data from
-                BlockDto block = queue.remove(0);
+                BlockDto block = fetchedBlocks.remove(0);
                 if (block.getFillSize() == 0) {
                     return false;
                 }

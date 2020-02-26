@@ -39,7 +39,7 @@ public class InsertIntoFewInstances {
 
     @Before
     public void setup() throws SQLException {
-        Connection conn = createConnection();
+        Connection conn = createConnection(createUrl(PORTS[0]));
         Statement statement = conn.createStatement();
         statement.execute(SQL_CREATE_TABLE);
         statement.close();
@@ -51,7 +51,7 @@ public class InsertIntoFewInstances {
         long t0 = System.currentTimeMillis();
         ExecutorService executorService = Executors.newFixedThreadPool(PORTS.length);
         for (int port : PORTS) {
-            executorService.submit(new InsertData(port));
+            executorService.submit(new InsertData(createUrl(port)));
         }
         executorService.shutdown();
         executorService.awaitTermination(5, TimeUnit.MINUTES);
@@ -63,23 +63,17 @@ public class InsertIntoFewInstances {
 
     private class InsertData implements Runnable {
 
-        private int port;
+        private String url;
 
-        public InsertData(int port) {
-            this.port = port;
+        public InsertData(String url) {
+            this.url = url;
         }
 
         @Override
         public void run() {
-            String url = URL;
-            if (url.contains(":5000")) {
-                url = url.replace(":5000", ":" + port);
-            } else {
-                fail();
-            }
 
             long t0 = System.nanoTime();
-            try (Connection conn = createConnection();
+            try (Connection conn = createConnection(url);
                  PreparedStatement ps = conn.prepareStatement(SQL_INSERT)) {
                 for (int j = 0; j < AMOUNT; j++) {
                     ps.setBoolean(1, true);
@@ -103,18 +97,28 @@ public class InsertIntoFewInstances {
         }
     }
 
-    private Connection createConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASS);
+    private Connection createConnection(String url) throws SQLException {
+        System.out.println(MessageFormat.format("Connect to [{0}]", url));
+        return DriverManager.getConnection(url, USER, PASS);
     }
 
     private void checkResult() throws SQLException {
-        try (Connection conn = createConnection();
+        try (Connection conn = createConnection(createUrl(PORTS[0]));
              Statement stmt = conn.createStatement()) {
 
             ResultSet rs = stmt.executeQuery(SQL_SELECT_COUNT);
 
             assertTrue(rs.next());
             assertEquals(AMOUNT * PORTS.length, rs.getLong(1));
+        }
+    }
+
+    private String createUrl(int port) {
+        String url = URL;
+        if (url.contains(":5000")) {
+            return url.replace(":5000", ":" + port);
+        } else {
+            throw new RuntimeException(MessageFormat.format("Test url should contain port 5000. URL=[{0}]", url));
         }
     }
 }

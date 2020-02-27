@@ -73,7 +73,7 @@ public class ConnectorImpl implements Connector {
     private boolean useSsl;
 
     // Binary data related
-    int ROWS_PER_FLUSH = 100000;
+    private static final int ROWS_PER_FLUSH = 100_000;
 
     // Column metadata
     private StatementType statementType;

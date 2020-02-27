@@ -18,7 +18,7 @@ public class JsonParser {
     private static final String QUERY_TYPE = "queryType";
     private static final String QUERY_TYPE_NAMED = "queryTypeNamed";
 
-    public static final int TEXT_ITEM_SIZE = 100_000;
+    public static final int TEXT_ITEM_SIZE = 1_000;
 
     public ConnectionStateDto toConnectionState(String body) throws ConnException {
         JsonObject jsonObj = parseJson(body);

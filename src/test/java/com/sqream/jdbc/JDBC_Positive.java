@@ -210,11 +210,12 @@ public class JDBC_Positive {
     @Test
     public void parameter_metadata() throws SQLException {
         /*  Check if charitable behavior works - not closing statement before starting the next one   */
+        int COLUMN_AMOUNT = 12;
 
         try (Connection conn = createConnection()) {
 
             // Count test - DML
-            String sql = "create or replace table test_parameter(bools bool not null, tinies tinyint, smalls smallint, ints int, bigs bigint, floats real, doubles double, dates date, dts datetime, varcs varchar (10), nvarcs nvarchar (10))";
+            String sql = "create or replace table test_parameter(bools bool not null, tinies tinyint, smalls smallint, ints int, bigs bigint, floats real, doubles double, dates date, dts datetime, varcs varchar (10), nvarcs nvarchar (10), tests text)";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ParameterMetaData params = ps.getParameterMetaData();
                 int count = params.getParameterCount();
@@ -224,62 +225,58 @@ public class JDBC_Positive {
             }
 
             // Count test - regular insert
-            sql = "insert into test_parameter values (true, 1, 11, 111, 1111, 1.1, 1.11, '2016-11-03', '2016-11-03 16:56:45.000', 'bla', 'nbla')";
+            sql = "insert into test_parameter values " +
+                    "(true, 1, 11, 111, 1111, 1.1, 1.11, '2016-11-03', '2016-11-03 16:56:45.000', 'bla', 'nbla', 'textTestValue')";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ParameterMetaData params = ps.getParameterMetaData();
                 int count = params.getParameterCount() ;
                 if (count != 0) {
-                    fail(MessageFormat.format("Should have 0 parameter count on a regular insert query, but got: [{0}]", count));
+                    fail(MessageFormat.format(
+                            "Should have 0 parameter count on a regular insert query, but got: [{0}]", count));
                 }
             }
 
             // Network insert - an actual paramtered query
-            sql = "insert into test_parameter values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            sql = "insert into test_parameter values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ParameterMetaData params = ps.getParameterMetaData();
                 int count = params.getParameterCount() ;
-                if (count != 11) {
-                    fail(MessageFormat.format("Should have 3 parameter count on a network insert, but got: [{0}]", count));
+                if (count != COLUMN_AMOUNT) {
+                    fail(MessageFormat.format(
+                            "Should have [{0}] parameter count on a network insert, but got: [{0}]",
+                            COLUMN_AMOUNT, count));
                 }
 
-                if (!params.getParameterClassName(1).equals("denied") || !params.getParameterClassName(2).equals("denied") ||
-                        !params.getParameterClassName(3).equals("denied") || !params.getParameterClassName(4).equals("denied") ||
-                        !params.getParameterClassName(5).equals("denied") || !params.getParameterClassName(6).equals("denied") ||
-                        !params.getParameterClassName(7).equals("denied") || !params.getParameterClassName(8).equals("denied") ||
-                        !params.getParameterClassName(9).equals("denied") || !params.getParameterClassName(10).equals("denied") ||
-                        !params.getParameterClassName(11).equals("denied"))
-                {
-                    fail("Bad column names returned:\n" + params.getParameterClassName(1) + '\n' + params.getParameterClassName(2) + '\n' + params.getParameterClassName(3) + '\n' + params.getParameterClassName(4) + '\n' + params.getParameterClassName(5) + '\n' + params.getParameterClassName(6) + '\n' + params.getParameterClassName(7) + '\n' + params.getParameterClassName(8) + '\n' + params.getParameterClassName(9) + '\n' + params.getParameterClassName(10) + '\n' + params.getParameterClassName(11)  );
+                for (int i = 1; i <= COLUMN_AMOUNT; i++) {
+                    if (!"denied".equals(params.getParameterClassName(i))) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int j = 1; j <= COLUMN_AMOUNT; j++) {
+                            sb.append(params.getParameterClassName(j));
+                            sb.append("\n");
+                        }
+                        fail(MessageFormat.format("Bad column names returned:\n{0}", sb.toString()));
+                    }
                 }
 
-                if (params.getParameterMode(1) != ParameterMetaData.parameterModeIn || params.getParameterMode(2) != ParameterMetaData.parameterModeIn  ||
-                        params.getParameterMode(3) != ParameterMetaData.parameterModeIn || params.getParameterMode(4) != ParameterMetaData.parameterModeIn  ||
-                        params.getParameterMode(5) != ParameterMetaData.parameterModeIn || params.getParameterMode(6) != ParameterMetaData.parameterModeIn  ||
-                        params.getParameterMode(7) != ParameterMetaData.parameterModeIn || params.getParameterMode(8) != ParameterMetaData.parameterModeIn  ||
-                        params.getParameterMode(9) != ParameterMetaData.parameterModeIn || params.getParameterMode(10) != ParameterMetaData.parameterModeIn  ||
-                        params.getParameterMode(11) != ParameterMetaData.parameterModeIn)
-                {
-                    fail("Bad parameter mode returned: " + params.getParameterMode(1));
+                for (int i = 1; i <= COLUMN_AMOUNT; i++) {
+                    if (params.getParameterMode(i) != ParameterMetaData.parameterModeIn) {
+                        fail("Bad parameter mode returned: " + params.getParameterMode(1));
+                    }
                 }
 
-                if (params.getScale(1) != 0 || params.getScale(2) != 0 || params.getScale(3) != 0 ||
-                        params.getScale(4) != 0 || params.getScale(5) != 0 || params.getScale(6) != 0 ||
-                        params.getScale(7) != 0 || params.getScale(8) != 0 || params.getScale(9) != 0 ||
-                        params.getScale(10) != 0 || params.getScale(11) != 0)
-                {
-                    // 4 on float, 8 on double, 0 elsewhere
-                    fail("Bad scale returned: " + params.getScale(2));
+                for (int i = 1; i <= COLUMN_AMOUNT; i++) {
+                    if (params.getScale(i) != 0) {
+                        fail("Bad scale returned: " + params.getScale(2));
+                    }
                 }
 
-                if (params.isNullable(1) != ParameterMetaData.parameterNullableUnknown || params.isNullable(2) != ParameterMetaData.parameterNullable ||
-                        params.isNullable(3) != ParameterMetaData.parameterNullable || params.isNullable(4) != ParameterMetaData.parameterNullable ||
-                        params.isNullable(5) != ParameterMetaData.parameterNullable || params.isNullable(6) != ParameterMetaData.parameterNullable ||
-                        params.isNullable(7) != ParameterMetaData.parameterNullable || params.isNullable(8) != ParameterMetaData.parameterNullable ||
-                        params.isNullable(9) != ParameterMetaData.parameterNullable || params.isNullable(10) != ParameterMetaData.parameterNullable ||
-                        params.isNullable(11) != ParameterMetaData.parameterNullable)
-                {
-                    // int column is not nullable
+                if (params.isNullable(1) != ParameterMetaData.parameterNullableUnknown) {
                     fail("Bad isNullable returned: " + params.isNullable(1));
+                }
+                for (int i = 2; i <= COLUMN_AMOUNT; i++) {
+                    if (params.isNullable(i) != ParameterMetaData.parameterNullable) {
+                        fail("Bad isNullable returned: " + params.isNullable(2));
+                    }
                 }
 
                 if (params.getParameterType(1) != Types.BOOLEAN || params.getParameterType(2) != TINYINT ||
@@ -287,18 +284,23 @@ public class JDBC_Positive {
                         params.getParameterType(5) != Types.BIGINT || params.getParameterType(6) != Types.REAL ||
                         params.getParameterType(7) != Types.DOUBLE || params.getParameterType(8) != Types.DATE ||
                         params.getParameterType(9) != Types.TIMESTAMP || params.getParameterType(10) != Types.VARCHAR ||
-                        params.getParameterType(11) != Types.NVARCHAR)
+                        params.getParameterType(11) != Types.NVARCHAR || params.getParameterType(12) != NVARCHAR)
                 {
                     fail("Bad parameter type returned: " + params.isNullable(1));
                 }
 
-                //params.getParameterType(1)
+                //FIXME: Alex K 27/02/2020 check what values we exactly should expect here.
                 if (params.getPrecision(1) != 1 || params.getPrecision(2) != 1 || params.getPrecision(3) != 2 ||
                         params.getPrecision(4) != 4 || params.getPrecision(5) != 8 || params.getPrecision(6) != 4 ||
                         params.getPrecision(7) != 8 || params.getPrecision(8) != 4 || params.getPrecision(9) != 8 ||
-                        params.getPrecision(10) != 10 || params.getPrecision(11) == 0)
+                        params.getPrecision(10) != 10 || params.getPrecision(11) == 0 || params.getPrecision(12) == 0)
                 {
-                    fail("Bad precision returned from parameter test:\n" + params.getPrecision(1) + '\n' + params.getPrecision(2) + '\n' + params.getPrecision(3) + '\n' + params.getPrecision(4) + '\n' + params.getPrecision(5) + '\n' + params.getPrecision(6) + '\n' + params.getPrecision(7) + '\n' + params.getPrecision(8) + '\n' + params.getPrecision(9) + '\n' + params.getPrecision(10) + '\n' + params.getPrecision(11)  );
+                    StringBuilder sb = new StringBuilder();
+                    for (int j = 1; j <= COLUMN_AMOUNT; j++) {
+                        sb.append(params.getPrecision(j));
+                        sb.append("\n");
+                    }
+                    fail(MessageFormat.format("Bad precision returned from parameter test:\n{0}", sb.toString()));
                 }
 
                 if (!params.getParameterTypeName(1).equals("ftBool") || !params.getParameterTypeName(2).equals("ftUByte") ||
@@ -311,13 +313,10 @@ public class JDBC_Positive {
                     fail("Bad taypenames returned:\n" + params.getParameterTypeName(1) + '\n' + params.getParameterTypeName(2) + '\n' + params.getParameterTypeName(3) + '\n' + params.getParameterTypeName(4) + '\n' + params.getParameterTypeName(5) + '\n' + params.getParameterTypeName(6) + '\n' + params.getParameterTypeName(7) + '\n' + params.getParameterTypeName(8) + '\n' + params.getParameterTypeName(9) + '\n' + params.getParameterTypeName(10) + '\n' + params.getParameterTypeName(11)  );
                 }
 
-                //params.getParameterType(1)
-                if (params.isSigned(1) != false || params.isSigned(2) != false || params.isSigned(3) != true ||
-                        params.isSigned(4) != true || params.isSigned(5) != true || params.isSigned(6) != true ||
-                        params.isSigned(7) != true || params.isSigned(8) != false || params.isSigned(9) != false ||
-                        params.isSigned(10) != false || params.isSigned(11) != false)
-                {
-                    fail("Bad values returned on isSigned():" + params.isSigned(1));
+                for (int i = 1; i <= COLUMN_AMOUNT; i++) {
+                    if (params.isSigned(1)) {
+                        fail("Bad values returned on isSigned():" + params.isSigned(1));
+                    }
                 }
             }
         }
@@ -526,7 +525,8 @@ public class JDBC_Positive {
 
     @Test
     public void typesTest() throws NoSuchAlgorithmException, SQLException, KeyManagementException, IOException {
-        String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(100)", "date", "datetime"};
+        String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)",
+                "nvarchar(100)", "date", "datetime", "text"};
 
         for (String col_type : typelist) {
             insert(col_type);
@@ -537,8 +537,8 @@ public class JDBC_Positive {
     public void setValuesAsNullTest() throws SQLException {
         String createSql = "create or replace table test_null_values " +
                 "(bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, " +
-                "strings varchar(10), strangs nvarchar(10), dates date, dts datetime)";
-        String insertSql = "insert into test_null_values values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                "strings varchar(10), strangs nvarchar(10), dates date, dts datetime, texts text)";
+        String insertSql = "insert into test_null_values values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         try (Connection conn = DriverManager.getConnection(url, "sqream", "sqream");
              Statement stmt = conn.createStatement()) {
             stmt.execute(createSql);
@@ -557,6 +557,7 @@ public class JDBC_Positive {
             ps.setString(9, null);
             ps.setDate(10, null);
             ps.setTimestamp(11, null);
+            ps.setString(12,null);
             ps.addBatch();
         }
 
@@ -578,6 +579,7 @@ public class JDBC_Positive {
             assertNull(rs.getString(9));
             assertNull(rs.getDate(10));
             assertNull(rs.getTimestamp(11));
+            assertNull(rs.getString(12));
         }
     }
 
@@ -709,8 +711,8 @@ public class JDBC_Positive {
         String CREATE_TABLE_SQL = "create or replace table test_get_set_objects " +
                 "(t_bool bool, t_ubyte tinyint, t_short smallint, t_int int, t_long bigint, " +
                 "t_double double, t_varchar varchar(10), t_nvarchar nvarchar(10), " +
-                "t_real real, t_date date, t_datetime datetime);";
-        String INSERT_SQL = "insert into test_get_set_objects values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                "t_real real, t_date date, t_datetime datetime, t_text text);";
+        String INSERT_SQL = "insert into test_get_set_objects values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         String SELECT_SQL = "select * from test_get_set_objects;";
 
         List<Object> objects = new ArrayList<>();
@@ -725,6 +727,7 @@ public class JDBC_Positive {
         objects.add(42f);
         objects.add(new Date(System.currentTimeMillis()));
         objects.add(new Timestamp(System.currentTimeMillis()));
+        objects.add("42");
 
 
 	    try (Connection conn = createConnection()) {
@@ -755,6 +758,7 @@ public class JDBC_Positive {
                 assertEquals(Float.class, rs.getObject(9).getClass());
                 assertEquals(Date.class, rs.getObject(10).getClass());
                 assertEquals(Timestamp.class, rs.getObject(11).getClass());
+                assertEquals(String.class, rs.getObject(12).getClass());
             }
         }
     }

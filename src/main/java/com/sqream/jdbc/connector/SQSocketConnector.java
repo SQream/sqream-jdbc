@@ -38,7 +38,7 @@ public class SQSocketConnector extends SQSocket {
     }
 
     // (3)  /* Used by _send_data()  (merge if only one )  */
-    public int getParseHeader() throws IOException, ConnException {
+    public int parseHeader() throws IOException, ConnException {
 
         this.header.clear();
         readData(header, HEADER_SIZE);
@@ -69,7 +69,7 @@ public class SQSocketConnector extends SQSocket {
 
         // Sending null for data will get us here directly, allowing to only get socket response if needed
         if(get_response) {
-            int msg_len = getParseHeader();
+            int msg_len = parseHeader();
             if (msg_len > 64000) // If our 64K response_message buffer doesn't do
             responseMessage = ByteBuffer.allocate(msg_len);
             responseMessage.clear();

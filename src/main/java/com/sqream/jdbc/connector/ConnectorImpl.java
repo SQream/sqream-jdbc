@@ -57,7 +57,7 @@ public class ConnectorImpl implements Connector {
     private static final ZoneId SYSTEM_TZ = ZoneId.systemDefault();
     private static final Charset UTF8 = StandardCharsets.UTF_8;
 
-    private static final int BYTE_BUFFER_POOL = 3;
+    private static final int BYTE_BUFFER_POOL_SIZE = 3;
 
     private SQSocketConnector socket;
     private Messenger messenger;
@@ -76,7 +76,7 @@ public class ConnectorImpl implements Connector {
     int ROWS_PER_FLUSH = 100000;
 
     // Column metadata
-    private StatementType statement_type;
+    private StatementType statementType;
     private int row_length;
 
     private TableMetadata tableMetadata;
@@ -87,7 +87,7 @@ public class ConnectorImpl implements Connector {
 
     // Column Storage
     private List<BlockDto> fetchedBlocks = new ArrayList<>();
-    private int fetch_limit = 0;
+    private int fetchLimit = 0;
 
     // Get / Set related
     private int totalRowCounter;
@@ -164,21 +164,21 @@ public class ConnectorImpl implements Connector {
         tableMetadata = TableMetadata.builder()
                 .rowLength(row_length)
                 .fromColumnsMetadata(columnsMetadata)
-                .statementType(statement_type)
+                .statementType(statementType)
                 .build();
 
         validator = new InsertValidator(tableMetadata);
 
         // Create Storage for insert / select operations
-        if (statement_type.equals(INSERT)) {
+        if (statementType.equals(INSERT)) {
             // Initiate buffers for each column using the metadata
             BlockDto block = new MemoryAllocationService().buildBlock(tableMetadata, ROWS_PER_FLUSH);
             flushService = FlushService.getInstance(socket, messenger);
             flushStorage = new FlushStorage(tableMetadata, block);
 
-            byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL, ROWS_PER_FLUSH, tableMetadata);
+            byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, ROWS_PER_FLUSH, tableMetadata);
         }
-        if (statement_type.equals(SELECT)) {
+        if (statementType.equals(SELECT)) {
             fetchService = FetchService.getInstance(socket, messenger, tableMetadata);
             totalRowCounter = 0;
         }
@@ -224,20 +224,16 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public int execute(String statement, int chunkSize) throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException {
+    public int execute(String statement, int chunkSize)
+            throws IOException, ConnException, NoSuchAlgorithmException, KeyManagementException {
         LOGGER.log(Level.FINE, MessageFormat.format("Statement=[{0}], ChunkSize=[{1}]", statement, chunkSize));
 
         if (chunkSize < 0) {
             throw new ConnException("chunk_size should be positive, got " + chunkSize);
         }
-        /* getStatementId, prepareStatement, reconnect, execute, queryType  */
-        boolean charitable = true;
         if (openStatement) {
-            if (charitable) {  // Automatically close previous unclosed statement
-                close();
-            } else {
-                throw new ConnException("Trying to run a statement when another was not closed. Open statement id: " + statementId + " on connection: " + connection_id);
-            }
+            // Automatically close previous unclosed statement
+            close();
         }
         openStatement = true;
         // Get statement ID, send prepareStatement and get response parameters
@@ -262,21 +258,24 @@ public class ConnectorImpl implements Connector {
 
         if (queryType.isEmpty()) {
             queryType = messenger.queryTypeOut();
-            statement_type = queryType.isEmpty() ? DML : SELECT;
+            statementType = queryType.isEmpty() ? DML : SELECT;
         }
         else {
-            statement_type = INSERT;
+            statementType = INSERT;
         }
 
         // Select or Insert statement - parse queryType response for metadata
-        if (!statement_type.equals(DML)) {
+        if (!statementType.equals(DML)) {
             parseQueryType(queryType);
         }
         // First fetch on the house, auto close statement if no data returned
-        if (statement_type.equals(SELECT)) {
-            fetchedBlocks = fetchService.process(fetch_limit);
+        if (statementType.equals(SELECT)) {
+            fetchedBlocks = fetchService.process(fetchLimit);
             if (fetchedBlocks.size() > 0) {
                 fetchStorage = new FetchStorage(tableMetadata, fetchedBlocks.remove(0));
+            } else {
+                //FIXME: Alex K 2/27/2020. Should handle this case to prevent NPE in next() method.
+                // If it's not correct case - throw exception with meaningful message.
             }
             close();
         }
@@ -286,13 +285,13 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean next() throws ConnException {
-        if (statement_type.equals(INSERT)) {
+        if (statementType.equals(INSERT)) {
             // Flush and clean if needed
             if (!flushStorage.next()) {
                 flush();
             }
-        } else if (statement_type.equals(SELECT)) {
-        	if (fetch_limit !=0 && totalRowCounter == fetch_limit) {
+        } else if (statementType.equals(SELECT)) {
+        	if (fetchLimit !=0 && totalRowCounter == fetchLimit) {
                 return false;  // MaxRow limit reached, stop even if more data was fetched
             }
         	if (!fetchStorage.next()) {
@@ -307,21 +306,21 @@ public class ConnectorImpl implements Connector {
                 fetchStorage.setBlock(block);
             }
             totalRowCounter++;
-        } else if (statement_type.equals(DML)) {
+        } else if (statementType.equals(DML)) {
             throw new ConnException("Calling next() on a non insert / select query");
         } else {
-            throw new ConnException("Calling next() on a statement type different than INSERT / SELECT / DML: " + statement_type.getValue());
+            throw new ConnException("Calling next() on a statement type different than INSERT / SELECT / DML: " + statementType.getValue());
         }
         return true;
     }
 
     @Override
     public void close() throws IOException, ConnException {
-        LOGGER.log(Level.FINE, MessageFormat.format("Close statement: openStatement=[{0}], statementType=[{1}]]", openStatement, statement_type));
+        LOGGER.log(Level.FINE, MessageFormat.format("Close statement: openStatement=[{0}], statementType=[{1}]]", openStatement, statementType));
 
     	if (isOpen()) {
     		if (openStatement) {
-    			if (statement_type!= null && statement_type.equals(INSERT)) {
+    			if (statementType != null && statementType.equals(INSERT)) {
     	            flush();
     	            flushService.close();
     	        }
@@ -634,7 +633,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public String getQueryType() {
-        return statement_type.getValue();
+        return statementType.getValue();
     }
 
     @Override
@@ -695,19 +694,18 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean setFetchLimit(int _fetch_limit) throws ConnException{
-
-        if (_fetch_limit < 0)
-            throw new ConnException("Max rows to fetch should be nonnegative, got" + _fetch_limit);
-
-        fetch_limit = _fetch_limit;
-
+    public boolean setFetchLimit(int fetchLimit) throws ConnException{
+        if (fetchLimit < 0) {
+            throw new ConnException(MessageFormat.format(
+                    "Max rows [{0}] to fetch should be non negative", fetchLimit));
+        }
+        this.fetchLimit = fetchLimit;
         return true;
     }
 
     @Override
     public int getFetchLimit() {
-        return fetch_limit;
+        return fetchLimit;
     }
 
 }

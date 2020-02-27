@@ -30,58 +30,45 @@ public class FetchService {
         return new FetchService(socket, messenger, metadata);
     }
 
-    public List<BlockDto> process(int rowAmount) throws IOException, ScriptException, ConnException {
+    public List<BlockDto> process(int rowAmount) throws IOException, ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format("Fetch [{0}]", rowAmount));
 
+        if (rowAmount < 0) {
+            throw new ConnException(MessageFormat.format("Row amount [{0}] should be positive", rowAmount));
+        }
+
         List<BlockDto> resultBlocks = new ArrayList<>();
+        int totalFetched = 0;
+        int newRowsFetched;
 
-        int total_fetched = 0;
-        int new_rows_fetched;
-
-        if (rowAmount < -1) {
-            throw new ConnException("row_amount should be positive, got " + rowAmount);
-        }
-        if (rowAmount == -1) {
-            // Place for adding logic for previos fetching behavior - per
-            // requirement fetch
-        }
-        else {  // positive row amount
-            while (rowAmount == 0 || total_fetched < rowAmount) {
-                new_rows_fetched = fetch(resultBlocks);
-                if (new_rows_fetched ==0)
-                    break;
-                total_fetched += new_rows_fetched;
-            }
+        while (rowAmount == 0 || totalFetched < rowAmount) {
+            newRowsFetched = fetch(resultBlocks);
+            if (newRowsFetched ==0)
+                break;
+            totalFetched += newRowsFetched;
         }
         return resultBlocks;
     }
 
-    private int fetch(List<BlockDto> resultList) throws IOException, ScriptException, ConnException {
-        /* Request and get data from SQream following a SELECT query */
-
-        // Send fetch request and get metadata on data to be received
+    private int fetch(List<BlockDto> resultList) throws IOException, ConnException {
 
         FetchMetadataDto fetchMeta = messenger.fetch();
 
         if (fetchMeta.getNewRowsFetched() == 0) {
             return fetchMeta.getNewRowsFetched();
         }
-        // Initiate storage columns using the "colSzs" returned by SQream
-        // All buffers in a single array to use SocketChannel's read(ByteBuffer[] dsts)
+
         ByteBuffer[] fetch_buffers = new ByteBuffer[fetchMeta.colAmount()];
 
         for (int i=0; i < fetchMeta.colAmount(); i++) {
             fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);
         }
 
-        // Initial naive implememntation - Get all socket data in advance
-        int bytes_read = socket.getParseHeader();   // Get header out of the way
-        for (ByteBuffer fetched : fetch_buffers) {
-            socket.readData(fetched, fetched.capacity());
-            //Arrays.stream(fetch_buffers).forEach(fetched -> fetched.flip());
+        int bytes_read = socket.parseHeader();   // Get header out of the way
+        for (ByteBuffer fetchBuffer : fetch_buffers) {
+            socket.readData(fetchBuffer, fetchBuffer.capacity());
         }
 
-        // Add buffers to buffer list
         resultList.add(parse(fetch_buffers, metadata, fetchMeta.getNewRowsFetched()));
 
         return fetchMeta.getNewRowsFetched();  // counter nullified by next()

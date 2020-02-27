@@ -322,8 +322,8 @@ public class JDBC_Positive {
         }
     }
     
-    
-    public boolean not_closing() throws SQLException {
+    @Test
+    public void not_closing() throws SQLException {
         /*  Check if charitable behavior works - not closing statement before starting the next one   */
         
    	    boolean a_ok = false;
@@ -347,7 +347,7 @@ public class JDBC_Positive {
         stmt.close();
         
         
-        return a_ok;
+        assertTrue(a_ok);
     }
     
     @Test
@@ -1064,20 +1064,30 @@ public class JDBC_Positive {
         stmt.execute(sql);
         stmt.close();
     }
-    
-    public boolean get_tables_test() throws SQLException {
-        conn = DriverManager.getConnection(url,"sqream","sqream");
-        dbmeta = conn.getMetaData();
-        // rs = dbmeta.getTables("master", "public", "test");
-         //rs = dbmeta.getTables(null, null, "test", null);
-        rs = dbmeta.getTables(null, null, null, null);
-        // rsmeta = rs.getMetaData();
-        while(rs.next()) 
-            log.info(rs.getString(3));
-        rs.close();
-        conn.close();
-        //conn.close();
-        return true;
+
+    @Test
+    public void get_tables_test() throws SQLException {
+        List<String> tablesByQuery = new ArrayList<>();
+        Set<String> tablesFromMetadata = new HashSet<>();
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery("select get_tables('*', '*', '*', '*');");
+                while (rs.next()) {
+                    tablesByQuery.add(rs.getString(3));
+                }
+            }
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet rs = metaData.getTables(null, null, null, null);
+            while (rs.next()) {
+                tablesFromMetadata.add(rs.getString(3));
+            }
+        }
+
+        assertEquals(tablesByQuery.size(), tablesFromMetadata.size());
+        for (String tableFromQuery : tablesByQuery) {
+            assertTrue(tablesFromMetadata.contains(tableFromQuery));
+        }
     }
 
     private Connection createConnection() {

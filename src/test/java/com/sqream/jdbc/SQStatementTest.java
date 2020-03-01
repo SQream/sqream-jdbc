@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import java.sql.*;
 import java.text.MessageFormat;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.sqream.jdbc.TestEnvironment.URL;
 import static org.junit.Assert.*;
@@ -149,6 +151,71 @@ public class SQStatementTest {
             assertEquals(42, rs.getInt(1));
         }
     }
+
+    @Test(expected = SQLException.class)
+    public void cancelExecutableStatementTest() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table cancel_statement_test (col1 int);";
+
+        StringBuilder INSERT_SQL = new StringBuilder("insert into cancel_statement_test values (42)");
+        for (int i = 0; i < 1_000; i++) {
+            INSERT_SQL.append(", (42)");
+        }
+        INSERT_SQL.append(";");
+
+        String SELECT_SQL = "select count(*) from cancel_statement_test;";
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(CREATE_TABLE_SQL);
+
+            ExecutorService cancelExecutor = Executors.newSingleThreadExecutor();
+            cancelExecutor.submit(() -> {
+                try {
+                    Thread.sleep(1000);
+                    stmt.cancel();
+                } catch (InterruptedException | SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            stmt.executeUpdate(INSERT_SQL.toString());
+        }
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            ResultSet rs = stmt.executeQuery(SELECT_SQL);
+
+            assertTrue(rs.next());
+            assertEquals(0, rs.getLong(1));
+        }
+    }
+
+    @Test
+    public void cancelStatementAfterExecuteTest() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table cancel_statement_test (col1 int);";
+        String INSERT_SQL = "insert into cancel_statement_test values (42);";
+        String SELECT_SQL = "select count(*) from cancel_statement_test;";
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(CREATE_TABLE_SQL);
+
+            stmt.executeUpdate(INSERT_SQL);
+
+            stmt.cancel();
+        }
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            ResultSet rs = stmt.executeQuery(SELECT_SQL);
+
+            assertTrue(rs.next());
+            assertEquals(0, rs.getLong(1));
+        }
+    }
+
 
     private Connection createConnection() {
         try {

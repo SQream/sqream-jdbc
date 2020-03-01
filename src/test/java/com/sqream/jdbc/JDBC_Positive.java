@@ -1067,7 +1067,7 @@ public class JDBC_Positive {
 
     @Test
     public void get_tables_test() throws SQLException {
-        List<String> tablesByQuery = new ArrayList<>();
+        Set<String> tablesByQuery = new HashSet<>();
         Set<String> tablesFromMetadata = new HashSet<>();
 
         try (Connection conn = createConnection()) {

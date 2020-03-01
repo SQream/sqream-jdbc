@@ -113,6 +113,43 @@ public class SQStatementTest {
         assertFalse(deleteResult);
     }
 
+    @Test
+    public void executeUpdateTest() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table execute_statement_test (col1 int);";
+        String INSERT_SQL = "insert into execute_statement_test values (42);";
+        String SELECT_SQL = "select * from execute_statement_test;";
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(CREATE_TABLE_SQL);
+
+            stmt.executeUpdate(INSERT_SQL);
+
+            ResultSet rs = stmt.executeQuery(SELECT_SQL);
+            assertTrue(rs.next());
+            assertEquals(42, rs.getInt(1));
+        }
+
+    }
+
+    @Test
+    public void executeTest() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table execute_statement_test (col1 int);";
+        String INSERT_SQL = "insert into execute_statement_test values (42);";
+        String SELECT_SQL = "select * from execute_statement_test;";
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(CREATE_TABLE_SQL);
+
+            stmt.execute(INSERT_SQL);
+
+            ResultSet rs = stmt.executeQuery(SELECT_SQL);
+            assertTrue(rs.next());
+            assertEquals(42, rs.getInt(1));
+        }
+    }
+
     private Connection createConnection() {
         try {
             return DriverManager.getConnection(URL,"sqream","sqream");

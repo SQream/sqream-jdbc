@@ -129,12 +129,12 @@ public class SQStatement implements Statement {
 			return (!"INSERT".equals(client.getQueryType())) && client.getRowLength() > 0;
 
 		} catch (Exception e) {
-			if (e.getMessage().contains("stopped by user")
-					|| e.getMessage().contains("cancelled by user")) {
+			if (e.getMessage() != null &&
+					("stopped by user".contains(e.getMessage()) || "cancelled by user".contains(e.getMessage()))) {
 				throw new SQLException("Statement cancelled by user");
 			} else {
 				throw new SQLException("can not execute - "
-						+ e.getMessage());
+						+ e.getMessage(), e);
 			}
 		}
 	}

@@ -112,40 +112,31 @@ public class SQStatement implements Statement {
 	public boolean execute(String sql) throws SQLException {
 		// Related to bug BG-469 - return true only if this sql should return
 		// result
-		boolean result = false;
+		try {
+			statementId = client.execute(sql);
 
-		if (client == null) {
-			
-		} 
-		else
-
-			try {
-				statementId = client.execute(sql);
-				
-				// Omer and Razi - support cancel
-				if (IsCancelStatement.get()) {
-					//Close the connection of cancel statement
-					client.closeConnection();
-					throw new SQLException("Statement cancelled by user");
-				}
-
-				//TODO: Duplicate logic in SQPreparedStatement
-				if ((!"INSERT".equals(client.getQueryType())) && client.getRowLength() > 0)
-					result = true;
-
-				resultSet = new SQResultSet(client, dbName);
-				resultSet.setMaxRows(SIZE_RESULT);
-			} catch (Exception e) {
-				if (e.getMessage().contains("stopped by user")
-						|| e.getMessage().contains("cancelled by user")) {
-					throw new SQLException("Statement cancelled by user");
-				} else {
-					throw new SQLException("can not execute - "
-							+ e.getMessage());
-				}
-
+			// Omer and Razi - support cancel
+			if (IsCancelStatement.get()) {
+				//Close the connection of cancel statement
+				client.closeConnection();
+				throw new SQLException("Statement cancelled by user");
 			}
-		return result;
+
+			resultSet = new SQResultSet(client, dbName);
+			resultSet.setMaxRows(SIZE_RESULT);
+
+			//TODO: Duplicate logic in SQPreparedStatement
+			return (!"INSERT".equals(client.getQueryType())) && client.getRowLength() > 0;
+
+		} catch (Exception e) {
+			if (e.getMessage().contains("stopped by user")
+					|| e.getMessage().contains("cancelled by user")) {
+				throw new SQLException("Statement cancelled by user");
+			} else {
+				throw new SQLException("can not execute - "
+						+ e.getMessage());
+			}
+		}
 	}
 
 	@Override

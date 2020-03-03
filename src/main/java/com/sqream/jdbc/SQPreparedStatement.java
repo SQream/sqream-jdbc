@@ -127,7 +127,6 @@ public class SQPreparedStatement implements PreparedStatement {
 
         //TODO: Duplicate logic in SQStatement
         return (!"INSERT".equals(Client.getQueryType())) && Client.getRowLength() > 0;
-
     }
     
     @Override

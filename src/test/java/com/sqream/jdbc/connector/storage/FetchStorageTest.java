@@ -2,6 +2,7 @@ package com.sqream.jdbc.connector.storage;
 
 import com.sqream.jdbc.connector.*;
 import com.sqream.jdbc.connector.enums.StatementType;
+import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorageImpl;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -14,7 +15,7 @@ public class FetchStorageTest {
 
     @Test
     public void nextTest() throws ConnException {
-        FetchStorage storage = prepareStorage();
+        FetchStorageImpl storage = prepareStorage();
         BlockDto secondBlock = createBlock();
 
         assertTrue(storage.next());
@@ -51,9 +52,9 @@ public class FetchStorageTest {
         return block;
     }
 
-    private FetchStorage prepareStorage() {
+    private FetchStorageImpl prepareStorage() {
         TableMetadata metadata = createMetadata();
         BlockDto block = createBlock();
-        return new FetchStorage(metadata, block);
+        return new FetchStorageImpl(metadata, block);
     }
 }

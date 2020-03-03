@@ -1090,6 +1090,25 @@ public class JDBC_Positive {
         }
     }
 
+    @Test
+    public void selectStatementReturnZeroRowsTest() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table select_statement_test(col1 int)";
+        String SELECT_SQL = "select * from select_statement_test";
+
+	    try (Connection conn = createConnection()) {
+
+	        try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(CREATE_TABLE_SQL);
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(SELECT_SQL);
+
+                assertFalse(rs.next());
+            }
+        }
+    }
+
     private Connection createConnection() {
         try {
             Class.forName("com.sqream.jdbc.SQDriver");

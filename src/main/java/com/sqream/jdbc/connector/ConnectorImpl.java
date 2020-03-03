@@ -14,6 +14,9 @@ import com.sqream.jdbc.connector.fetchService.FetchService;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
 import com.sqream.jdbc.connector.storage.*;
+import com.sqream.jdbc.connector.storage.fetchStorage.EmptyFetchStorage;
+import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorage;
+import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorageImpl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
@@ -272,10 +275,9 @@ public class ConnectorImpl implements Connector {
         if (statementType.equals(SELECT)) {
             fetchedBlocks = fetchService.process(fetchLimit);
             if (fetchedBlocks.size() > 0) {
-                fetchStorage = new FetchStorage(tableMetadata, fetchedBlocks.remove(0));
+                fetchStorage = new FetchStorageImpl(tableMetadata, fetchedBlocks.remove(0));
             } else {
-                //FIXME: Alex K 2/27/2020. Should handle this case to prevent NPE in next() method.
-                // If it's not correct case - throw exception with meaningful message.
+                fetchStorage = new EmptyFetchStorage();
             }
             close();
         }

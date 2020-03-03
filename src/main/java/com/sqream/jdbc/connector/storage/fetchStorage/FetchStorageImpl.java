@@ -1,8 +1,9 @@
-package com.sqream.jdbc.connector.storage;
+package com.sqream.jdbc.connector.storage.fetchStorage;
 
 import com.sqream.jdbc.connector.BlockDto;
 import com.sqream.jdbc.connector.TableMetadata;
 import com.sqream.jdbc.connector.byteReaders.ByteReaderFactory;
+import com.sqream.jdbc.connector.storage.RowIterator;
 
 import java.nio.charset.Charset;
 import java.sql.Date;
@@ -14,13 +15,13 @@ import java.util.BitSet;
 import static com.sqream.jdbc.utils.Utils.intToDate;
 import static com.sqream.jdbc.utils.Utils.longToDt;
 
-public class FetchStorage {
+public class FetchStorageImpl implements FetchStorage {
     private TableMetadata metadata;
     private BlockDto curBlock;
     private RowIterator rowIterator;
     private int[] col_calls;
 
-    public FetchStorage(TableMetadata metadata, BlockDto block) {
+    public FetchStorageImpl(TableMetadata metadata, BlockDto block) {
         this.metadata = metadata;
         this.curBlock = block;
         col_calls = new int[metadata.getRowLength()];

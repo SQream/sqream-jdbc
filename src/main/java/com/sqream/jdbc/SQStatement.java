@@ -271,6 +271,23 @@ public class SQStatement implements Statement {
 		return false;
 	}
 
+	@Override
+	public void setQueryTimeout(int arg0) throws SQLException {
+		if (arg0 !=0)  // 0 means unlimited timeout
+			throw new SQLFeatureNotSupportedException("setQueryTimeout in SQStatement");
+	}
+
+	@Override
+	public void setEscapeProcessing(boolean arg0) throws SQLException {
+		/*
+		Sets escape processing on or off. If escape scanning is on (the default),
+		the driver will do escape substitution before sending the SQL statement to
+		the database. Note: Since prepared statements have usually been parsed prior
+		to making this call, disabling escape processing for PreparedStatements objects
+		will have no effect.
+		*/
+	}
+
 	//<editor-fold desc="Unsupported">
 	// Unsupported
 	// -----------
@@ -283,12 +300,6 @@ public class SQStatement implements Statement {
 	@Override
 	public void clearWarnings() throws SQLException {
 		throw new SQLFeatureNotSupportedException("clearWarnings in SQStatement");
-	}
-	
-	@Override
-	public void setQueryTimeout(int arg0) throws SQLException {
-		if (arg0 !=0)  // 0 means unlimited timeout
-			throw new SQLFeatureNotSupportedException("setQueryTimeout in SQStatement");
 	}
 	
 	@Override
@@ -354,17 +365,6 @@ public class SQStatement implements Statement {
 	@Override
 	public int getMaxFieldSize() throws SQLException {
 		throw new SQLFeatureNotSupportedException("getMaxFieldSize in SQStatement");
-	}
-	
-	@Override
-	public void setEscapeProcessing(boolean arg0) throws SQLException {
-		/*
-		Sets escape processing on or off. If escape scanning is on (the default), 
-		the driver will do escape substitution before sending the SQL statement to 
-		the database. Note: Since prepared statements have usually been parsed prior 
-		to making this call, disabling escape processing for PreparedStatements objects 
-		will have no effect.
-		*/
 	}
 	
 	@Override

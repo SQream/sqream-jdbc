@@ -36,13 +36,4 @@ public class TODOList {
             }
         }
     }
-
-    private Connection createConnection() {
-        try {
-            Class.forName("com.sqream.jdbc.SQDriver");
-            return DriverManager.getConnection(URL,USER,PASS);
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

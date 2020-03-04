@@ -105,10 +105,6 @@ public class ExecuteQueriesInLoop {
         return queries.get(rand.nextInt(queries.size()));
     }
 
-    private Connection createConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASS);
-    }
-
     private void executeQuery(String query) {
         try (Connection conn = createConnection();
              Statement stmt = conn.createStatement()) {

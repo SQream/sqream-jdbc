@@ -45,10 +45,6 @@ public class JDBCPerf {
         conn.close();
     }
 
-    private Connection createConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASS);
-    }
-
     @Test
     public void test() throws SQLException {
 

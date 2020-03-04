@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.sqream.jdbc.TestEnvironment.URL;
+import static com.sqream.jdbc.TestEnvironment.createConnection;
 import static org.junit.Assert.*;
 
 public class SQStatementTest {
@@ -213,15 +214,6 @@ public class SQStatementTest {
 
             assertTrue(rs.next());
             assertEquals(0, rs.getLong(1));
-        }
-    }
-
-
-    private Connection createConnection() {
-        try {
-            return DriverManager.getConnection(URL,"sqream","sqream");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 }

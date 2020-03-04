@@ -1,5 +1,8 @@
 package com.sqream.jdbc;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 
 public class TestEnvironment {
@@ -19,4 +22,13 @@ public class TestEnvironment {
 
     public static final String SHORT_URL = MessageFormat.format(
             "jdbc:Sqream://{0}:{1}/{2};user={3};password={4}", IP, String.valueOf(PORT), DATABASE, USER, PASS);
+
+    public static Connection createConnection() {
+        try {
+            Class.forName("com.sqream.jdbc.SQDriver");
+            return DriverManager.getConnection(URL,USER,PASS);
+        } catch (SQLException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

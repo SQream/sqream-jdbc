@@ -307,12 +307,4 @@ public class SQPreparedStatementTest {
             }
         }
     }
-
-    private Connection createConnection() {
-        try {
-            return DriverManager.getConnection(URL,USER,PASS);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

@@ -559,6 +559,13 @@ class SQResultSet implements ResultSet {
 		
 		return (isNull) ? null : res;
 	}
+
+	@Override
+	public boolean absolute(int row) {
+		this.baseUsageError();
+		return false;
+	}
+
 	//</editor-fold>
 
 	//<editor-fold desc="Unsupported">
@@ -751,12 +758,6 @@ class SQResultSet implements ResultSet {
 	public int getRow() throws SQLException {
 		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException("getRow in SQResultSet");
-	}
-
-	@Override
-	public boolean absolute(int row) {
-		this.baseUsageError();
-		return false;
 	}
 
 	@Override

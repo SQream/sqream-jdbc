@@ -1,12 +1,32 @@
 package com.sqream.jdbc;
 
+import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.connector.SQSocketConnector;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.util.Arrays;
 
 import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({SQSocketConnector.class, SocketChannel.class, SSLContext.class})
 public class TODOList {
 
     //TODO: Should we close SQPreparedStatement#executeQuery() as "Not supported" or implement this logic?
@@ -67,5 +87,33 @@ public class TODOList {
                 assertFalse(rs.next());
             }
         }
+    }
+
+
+    //TODO: When we connect to server picker BUT did not provide param 'cluster=true', then read wrong data from socket.
+    // Server sent ip address and port to reconnect, but client read first byte as protocol version (actually size of ip address)
+    @Test
+    public void whenConnectToClusterWithParamClusterFalseTest()
+            throws IOException, ConnException, KeyManagementException, NoSuchAlgorithmException {
+
+        SocketChannel socketMock = Mockito.mock(SocketChannel.class);
+        Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
+            @Override
+            public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
+                ByteBuffer targetBuffer = invocationOnMock.getArgument(0);
+                byte[] ip = IP.getBytes(StandardCharsets.UTF_8);
+                targetBuffer.putInt(ip.length);
+                targetBuffer.put(Arrays.copyOfRange(ip, 0, targetBuffer.capacity() - targetBuffer.position()));
+                return targetBuffer.capacity();
+            }
+        });
+
+        PowerMockito.mockStatic(SocketChannel.class);
+        PowerMockito.when(SocketChannel.open()).thenReturn(socketMock);
+        PowerMockito.mockStatic(SSLContext.class);
+        PowerMockito.when(SSLContext.getDefault()).thenReturn(null);
+        SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false);
+
+        socketConnector.parseHeader();
     }
 }

@@ -2,6 +2,7 @@ package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.enums.StatementType;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
+import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import com.sqream.jdbc.connector.storage.FlushStorage;
 import org.junit.Test;
 import org.mockito.Mockito;

@@ -1,10 +1,11 @@
-package com.sqream.jdbc.connector;
+package com.sqream.jdbc.connector.socket;
+
+import com.sqream.jdbc.connector.ConnException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.StringJoiner;
 
 import static com.sqream.jdbc.utils.Utils.decode;
 
-public class SQSocketConnector extends SQSocket {
+public class SQSocketConnector {
 
     private static final byte PROTOCOL_VERSION = 8;
     private static final int HEADER_SIZE = 10;
@@ -21,23 +22,33 @@ public class SQSocketConnector extends SQSocket {
     private ByteBuffer responseMessage = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);;
     private ByteBuffer header = ByteBuffer.allocateDirect(10).order(ByteOrder.LITTLE_ENDIAN);
 
-    private SQSocketConnector(String ip, int port) throws IOException, NoSuchAlgorithmException {
-        super(ip, port);
+    private SQSocket socket;
+
+    private SQSocketConnector(String ip, int port, boolean useSsl, boolean cluster) throws IOException {
+        socket = SQSocket.connect(ip, port, useSsl);
+        // Clustered connection - reconnect to actual ip and port
+        if (cluster) {
+            reconnectToNode(useSsl);
+        }
     }
 
-    public static SQSocketConnector connect(String ip, int port, boolean useSsl) throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        SQSocketConnector socketConnector = new SQSocketConnector(ip, port);
-        socketConnector.connect(useSsl);
-        return socketConnector;
+    public static SQSocketConnector connect(String ip, int port, boolean useSsl, boolean cluster) throws IOException {
+        return new SQSocketConnector(ip, port, useSsl, cluster);
+    }
+
+    public void reconnect(String ip, int port, boolean useSsl) throws IOException {
+        socket.close();
+        socket = SQSocket.connect(ip, port, useSsl);
     }
 
     // (2)  /* Return ByteBuffer with appropriate header for message */
-    ByteBuffer generateHeaderedBuffer(long dataLength, boolean is_text_msg) {
+
+    public ByteBuffer generateHeaderedBuffer(long dataLength, boolean is_text_msg) {
 
         return ByteBuffer.allocate(10 + (int) dataLength).order(ByteOrder.LITTLE_ENDIAN).put(PROTOCOL_VERSION).put(is_text_msg ? (byte)1:(byte)2).putLong(dataLength);
     }
-
     // (3)  /* Used by _send_data()  (merge if only one )  */
+
     public int parseHeader() throws IOException, ConnException {
 
         this.header.clear();
@@ -56,14 +67,14 @@ public class SQSocketConnector extends SQSocket {
 
         return (int) responseLength;
     }
-
     // (4) /* Manage actual sending and receiving of ByteBuffers over exising socket  */
+
     public String sendData(ByteBuffer data, boolean get_response) throws IOException, ConnException {
 
         if (data != null ) {
             data.flip();
             while(data.hasRemaining()) {
-                super.write(data);
+                socket.write(data);
             }
         }
 
@@ -79,8 +90,8 @@ public class SQSocketConnector extends SQSocket {
 
         return (get_response) ? decode(responseMessage) : "" ;
     }
-
     // (5)   /* Send a JSON string to SQream over socket  */
+
     public String sendMessage(String message, boolean getResponse) throws IOException, ConnException {
 
         byte[] messageBytes = message.getBytes();
@@ -89,7 +100,6 @@ public class SQSocketConnector extends SQSocket {
 
         return sendData(messageBuffer, getResponse);
     }
-
     public int readData(ByteBuffer response, int msgLen) throws IOException, ConnException {
         /* Read either a specific amount of data, or until socket is empty if msg_len is 0.
          * response ByteBuffer of a fitting size should be supplied.
@@ -101,7 +111,7 @@ public class SQSocketConnector extends SQSocket {
         int totalBytesRead = 0;
 
         while (totalBytesRead < msgLen || msgLen == 0) {
-            int bytesRead = super.read(response);
+            int bytesRead = socket.read(response);
             if (bytesRead == -1) {
                 throw new IOException("Socket closed. Last buffer written: " + response);
             }
@@ -115,5 +125,36 @@ public class SQSocketConnector extends SQSocket {
         response.flip();  // reset position to allow reading from buffer
 
         return totalBytesRead;
+    }
+
+    public void close() throws IOException {
+        socket.close();
+    }
+
+    public boolean isOpen() {
+        return socket.isOpen();
+    }
+
+    private void reconnectToNode(boolean useSsl) throws IOException {
+        ByteBuffer response_buffer = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);
+        // Get data from server picker
+        response_buffer.clear();
+        //_read_data(response_buffer, 0); // IP address size may vary
+        int bytes_read = socket.read(response_buffer);
+        response_buffer.flip();
+        if (bytes_read == -1) {
+            throw new IOException("Socket closed When trying to connect to server picker");
+        }
+
+        // Read size of IP address (7-15 bytes) and get the IP
+        byte [] ip_bytes = new byte[response_buffer.getInt()]; // Retreiving ip from clustered connection
+        response_buffer.get(ip_bytes);
+        String ip = new String(ip_bytes, StandardCharsets.UTF_8);
+
+        // Last is the port
+        int port = response_buffer.getInt();
+
+        socket.close();
+        socket = SQSocket.connect(ip, port, useSsl);
     }
 }

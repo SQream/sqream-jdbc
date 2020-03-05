@@ -1,6 +1,7 @@
 package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.messenger.Messenger;
+import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import com.sqream.jdbc.utils.Utils;
 
 import java.io.IOException;

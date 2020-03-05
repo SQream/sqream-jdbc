@@ -1,7 +1,7 @@
 package com.sqream.jdbc;
 
 import com.sqream.jdbc.connector.ConnException;
-import com.sqream.jdbc.connector.SQSocketConnector;
+import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -112,8 +112,11 @@ public class TODOList {
         PowerMockito.when(SocketChannel.open()).thenReturn(socketMock);
         PowerMockito.mockStatic(SSLContext.class);
         PowerMockito.when(SSLContext.getDefault()).thenReturn(null);
-        SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false);
+        SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false, false);
 
         socketConnector.parseHeader();
     }
+
+
+    //TODO: Rewrite commented tests in SQSocketConnectorTest
 }

@@ -1,8 +1,6 @@
 package com.sqream.jdbc.connector;
 
 //Packing and unpacking columnar data
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 // Socket communication
 
@@ -13,6 +11,7 @@ import com.sqream.jdbc.connector.enums.StatementType;
 import com.sqream.jdbc.connector.fetchService.FetchService;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
+import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import com.sqream.jdbc.connector.storage.*;
 import com.sqream.jdbc.connector.storage.fetchStorage.EmptyFetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorage;
@@ -107,34 +106,8 @@ public class ConnectorImpl implements Connector {
             throws IOException, NoSuchAlgorithmException, KeyManagementException {
         /* JSON parsing engine setup, initial socket connection */
         useSsl = ssl;
-        socket = SQSocketConnector.connect(ip, port, useSsl);
-        // Clustered connection - reconnect to actual ip and port
-        if (cluster) {
-            reconnectToNode();
-        }
+        socket = SQSocketConnector.connect(ip, port, useSsl, cluster);
         this.messenger = MessengerImpl.getInstance(socket);
-    }
-
-    private void reconnectToNode() throws NoSuchAlgorithmException, IOException, KeyManagementException {
-        ByteBuffer response_buffer = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);
-        // Get data from server picker
-        response_buffer.clear();
-        //_read_data(response_buffer, 0); // IP address size may vary
-        int bytes_read = socket.read(response_buffer);
-        response_buffer.flip();
-        if (bytes_read == -1) {
-            throw new IOException("Socket closed When trying to connect to server picker");
-        }
-
-        // Read size of IP address (7-15 bytes) and get the IP
-        byte [] ip_bytes = new byte[response_buffer.getInt()]; // Retreiving ip from clustered connection
-        response_buffer.get(ip_bytes);
-        String ip = new String(ip_bytes, UTF8);
-
-        // Last is the port
-        int port = response_buffer.getInt();
-
-        socket.reconnect(ip, port, useSsl);
     }
 
     // Internal Mechanism Functions

@@ -4,6 +4,7 @@ import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
 import com.sqream.jdbc.connector.*;
+import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

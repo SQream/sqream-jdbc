@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
 import com.eclipsesource.json.WriterConfig;
 import com.sqream.jdbc.connector.*;
+import com.sqream.jdbc.connector.socket.SQSocketConnector;
 
 import java.io.IOException;
 import java.util.List;

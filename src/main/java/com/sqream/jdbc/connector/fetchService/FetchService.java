@@ -2,8 +2,8 @@ package com.sqream.jdbc.connector.fetchService;
 
 import com.sqream.jdbc.connector.*;
 import com.sqream.jdbc.connector.messenger.Messenger;
+import com.sqream.jdbc.connector.socket.SQSocketConnector;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

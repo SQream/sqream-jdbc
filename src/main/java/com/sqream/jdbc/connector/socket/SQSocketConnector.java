@@ -91,15 +91,6 @@ public class SQSocketConnector {
         return (get_response) ? decode(responseMessage) : "" ;
     }
     // (5)   /* Send a JSON string to SQream over socket  */
-
-    public String sendMessage(String message, boolean getResponse) throws IOException, ConnException {
-
-        byte[] messageBytes = message.getBytes();
-        ByteBuffer messageBuffer = generateHeaderedBuffer(messageBytes.length, true);
-        messageBuffer.put(messageBytes);
-
-        return sendData(messageBuffer, getResponse);
-    }
     public int readData(ByteBuffer response, int msgLen) throws IOException, ConnException {
         /* Read either a specific amount of data, or until socket is empty if msg_len is 0.
          * response ByteBuffer of a fitting size should be supplied.

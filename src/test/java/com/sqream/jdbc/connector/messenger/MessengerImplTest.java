@@ -14,6 +14,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,12 +38,16 @@ public class MessengerImplTest {
     public void setUp() {
         this.socket = Mockito.mock(SQSocketConnector.class);
         this.messenger = MessengerImpl.getInstance(socket);
+        when(socket.generateHeaderedBuffer(any(Long.class), any(Boolean.class))).thenCallRealMethod();
     }
 
     @Test
     public void fetchTest() throws IOException, ConnException {
         String expectedResponse = "{\"colSzs\":[1048576,4194304],\"rows\":1048576}";
-        Mockito.when(socket.sendMessage("{\"fetch\":\"fetch\"}", true)).thenReturn(expectedResponse);
+        String expectedRequest = "{\"fetch\":\"fetch\"}";
+        ByteBuffer buffer = socket.generateHeaderedBuffer(expectedRequest.length(), true);
+        buffer.put(expectedRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn(expectedResponse);
 
         FetchMetadataDto result = messenger.fetch();
 
@@ -56,7 +61,9 @@ public class MessengerImplTest {
     @Test
     public void connectTest() throws IOException, ConnException {
         String connectionRequest = "{\"connectDatabase\":\"testDatabase\", \"username\":\"testUser\", \"password\":\"testPass\", \"service\":\"testService\"}";
-        Mockito.when(socket.sendMessage(connectionRequest, true)).thenReturn("{\"connectionId\":1139,\"databaseConnected\":\"databaseConnected\",\"varcharEncoding\":\"cp874\"}\n");
+        ByteBuffer buffer = socket.generateHeaderedBuffer(connectionRequest.length(), true);
+        buffer.put(connectionRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("{\"connectionId\":1139,\"databaseConnected\":\"databaseConnected\",\"varcharEncoding\":\"cp874\"}\n");
 
         ConnectionStateDto state = messenger.connect("testDatabase", "testUser", "testPass", "testService");
 
@@ -68,24 +75,29 @@ public class MessengerImplTest {
     @Test
     public void reconnectTest() throws IOException, ConnException {
         String reconnectionRequest = "{\"reconnectDatabase\":\"testDatabase\", \"username\":\"testUser\", \"password\":\"testPass\", \"service\":\"testService\", \"connectionId\": 1139, \"listenerId\": 1}";
-
+        ByteBuffer buffer = socket.generateHeaderedBuffer(reconnectionRequest.length(), true);
+        buffer.put(reconnectionRequest.getBytes());
         messenger.reconnect("testDatabase", "testUser", "testPass", "testService", 1139, 1);
 
-        Mockito.verify(socket).sendMessage(reconnectionRequest, true);
+        Mockito.verify(socket).sendData(buffer, true);
     }
 
     @Test
     public void closeConnectionTest() throws IOException, ConnException {
         String closeConnectionRequest = "{\"closeConnection\":\"closeConnection\"}";
-        Mockito.when(socket.sendMessage(closeConnectionRequest, true)).thenReturn("{\"connectionClosed\":\"connectionClosed\"}");
+        ByteBuffer buffer = socket.generateHeaderedBuffer(closeConnectionRequest.length(), true);
+        buffer.put(closeConnectionRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("{\"connectionClosed\":\"connectionClosed\"}");
 
         messenger.closeConnection();
     }
 
-    @Test
+    @Test(expected = ConnException.class)
     public void closeConnectionWrongResponseTest() throws IOException, ConnException {
         String closeConnectionRequest = "{\"closeConnection\":\"closeConnection\"}";
-        Mockito.when(socket.sendMessage(closeConnectionRequest, true)).thenReturn("{\"connectionClosed\":\"connectionClosed\"}");
+        ByteBuffer buffer = socket.generateHeaderedBuffer(closeConnectionRequest.length(), true);
+        buffer.put(closeConnectionRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("wrong answer from server");
 
         try {
             messenger.closeConnection();
@@ -101,7 +113,9 @@ public class MessengerImplTest {
     @Test
     public void closeStatementTest() throws IOException, ConnException {
         String closeStatementRequest = "{\"closeStatement\":\"closeStatement\"}";
-        Mockito.when(socket.sendMessage(closeStatementRequest, true)).thenReturn("{\"statementClosed\":\"statementClosed\"}");
+        ByteBuffer buffer = socket.generateHeaderedBuffer(closeStatementRequest.length(), true);
+        buffer.put(closeStatementRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("{\"statementClosed\":\"statementClosed\"}");
 
         messenger.closeStatement();
     }
@@ -109,7 +123,9 @@ public class MessengerImplTest {
     @Test(expected = ConnException.class)
     public void closeStatementWrongResponseTest() throws IOException, ConnException {
         String closeStatementRequest = "{\"closeStatement\":\"closeStatement\"}";
-        Mockito.when(socket.sendMessage(closeStatementRequest, true)).thenReturn("wrong:response");
+        ByteBuffer buffer = socket.generateHeaderedBuffer(closeStatementRequest.length(), true);
+        buffer.put(closeStatementRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("wrong:response");
 
         try {
             messenger.closeStatement();
@@ -125,9 +141,11 @@ public class MessengerImplTest {
     @Test
     public void putTest() throws IOException, ConnException {
         String putRequest = "{\"put\": 15}";
+        ByteBuffer buffer = socket.generateHeaderedBuffer(putRequest.length(), true);
+        buffer.put(putRequest.getBytes());
         messenger.put(15);
 
-        Mockito.verify(socket).sendMessage(putRequest, false);
+        Mockito.verify(socket).sendData(buffer, false);
     }
 
     @Test
@@ -155,8 +173,10 @@ public class MessengerImplTest {
     @Test
     public void isStatementReconstructedTest() throws IOException, ConnException {
         String isStatementReconstructedRequest = "{\"reconstructStatement\": 1083}";
+        ByteBuffer buffer = socket.generateHeaderedBuffer(isStatementReconstructedRequest.length(), true);
+        buffer.put(isStatementReconstructedRequest.getBytes());
 
-        Mockito.when(socket.sendMessage(isStatementReconstructedRequest, true)).thenReturn("{\"statementReconstructed\":\"statementReconstructed\"}");
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("{\"statementReconstructed\":\"statementReconstructed\"}");
 
         messenger.isStatementReconstructed(1083);
     }
@@ -164,8 +184,10 @@ public class MessengerImplTest {
     @Test(expected = ConnException.class)
     public void isStatementReconstructedGetWrongResponseTest() throws IOException, ConnException {
         String isStatementReconstructedRequest = "{\"reconstructStatement\": 1083}";
+        ByteBuffer buffer = socket.generateHeaderedBuffer(isStatementReconstructedRequest.length(), true);
+        buffer.put(isStatementReconstructedRequest.getBytes());
 
-        Mockito.when(socket.sendMessage(isStatementReconstructedRequest, true)).thenReturn("wrong:response");
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("wrong:response");
 
         messenger.isStatementReconstructed(1083);
     }
@@ -173,8 +195,10 @@ public class MessengerImplTest {
     @Test
     public void openStatementTest() throws IOException, ConnException {
         String getStatementIdRequest = "{\"getStatementId\":\"getStatementId\"}";
+        ByteBuffer buffer = socket.generateHeaderedBuffer(getStatementIdRequest.length(), true);
+        buffer.put(getStatementIdRequest.getBytes());
 
-        Mockito.when(socket.sendMessage(getStatementIdRequest, true)).thenReturn("{\"statementId\":1083}");
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("{\"statementId\":1083}");
 
         assertEquals(1083, messenger.openStatement());
     }
@@ -182,8 +206,10 @@ public class MessengerImplTest {
     @Test(expected = UnsupportedOperationException.class)
     public void openStatementGetWrongResponseTest() throws IOException, ConnException {
         String getStatementIdRequest = "{\"getStatementId\":\"getStatementId\"}";
+        ByteBuffer buffer = socket.generateHeaderedBuffer(getStatementIdRequest.length(), true);
+        buffer.put(getStatementIdRequest.getBytes());
 
-        Mockito.when(socket.sendMessage(getStatementIdRequest, true)).thenReturn("{\"statementId\":\"notNumber\"}");
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("{\"statementId\":\"notNumber\"}");
 
         messenger.openStatement();
     }
@@ -197,7 +223,9 @@ public class MessengerImplTest {
         expectedList.add(new ColumnMetadataDto(false, "", true, "ftUByte", 1));
         expectedList.add(new ColumnMetadataDto(false, "", true, "ftShort", 2));
         expectedList.add(new ColumnMetadataDto(true, "", true, "ftBlob", TEXT_ITEM_SIZE));
-        Mockito.when(socket.sendMessage(queryTypeInputRequest, true)).thenReturn(serverResponse);
+        ByteBuffer buffer = socket.generateHeaderedBuffer(queryTypeInputRequest.length(), true);
+        buffer.put(queryTypeInputRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn(serverResponse);
 
         List<ColumnMetadataDto> resultList = messenger.queryTypeInput();
 
@@ -221,7 +249,9 @@ public class MessengerImplTest {
         String serverResponse = "{\"queryTypeNamed\":[{\"isTrueVarChar\":false,\"name\":\"ints\",\"nullable\":true,\"type\":[\"ftInt\",4,0]}]}";
         List<ColumnMetadataDto> expectedList = new ArrayList<>();
         expectedList.add(new ColumnMetadataDto(false, "ints", true, "ftInt", 4));
-        Mockito.when(socket.sendMessage(queryTypeOutRequest, true)).thenReturn(serverResponse);
+        ByteBuffer buffer = socket.generateHeaderedBuffer(queryTypeOutRequest.length(), true);
+        buffer.put(queryTypeOutRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn(serverResponse);
 
         List<ColumnMetadataDto> resultList = messenger.queryTypeOut();
 
@@ -243,7 +273,9 @@ public class MessengerImplTest {
     public void executeTest() throws IOException, ConnException {
         String executeRequest = "{\"execute\":\"execute\"}";
         String response = "{\"executed\":\"executed\"}";
-        Mockito.when(socket.sendMessage(executeRequest, true)).thenReturn(response);
+        ByteBuffer buffer = socket.generateHeaderedBuffer(executeRequest.length(), true);
+        buffer.put(executeRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn(response);
 
         messenger.execute();
     }
@@ -251,7 +283,9 @@ public class MessengerImplTest {
     @Test(expected = ConnException.class)
     public void executeGetWrongResponseTest() throws IOException, ConnException {
         String executeRequest = "{\"execute\":\"execute\"}";
-        Mockito.when(socket.sendMessage(executeRequest, true)).thenReturn("wrong:response");
+        ByteBuffer buffer = socket.generateHeaderedBuffer(executeRequest.length(), true);
+        buffer.put(executeRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn("wrong:response");
 
         try {
             messenger.execute();
@@ -280,7 +314,9 @@ public class MessengerImplTest {
         response.set("port_ssl", portSsl);
         response.set("reconnect", true);
         response.set("statementPrepared", true);
-        Mockito.when(socket.sendMessage(request.toString(), true)).thenReturn(response.toString());
+        ByteBuffer buffer = socket.generateHeaderedBuffer(request.toString().length(), true);
+        buffer.put(request.toString().getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn(response.toString());
 
         StatementStateDto result = messenger.prepareStatement(statement, chunkSize);
 

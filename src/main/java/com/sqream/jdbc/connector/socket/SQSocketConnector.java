@@ -59,7 +59,11 @@ public class SQSocketConnector {
         if (!SUPPORTED_PROTOCOLS.contains(userProtocolVersion)) {
             StringJoiner joiner = new StringJoiner(", ");
             SUPPORTED_PROTOCOLS.forEach(newElement -> joiner.add(newElement.toString()));
-            throw new ConnException(String.format("Unsupported protocol version - supported versions are %s, but got %s", joiner.toString(), userProtocolVersion));
+            if (isRedirection(header)) {
+                throw new ConnException("Probably tried to connect to server picker, but cluster parameter was not provided");
+            } else {
+                throw new ConnException(String.format("Unsupported protocol version - supported versions are %s, but got %s", joiner.toString(), userProtocolVersion));
+            }
         }
 
         header.get();  // Catching the 2nd byte of a response
@@ -147,5 +151,15 @@ public class SQSocketConnector {
 
         socket.close();
         socket = SQSocket.connect(ip, port, useSsl);
+    }
+
+    // In case when try to connect to server picket, but cluster parameter was not provided.
+    // First int is node ip address, but try to read first byte as protocol version.
+    private boolean isRedirection(ByteBuffer header) {
+        header.position(0);
+        int firstByteAsInt = (int) header.get();
+        header.position(0);
+        int firstInt = header.getInt();
+        return firstByteAsInt == firstInt;
     }
 }

@@ -1,18 +1,31 @@
 package com.sqream.jdbc.connector;
 
+import com.sqream.jdbc.connector.socket.SQSocket;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
+import static com.sqream.jdbc.TestEnvironment.IP;
+import static com.sqream.jdbc.TestEnvironment.PORT;
+import static junit.framework.TestCase.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SQSocketConnector.class})
+@PrepareForTest({SQSocketConnector.class, SQSocket.class, SSLContext.class})
 public class SQSocketConnectorTest {
 
                                                 //TODO: Alex K 03/05/2020 rewrite this test
@@ -68,5 +81,37 @@ public class SQSocketConnectorTest {
 //            }
 //        }
 //        fail("Method should throw exception");
+    }
+
+    //TODO: When we connect to server picker BUT did not provide param 'cluster=true', then read wrong data from socket.
+    // Server sent ip address and port to reconnect, but client read first byte as protocol version (actually size of ip address)
+    @Test(expected = ConnException.class)
+    public void whenConnectToClusterWithParamClusterFalseTest()
+            throws IOException, ConnException, KeyManagementException, NoSuchAlgorithmException {
+
+        SQSocket socketMock = Mockito.mock(SQSocket.class);
+        Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
+            @Override
+            public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
+                ByteBuffer targetBuffer = invocationOnMock.getArgument(0);
+                byte[] ip = IP.getBytes(StandardCharsets.UTF_8);
+                targetBuffer.putInt(ip.length);
+                targetBuffer.put(Arrays.copyOfRange(ip, 0, targetBuffer.capacity() - targetBuffer.position()));
+                return targetBuffer.capacity();
+            }
+        });
+
+        PowerMockito.mockStatic(SQSocket.class);
+        PowerMockito.when(SQSocket.connect(IP, PORT, false)).thenReturn(socketMock);
+        PowerMockito.mockStatic(SSLContext.class);
+        PowerMockito.when(SSLContext.getDefault()).thenReturn(null);
+        SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false, false);
+
+        try {
+            socketConnector.parseHeader();
+        } catch (ConnException e) {
+            assertTrue(e.getMessage().contains("Probably tried to connect to server picker"));
+            throw e;
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.sqream.jdbc;
 
 import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.connector.socket.SQSocket;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +27,7 @@ import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SQSocketConnector.class, SocketChannel.class, SSLContext.class})
+@PrepareForTest({SQSocketConnector.class, SQSocket.class, SSLContext.class})
 public class TODOList {
 
     //TODO: Should we close SQPreparedStatement#executeQuery() as "Not supported" or implement this logic?
@@ -96,7 +97,7 @@ public class TODOList {
     public void whenConnectToClusterWithParamClusterFalseTest()
             throws IOException, ConnException, KeyManagementException, NoSuchAlgorithmException {
 
-        SocketChannel socketMock = Mockito.mock(SocketChannel.class);
+        SQSocket socketMock = Mockito.mock(SQSocket.class);
         Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
             @Override
             public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -108,8 +109,8 @@ public class TODOList {
             }
         });
 
-        PowerMockito.mockStatic(SocketChannel.class);
-        PowerMockito.when(SocketChannel.open()).thenReturn(socketMock);
+        PowerMockito.mockStatic(SQSocket.class);
+        PowerMockito.when(SQSocket.connect(IP, PORT, false)).thenReturn(socketMock);
         PowerMockito.mockStatic(SSLContext.class);
         PowerMockito.when(SSLContext.getDefault()).thenReturn(null);
         SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false, false);

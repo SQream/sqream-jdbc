@@ -14,7 +14,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
-class SQSocket {
+public class SQSocket {
     private static final String TLS_PROTOCOL_VERSION = "TLSv1.2";
 
     private SocketChannel socketChannel;
@@ -31,11 +31,11 @@ class SQSocket {
         openSocket();
     }
 
-    static SQSocket connect(String ip, int port, boolean useSsl) throws IOException {
+    public static SQSocket connect(String ip, int port, boolean useSsl) throws IOException {
         return new SQSocket(ip, port, useSsl);
     }
 
-    int read(ByteBuffer result) throws IOException {
+    public int read(ByteBuffer result) throws IOException {
         return (useSsl) ? tlsChannel.read(result) : socketChannel.read(result);
     }
 

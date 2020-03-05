@@ -98,15 +98,16 @@ public class FlushService {
         socket.sendData(header_buffer, false);
 
         // Send available columns
-        sendDataToSocket(metadata.getRowLength(), block.getFillSize(), metadata, socket, block);
+        sendDataToSocket(metadata, block);
         messenger.isPutted();
     }
 
-    private void sendDataToSocket(int rowLength, int rowCounter, TableMetadata tableMetadata, SQSocketConnector socket,
-                                  BlockDto block) throws IOException, ConnException {
-        for(int idx=0; idx < rowLength; idx++) {
+    private void sendDataToSocket(TableMetadata tableMetadata, BlockDto block)
+            throws IOException, ConnException {
+
+        for(int idx=0; idx < tableMetadata.getRowLength(); idx++) {
             if(tableMetadata.isNullable(idx)) {
-                socket.sendData((ByteBuffer) block.getNullBuffers()[idx].position(rowCounter), false);
+                socket.sendData((ByteBuffer) block.getNullBuffers()[idx].position(block.getFillSize()), false);
             }
             if(tableMetadata.isTruVarchar(idx)) {
                 socket.sendData(block.getNvarcLenBuffers()[idx], false);

@@ -31,7 +31,7 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 		rowLength = client.getRowLength();
 		meta = new ColumnMetadata[rowLength];
 		for (int idx = 0; idx < rowLength; idx++) {
-			meta[idx] = new ColumnMetadata(client.getColName(idx +1), client.get_col_type(idx +1), client.get_col_size(idx +1), client.is_col_nullable(idx +1));
+			meta[idx] = new ColumnMetadata(client.getColName(idx +1), client.getColType(idx +1), client.getColSize(idx +1), client.isColNullable(idx +1));
 		}
 	}	
 	

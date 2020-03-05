@@ -84,7 +84,7 @@ public class SQParameterMetaData implements ParameterMetaData{
 		_validate_index(param_index);
 
 		try {
-			return sqream_to_sql.get(conn.get_col_type(param_index));
+			return sqream_to_sql.get(conn.getColType(param_index));
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to check parameter type in SQParameterMetaData:\n" + e);
@@ -111,7 +111,7 @@ public class SQParameterMetaData implements ParameterMetaData{
 		  _validate_index(param_index);
 		  
 		  try {
-				return conn.get_col_size(param_index);
+				return conn.getColSize(param_index);
 			} catch (ConnException e) {
 				e.printStackTrace();
 				throw new SQLException ("Connector exception when trying to check parameter precision in SQParameterMetaData:\n" + e);
@@ -139,7 +139,7 @@ public class SQParameterMetaData implements ParameterMetaData{
 		  _validate_index(param_index);
 	    
 	    try {
-	    	return conn.is_col_nullable(param_index) ? ParameterMetaData.parameterNullable : ParameterMetaData.parameterNullableUnknown;
+	    	return conn.isColNullable(param_index) ? ParameterMetaData.parameterNullable : ParameterMetaData.parameterNullableUnknown;
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to get parameter nullability in SQParameterMetaData:\n" + e);
@@ -154,7 +154,7 @@ public class SQParameterMetaData implements ParameterMetaData{
 		  _validate_index(param_index);
 		  
 		  try {
-			  return conn.get_col_type(param_index);
+			  return conn.getColType(param_index);
 			} catch (ConnException e) {
 				e.printStackTrace();
 				throw new SQLException ("Connector exception when trying to get parameter type name in SQParameterMetaData:\n" + e);
@@ -169,7 +169,7 @@ public class SQParameterMetaData implements ParameterMetaData{
 		  _validate_index(param_index);  
 	    
         try {
-			return Arrays.asList("ftShort", "ftInt", "ftLong", "ftFloat", "ftDouble").contains(conn.get_col_type(param_index));
+			return Arrays.asList("ftShort", "ftInt", "ftLong", "ftFloat", "ftDouble").contains(conn.getColType(param_index));
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to check if parameter is signed in SQParameterMetaData:\n" + e);

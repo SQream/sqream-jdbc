@@ -30,7 +30,6 @@ import javax.script.ScriptException;
 
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
-import com.sqream.jdbc.enums.RS_STAT;
 
 class SQResultSet implements ResultSet {
 
@@ -184,7 +183,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public byte getByte(String columnLabel) throws SQLException {
 		try {
-			Byte res = client.get_ubyte(columnLabel.toLowerCase());
+			Byte res = client.getUbyte(columnLabel.toLowerCase());
 			isNull = res == null;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
@@ -196,7 +195,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public byte getByte(int columnIndex) throws SQLException {
 		try {
-			Byte res = client.get_ubyte(columnIndex);
+			Byte res = client.getUbyte(columnIndex);
 			isNull = res == null;
 			return (res == null) ? 0 : res;
 		} catch (ConnException e) {
@@ -208,7 +207,7 @@ class SQResultSet implements ResultSet {
 	public short getShort(String columnLabel) throws SQLException {
 		try {
 			columnLabel = columnLabel.toLowerCase();
-			Short res = client.get_short(columnLabel);
+			Short res = client.getShort(columnLabel);
 			return (isNull = res == null) ? 0 : res;
 		} catch (ConnException e) {
 			throw new SQLException(e);
@@ -218,7 +217,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public short getShort(int columnIndex) throws SQLException {
 		try {
-			Short res = client.get_short(columnIndex);
+			Short res = client.getShort(columnIndex);
 			return (isNull = res == null) ? 0 : res;
 		} catch (ConnException e) {
 			throw new SQLException(e);
@@ -230,7 +229,7 @@ class SQResultSet implements ResultSet {
 	public int getInt(String columnLabel) throws SQLException {
 		try {
 			columnLabel = columnLabel.toLowerCase();
-			Integer res = client.get_int(columnLabel.toLowerCase());
+			Integer res = client.getInt(columnLabel.toLowerCase());
 			return (isNull = res == null) ? 0 : res;
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -240,7 +239,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public int getInt(int columnIndex) throws SQLException {
 		try {
-			Integer res = client.get_int(columnIndex);
+			Integer res = client.getInt(columnIndex);
 			return (isNull = res == null) ? 0 : res;
 		} catch (ConnException e) {
 			throw new SQLException(e);
@@ -250,7 +249,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public long getLong(String columnLabel) throws SQLException {
 		try {
-			Long res = client.get_long(columnLabel.toLowerCase());
+			Long res = client.getLong(columnLabel.toLowerCase());
 			isNull = res == null;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
@@ -261,7 +260,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public long getLong(int columnIndex) throws SQLException {
 		try {
-			Long res = client.get_long(columnIndex);
+			Long res = client.getLong(columnIndex);
 			isNull = res == null;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
@@ -273,7 +272,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public float getFloat(String columnLabel) throws SQLException {
 		try {
-			Float res = client.get_float(columnLabel.toLowerCase());
+			Float res = client.getFloat(columnLabel.toLowerCase());
 			isNull = res == null;
 			return (res == null) ? 0 : res;
 		} catch (Exception e) {
@@ -285,7 +284,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public float getFloat(int columnIndex) throws SQLException {
 		try {
-			Float res = client.get_float(columnIndex);
+			Float res = client.getFloat(columnIndex);
 			return (isNull = res == null) ? 0 : res;
 		} catch (ConnException e) {
 			throw new SQLException(e);
@@ -296,7 +295,7 @@ class SQResultSet implements ResultSet {
 	public double getDouble(String columnLabel) throws SQLException {
 		try {
 			columnLabel = columnLabel.toLowerCase();
-			Double res = client.get_double(columnLabel);
+			Double res = client.getDouble(columnLabel);
 			return (isNull = res == null) ? 0 : res;
 		} 
 		catch (ConnException e) {
@@ -307,7 +306,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public double getDouble(int columnIndex) throws SQLException {
 		try {
-			Double res = client.get_double(columnIndex);
+			Double res = client.getDouble(columnIndex);
 			return (isNull = res == null) ? 0 : res;
 		} 
 		catch (ConnException e) {
@@ -318,7 +317,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(int columnIndex) throws SQLException {
 		try {
-			Date res = client.get_date(columnIndex);
+			Date res = client.getDate(columnIndex);
 			isNull = res == null;
 			return res;
 		} catch (ConnException e) {
@@ -329,7 +328,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(String columnLabel) throws SQLException {
 		try {
-			Date res = client.get_date(columnLabel.toLowerCase());
+			Date res = client.getDate(columnLabel.toLowerCase());
 			isNull = res == null;
 			return res;
 		} catch (Exception e) {
@@ -340,7 +339,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(int columnIndex, Calendar cal) throws SQLException {
 		try {
-			Date res = client.get_date(columnIndex, cal.getTimeZone().toZoneId());
+			Date res = client.getDate(columnIndex, cal.getTimeZone().toZoneId());
 			isNull = res == null;
 			return res;
 		} catch (ConnException e) {
@@ -351,7 +350,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Date getDate(String columnLabel, Calendar cal) throws SQLException {
 		try {
-			Date res = client.get_date(columnLabel.toLowerCase(), cal.getTimeZone().toZoneId());
+			Date res = client.getDate(columnLabel.toLowerCase(), cal.getTimeZone().toZoneId());
 			isNull = res == null;
 			return res;
 		} catch (Exception e) {
@@ -362,7 +361,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Timestamp getTimestamp(String columnLabel) throws SQLException {
 		try {
-			Timestamp res =  client.get_datetime(columnLabel.toLowerCase());
+			Timestamp res =  client.getDatetime(columnLabel.toLowerCase());
 			isNull = res == null;
 			return res;
 		} catch (Exception e) {
@@ -376,7 +375,7 @@ class SQResultSet implements ResultSet {
 	public Timestamp getTimestamp(int columnIndex) {
 		Timestamp res = null;
 		try {
-			res = client.get_datetime(columnIndex);
+			res = client.getDatetime(columnIndex);
 			isNull = res == null;
 		} catch (ConnException e) {
 			e.printStackTrace();
@@ -392,7 +391,7 @@ class SQResultSet implements ResultSet {
 		
 		Timestamp res = null;
 		try {
-			res = client.get_datetime(columnIndex, cal.getTimeZone().toZoneId());
+			res = client.getDatetime(columnIndex, cal.getTimeZone().toZoneId());
 			isNull = res == null;
 		} catch (ConnException e) {
 			e.printStackTrace();
@@ -404,7 +403,7 @@ class SQResultSet implements ResultSet {
 	@Override
 	public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
 		try {
-			Timestamp res =  client.get_datetime(columnLabel.toLowerCase(), cal.getTimeZone().toZoneId());
+			Timestamp res =  client.getDatetime(columnLabel.toLowerCase(), cal.getTimeZone().toZoneId());
 			isNull = res == null;
 			return res;
 		} catch (Exception e) {
@@ -421,21 +420,21 @@ class SQResultSet implements ResultSet {
 		String type = "";
 		columnLabel = columnLabel.toLowerCase();
 		try {
-			type = client.get_col_type(columnLabel);
+			type = client.getColType(columnLabel);
 		} catch (ConnException e1) {
 			e1.printStackTrace();
 		}
 		
 		if (type.equals("ftBlob")) {
 			try {
-				res = client.get_nvarchar(columnLabel);
+				res = client.getNvarchar(columnLabel);
 			}catch (ConnException e) {
 				e.printStackTrace();
 			}
 		}
 		else if (type.equals("ftVarchar")) {
 			try {
-				res = client.get_varchar(columnLabel);
+				res = client.getVarchar(columnLabel);
 			}catch (ConnException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -454,21 +453,21 @@ class SQResultSet implements ResultSet {
 		Object res_obj;
 		String type = "";
 		try {
-			type = client.get_col_type(columnIndex);
+			type = client.getColType(columnIndex);
 		} catch (ConnException e1) {
 			e1.printStackTrace();
 		}
 		
 		if (type.equals("ftBlob")) {
 			try {
-				res = client.get_nvarchar(columnIndex);
+				res = client.getNvarchar(columnIndex);
 			}catch (ConnException e) {
 				e.printStackTrace();
 			}
 		}
 		else if (type.equals("ftVarchar")) {
 			try {
-				res = client.get_varchar(columnIndex);
+				res = client.getVarchar(columnIndex);
 			}catch (ConnException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -489,7 +488,7 @@ class SQResultSet implements ResultSet {
 		Object res = null; 
 		
 		try {
-			type = client.get_col_type(columnLabel);
+			type = client.getColType(columnLabel);
 		} catch (ConnException e) {
 			e.printStackTrace();
 		}
@@ -528,7 +527,7 @@ class SQResultSet implements ResultSet {
 		Object res = null; 
 		
 		try {
-			type = client.get_col_type(columnIndex);
+			type = client.getColType(columnIndex);
 		} catch (ConnException e) {
 			e.printStackTrace();
 		}

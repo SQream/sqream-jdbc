@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 import javax.script.ScriptException;
 
-import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.Test;
 
@@ -66,7 +65,7 @@ public class Negative {
 		conn.execute(sql);
 		if (table_type == "bool")
 			try {
-				conn.set_ubyte(1, test_ubyte);
+				conn.setUbyte(1, test_ubyte);
 			} catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -75,7 +74,7 @@ public class Negative {
 			}
 		else if (table_type == "tinyint") 
 			try {
-				conn.set_double(1, test_double);
+				conn.setDouble(1, test_double);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -84,7 +83,7 @@ public class Negative {
 			}
 		else if (table_type == "smallint") 
 			try {
-				conn.set_ubyte(1, test_ubyte);
+				conn.setUbyte(1, test_ubyte);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -93,7 +92,7 @@ public class Negative {
 			}
 		else if (table_type == "int") 
 			try {
-				conn.set_short(1, test_short);
+				conn.setShort(1, test_short);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -102,7 +101,7 @@ public class Negative {
 			}
 		else if (table_type == "bigint")
 			try {
-				conn.set_int(1, test_int);
+				conn.setInt(1, test_int);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -111,7 +110,7 @@ public class Negative {
 			}
 		else if (table_type == "real")
 			try {
-				conn.set_long(1, test_long);
+				conn.setLong(1, test_long);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -120,7 +119,7 @@ public class Negative {
 			}
 		else if (table_type == "double")
 			try {
-			 	conn.set_float(1, test_real);
+			 	conn.setFloat(1, test_real);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -129,7 +128,7 @@ public class Negative {
 			}
 		else if (table_type == "varchar(100)")
 			try {
-				conn.set_nvarchar(1, test_nvarchar);
+				conn.setNvarchar(1, test_nvarchar);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -138,7 +137,7 @@ public class Negative {
 			}
 		else if (table_type == "nvarchar(100)")
 			try {
-				conn.set_varchar(1, test_varchar);
+				conn.setVarchar(1, test_varchar);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -147,7 +146,7 @@ public class Negative {
 			}
 		else if (table_type == "date")
 			try {
-				conn.set_datetime(1, test_datetime); 
+				conn.setDatetime(1, test_datetime);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -156,7 +155,7 @@ public class Negative {
 			}
 		else if (table_type == "datetime")
 			try {
-				conn.set_date(1, test_date);
+				conn.setDate(1, test_date);
 			}catch (IllegalArgumentException e) {
 				if (e.getMessage().contains("Trying to set")) {
 					log.info("Correct error message on wrong set function");
@@ -191,27 +190,27 @@ public class Negative {
 		sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 		conn.execute(sql);
 		if (table_type == "bool") 
-			conn.set_boolean(1, test_bool);
+			conn.setBoolean(1, test_bool);
 		else if (table_type == "tinyint") 
-			conn.set_ubyte(1, test_ubyte);
+			conn.setUbyte(1, test_ubyte);
 		else if (table_type == "smallint") 
-			conn.set_short(1, test_short);
+			conn.setShort(1, test_short);
 		else if (table_type == "int") 
-			conn.set_int(1, test_int);
+			conn.setInt(1, test_int);
 		else if (table_type == "bigint")
-			conn.set_long(1, test_long);
+			conn.setLong(1, test_long);
 		else if (table_type == "real")
-			conn.set_float(1, test_real);
+			conn.setFloat(1, test_real);
 		else if (table_type == "double")
-			conn.set_double(1, test_double);
+			conn.setDouble(1, test_double);
 		else if (table_type == "varchar(100)")
-			conn.set_varchar(1, test_varchar);
+			conn.setVarchar(1, test_varchar);
 		else if (table_type == "nvarchar(100)")
-			conn.set_nvarchar(1, test_nvarchar);
+			conn.setNvarchar(1, test_nvarchar);
 		else if (table_type == "date")
-			conn.set_date(1, test_date);
+			conn.setDate(1, test_date);
 		else if (table_type == "datetime")
-			conn.set_datetime(1, test_datetime); 
+			conn.setDatetime(1, test_datetime);
 		
 		conn.next();
 		conn.close();
@@ -226,7 +225,7 @@ public class Negative {
 		{
 			if (table_type == "bool") 
 				try {
-					res_ubyte = conn.get_ubyte(1);
+					res_ubyte = conn.getUbyte(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -235,7 +234,7 @@ public class Negative {
 				}
 			else if (table_type == "tinyint") 
 				try {
-					res_double = conn.get_double(1);
+					res_double = conn.getDouble(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -244,7 +243,7 @@ public class Negative {
 				}
 			else if (table_type == "smallint") 
 				try {
-					res_ubyte = conn.get_ubyte(1);
+					res_ubyte = conn.getUbyte(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -253,7 +252,7 @@ public class Negative {
 				}
 			else if (table_type == "int") 
 				try {
-					res_short = conn.get_short(1);
+					res_short = conn.getShort(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -262,7 +261,7 @@ public class Negative {
 				}
 			else if (table_type == "bigint")
 				try {
-					res_int = conn.get_int(1);
+					res_int = conn.getInt(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -271,7 +270,7 @@ public class Negative {
 				}
 			else if (table_type == "real")	
 				try {
-					res_long = conn.get_long(1);
+					res_long = conn.getLong(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -280,7 +279,7 @@ public class Negative {
 				}
 			else if (table_type == "double")
 				try {
-					res_real = conn.get_float(1);
+					res_real = conn.getFloat(1);
 					//res_double = conn.get_double(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
@@ -290,7 +289,7 @@ public class Negative {
 				}
 			else if (table_type == "varchar(100)")
 				try {
-					res_nvarchar = conn.get_nvarchar(1);
+					res_nvarchar = conn.getNvarchar(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -299,7 +298,7 @@ public class Negative {
 				}
 			else if (table_type == "nvarchar(100)")
 				try {
-					res_int = conn.get_int(1);
+					res_int = conn.getInt(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -308,7 +307,7 @@ public class Negative {
 				}
 			else if (table_type == "date")
 				try {
-					res_datetime = conn.get_datetime(1);
+					res_datetime = conn.getDatetime(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -317,7 +316,7 @@ public class Negative {
 				}
 			else if (table_type == "datetime")
 				try {
-					res_date = conn.get_date(1);
+					res_date = conn.getDate(1);
 				}catch (ConnException e) {
 					if (e.getMessage().contains("Trying to get")) {
 						log.info("Correct error message on wrong get function");
@@ -374,7 +373,7 @@ public class Negative {
 				
 				try {
 					log.info("Attempted bad insert value: " + bad);
-					conn.set_ubyte(1, bad);
+					conn.setUbyte(1, bad);
 				}catch (IllegalArgumentException e) {
 					if (e.getMessage().contains("Trying to set")) {
 						log.info("Correct error message on setting bad value");
@@ -395,7 +394,7 @@ public class Negative {
 				
 				try {
 					log.info("Attempted bad insert value: " + bad);
-					conn.set_varchar(1, bad);}
+					conn.setVarchar(1, bad);}
 				catch (IllegalArgumentException e) {
 					if (e.getMessage().contains("Trying to set string of size")) {
 						log.info("Correct error message on setting oversized varchar");
@@ -414,7 +413,7 @@ public class Negative {
 				
 				try {
 					log.info("Attempted bad insert value: " + bad);
-					conn.set_date(1, bad);}
+					conn.setDate(1, bad);}
 				finally {
 					conn.close();
 					// log.info("Correct exception thrown on bad date");
@@ -430,7 +429,7 @@ public class Negative {
 			for (Timestamp bad: badDatetimes) {
 				try {
 					log.info("Attempted bad insert value: " + bad);
-					conn.set_datetime(1, bad);}
+					conn.setDatetime(1, bad);}
 				finally {
 					conn.close();
 					// log.info("Correct exception thrown on bad datetime");

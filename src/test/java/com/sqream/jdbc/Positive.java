@@ -101,26 +101,26 @@ public class Positive {
 		conn.execute(sql);		
 		
 		while(conn.next()) { 
-			String res = conn.get_nvarchar(11);
+			String res = conn.getNvarchar(11);
 			if (conn.getBoolean(1) != false)
 				log.info("Wrong return value on getBoolen");
-			else if (conn.get_ubyte(2) != 14) 
+			else if (conn.getUbyte(2) != 14)
 				log.info("Wrong return value on get_ubyte");
-			else if (conn.get_short(3) != 140)
+			else if (conn.getShort(3) != 140)
 				log.info("Wrong return value on get_short");
-			else if (conn.get_int(4) != 1400) 
+			else if (conn.getInt(4) != 1400)
 				log.info("Wrong return value on get_int");
-			else if (conn.get_long(5) != 14000000l) 
+			else if (conn.getLong(5) != 14000000l)
 				log.info("Wrong return value on get_long");
-			else if (conn.get_float(6) != 14.1f) 
+			else if (conn.getFloat(6) != 14.1f)
 				log.info("Wrong return value on get_float");
-			else if (conn.get_double(7) != 14.12345) 
+			else if (conn.getDouble(7) != 14.12345)
 				log.info("Wrong return value on get_double");
-			else if (!conn.get_date(8).toString().equals("2013-11-23")) 
+			else if (!conn.getDate(8).toString().equals("2013-11-23"))
 				log.info("Wrong return value on get_date");
-			else if (!conn.get_datetime(9).toString().equals("2013-11-23 14:56:47.1"))
+			else if (!conn.getDatetime(9).toString().equals("2013-11-23 14:56:47.1"))
 				log.info("Wrong return value on get_datetime");
-			else if (!conn.get_varchar(10).trim().equals("wuzz")) 
+			else if (!conn.getVarchar(10).trim().equals("wuzz"))
 				log.info("Wrong return value on get_varchar");
 			
 			else if (!res.equals("up"))
@@ -156,7 +156,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				 
-				conn.set_boolean(1, test_bool); 
+				conn.setBoolean(1, test_bool);
 				send_and_retreive_result (conn, table_name, table_type);
 				a_ok = is_identical(table_type);}
 		else if (table_type == "tinyint") 
@@ -165,7 +165,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				 
-				conn.set_ubyte(1, test_ubyte);
+				conn.setUbyte(1, test_ubyte);
 				send_and_retreive_result (conn, table_name, table_type); 
 				a_ok = is_identical(table_type);}
 		else if (table_type == "smallint") 
@@ -174,7 +174,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				
-				conn.set_short(1, test_short);
+				conn.setShort(1, test_short);
 				send_and_retreive_result (conn, table_name, table_type);
 				a_ok = is_identical(table_type);}
 		else if (table_type == "int") 
@@ -182,7 +182,7 @@ public class Positive {
 				test_int = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
-				conn.set_int(1, test_int);
+				conn.setInt(1, test_int);
 				send_and_retreive_result (conn, table_name, table_type); 
 				a_ok = is_identical(table_type);}
 		else if (table_type == "bigint")
@@ -191,7 +191,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				 
-				conn.set_long(1, test_long);
+				conn.setLong(1, test_long);
 				send_and_retreive_result (conn, table_name, table_type); 
 				a_ok = is_identical(table_type);}
 		else if (table_type == "real")
@@ -200,7 +200,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				
-				conn.set_float(1, test_real);
+				conn.setFloat(1, test_real);
 				send_and_retreive_result (conn, table_name, table_type);
 				a_ok = is_identical(table_type);}
 		else if (table_type == "double")
@@ -209,7 +209,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				
-				conn.set_double(1, test_double);
+				conn.setDouble(1, test_double);
 				send_and_retreive_result (conn, table_name, table_type); 
 				a_ok = is_identical(table_type);}
 		else if (table_type == "varchar(100)")
@@ -218,7 +218,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				
-				conn.set_varchar(1, test_varchar);
+				conn.setVarchar(1, test_varchar);
 				send_and_retreive_result (conn, table_name, table_type); 
 				a_ok = is_identical(table_type);}
 		else if (table_type == "nvarchar(4)")
@@ -227,7 +227,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				 
-				conn.set_nvarchar(1, test_nvarchar);
+				conn.setNvarchar(1, test_nvarchar);
 				send_and_retreive_result (conn, table_name, table_type); 
 				a_ok = is_identical(table_type);}
 		else if (table_type == "date")
@@ -236,7 +236,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				 
-				conn.set_date(1, test_date);
+				conn.setDate(1, test_date);
 				send_and_retreive_result (conn, table_name, table_type); 
 				a_ok = is_identical(table_type);}
 		else if (table_type == "datetime")
@@ -246,7 +246,7 @@ public class Positive {
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				
-				conn.set_datetime(1, test_datetime);
+				conn.setDatetime(1, test_datetime);
 				send_and_retreive_result (conn, table_name, table_type); 
 				a_ok = is_identical(table_type);}
 	
@@ -272,25 +272,25 @@ public class Positive {
 			if (table_type == "bool") 
 				res_bool = conn.getBoolean(1);
 			else if (table_type == "tinyint") 
-				res_ubyte = conn.get_ubyte(1);
+				res_ubyte = conn.getUbyte(1);
 			else if (table_type == "smallint") 
-				res_short = conn.get_short(1);
+				res_short = conn.getShort(1);
 			else if (table_type == "int") 
-				res_int = conn.get_int(1);
+				res_int = conn.getInt(1);
 			else if (table_type == "bigint")
-				res_long = conn.get_long(1);
+				res_long = conn.getLong(1);
 			else if (table_type == "real")
-				res_real = conn.get_float(1);
+				res_real = conn.getFloat(1);
 			else if (table_type == "double")
-				res_double = conn.get_double(1);
+				res_double = conn.getDouble(1);
 			else if (table_type == "varchar(100)")
-				res_varchar = conn.get_varchar(1);
+				res_varchar = conn.getVarchar(1);
 			else if (table_type == "nvarchar(4)")
-				res_nvarchar = conn.get_nvarchar(1);
+				res_nvarchar = conn.getNvarchar(1);
 			else if (table_type == "date")
-				res_date = conn.get_date(1);
+				res_date = conn.getDate(1);
 			else if (table_type == "datetime")
-				res_datetime = conn.get_datetime(1); 
+				res_datetime = conn.getDatetime(1);
 		}  //*/	
 		conn.close();
 	}
@@ -360,8 +360,8 @@ public class Positive {
 		String multi_row_string = "koko";
     	//* Insert a bunch of rows
 		for(int i =0 ; i< total_inserts; i++) {   
-          conn.set_int(1,  multi_row_value);
-          conn.set_nvarchar(2,  multi_row_string);
+          conn.setInt(1,  multi_row_value);
+          conn.setNvarchar(2,  multi_row_string);
           conn.next();  //  if ((i)%commitEvery==0)  
     
 		}          

@@ -144,7 +144,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setBoolean(int arg0, boolean arg1) throws SQLException {
         
         try {
-			Client.set_boolean(arg0, arg1);
+			Client.setBoolean(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++;      
@@ -154,7 +154,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setByte(int arg0, byte arg1) throws SQLException {
         
     	try {
-			Client.set_ubyte(arg0, arg1);
+			Client.setUbyte(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -163,7 +163,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setShort(int arg0, short arg1) throws SQLException {
 	    try {
-			Client.set_short(arg0, arg1);
+			Client.setShort(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++;    
@@ -173,7 +173,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setInt(int arg0, int arg1) throws SQLException {
 
     	try {
-			Client.set_int(arg0, arg1);
+			Client.setInt(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++;    
@@ -183,7 +183,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setLong(int arg0, long arg1) throws SQLException {
         
         try {
-			Client.set_long(arg0, arg1);
+			Client.setLong(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -192,7 +192,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setFloat(int arg0, float arg1) throws SQLException {
         try {
-			Client.set_float(arg0, arg1);
+			Client.setFloat(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++;    
@@ -202,7 +202,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setDouble(int arg0, double arg1) throws SQLException {
         
          try {
-			Client.set_double(arg0, arg1);
+			Client.setDouble(arg0, arg1);
 		} catch (ConnException e) {
              throw new SQLException(e);
 		} setCounter++;  
@@ -211,7 +211,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setDate(int colNum, Date date) throws SQLException {
         try {
-			Client.set_date(colNum, date);
+			Client.setDate(colNum, date);
 		} catch (IllegalArgumentException | UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e.getMessage());
 		} setCounter++; 
@@ -221,7 +221,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setDate(int colNum, Date date, Calendar cal) throws SQLException {
     	
     	try {
-			Client.set_date(colNum, date, cal.getTimeZone().toZoneId());
+			Client.setDate(colNum, date, cal.getTimeZone().toZoneId());
 		} catch (UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -231,7 +231,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setTimestamp(int colNum, Timestamp datetime) throws SQLException {
         
     	try {
-			Client.set_datetime(colNum, datetime);
+			Client.setDatetime(colNum, datetime);
 		} catch (UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -240,7 +240,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setTimestamp(int colNum, Timestamp datetime, Calendar cal) throws SQLException {
     	try {
-			Client.set_datetime(colNum, datetime, cal.getTimeZone().toZoneId());
+			Client.setDatetime(colNum, datetime, cal.getTimeZone().toZoneId());
 		} catch (UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e);
 		}
@@ -252,9 +252,9 @@ public class SQPreparedStatement implements PreparedStatement {
         String type = getMetaData().getColumnTypeName(colNum);
         try {
             if ("Varchar".equals(type)) {
-                Client.set_varchar(colNum, value);
+                Client.setVarchar(colNum, value);
             } else if ("NVarchar".equals(type)) {
-                Client.set_nvarchar(colNum, value);
+                Client.setNvarchar(colNum, value);
             } else {
                 throw new IllegalArgumentException(
                         MessageFormat.format("Trying to set [{0}] on a column number [{1}] of type [{2}]",
@@ -269,7 +269,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setNString(int arg0, String arg1) throws SQLException {
         try {
-			Client.set_nvarchar(arg0, arg1);
+			Client.setNvarchar(arg0, arg1);
 		} catch (UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -281,41 +281,41 @@ public class SQPreparedStatement implements PreparedStatement {
     	String type = "";
     	
     	try {
-    	    type = Client.get_col_type(arg0);
+    	    type = Client.getColType(arg0);
 
             switch (type) {
                 case "ftBool":
-                    Client.set_boolean(arg0, null);
+                    Client.setBoolean(arg0, null);
                     break;
                 case "ftUByte":
-                    Client.set_ubyte(arg0, null);
+                    Client.setUbyte(arg0, null);
                     break;
                 case "ftShort":
-                    Client.set_short(arg0, null);
+                    Client.setShort(arg0, null);
                     break;
                 case "ftInt":
-                    Client.set_int(arg0, null);
+                    Client.setInt(arg0, null);
                     break;
                 case "ftLong":
-                    Client.set_long(arg0, null);
+                    Client.setLong(arg0, null);
                     break;
                 case "ftFloat":
-                    Client.set_float(arg0, null);
+                    Client.setFloat(arg0, null);
                     break;
                 case "ftDouble":
-                    Client.set_double(arg0, null);
+                    Client.setDouble(arg0, null);
                     break;
                 case "ftDate":
-                    Client.set_date(arg0, null);
+                    Client.setDate(arg0, null);
                     break;
                 case "ftDateTime":
-                    Client.set_datetime(arg0, null);
+                    Client.setDatetime(arg0, null);
                     break;
                 case "ftVarchar":
-                    Client.set_varchar(arg0, null);
+                    Client.setVarchar(arg0, null);
                     break;
                 case "ftBlob":
-                    Client.set_nvarchar(arg0, null);
+                    Client.setNvarchar(arg0, null);
                     break;
                 default:
                     throw new IllegalArgumentException(

@@ -17,10 +17,12 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 
 import static com.sqream.jdbc.TestEnvironment.IP;
 import static com.sqream.jdbc.TestEnvironment.PORT;
+import static com.sqream.jdbc.connector.socket.SQSocketConnector.SUPPORTED_PROTOCOLS;
 import static junit.framework.TestCase.*;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -113,5 +115,65 @@ public class SQSocketConnectorTest {
             assertTrue(e.getMessage().contains("Probably tried to connect to server picker"));
             throw e;
         }
+    }
+
+    @Test
+    public void supportedProtocolsTest() throws IOException, ConnException, NoSuchAlgorithmException {
+
+        for (byte protocolVersion : SUPPORTED_PROTOCOLS) {
+            SQSocket socketMock = Mockito.mock(SQSocket.class);
+            Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
+                @Override
+                public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
+                    ByteBuffer targetBuffer = invocationOnMock.getArgument(0);
+                    targetBuffer.put(protocolVersion);
+                    targetBuffer.put((byte) 0);
+                    targetBuffer.putLong(42L);
+                    return targetBuffer.capacity();
+                }
+            });
+
+            PowerMockito.mockStatic(SQSocket.class);
+            PowerMockito.when(SQSocket.connect(IP, PORT, false)).thenReturn(socketMock);
+            PowerMockito.mockStatic(SSLContext.class);
+            PowerMockito.when(SSLContext.getDefault()).thenReturn(null);
+            SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false, false);
+
+            socketConnector.parseHeader();
+        }
+    }
+
+    @Test(expected = ConnException.class)
+    public void unsupportedProtocolTest() throws IOException, ConnException, NoSuchAlgorithmException {
+        byte UNSUPPORTED_PROTOCOL_VERSION = (byte) 1;
+
+        SQSocket socketMock = Mockito.mock(SQSocket.class);
+        Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
+            @Override
+            public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
+                ByteBuffer targetBuffer = invocationOnMock.getArgument(0);
+                targetBuffer.put(UNSUPPORTED_PROTOCOL_VERSION);
+                targetBuffer.put((byte) 0);
+                targetBuffer.putLong(42L);
+                return targetBuffer.capacity();
+            }
+        });
+
+        PowerMockito.mockStatic(SQSocket.class);
+        PowerMockito.when(SQSocket.connect(IP, PORT, false)).thenReturn(socketMock);
+        PowerMockito.mockStatic(SSLContext.class);
+        PowerMockito.when(SSLContext.getDefault()).thenReturn(null);
+        SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false, false);
+
+        try {
+            socketConnector.parseHeader();
+        } catch (ConnException e) {
+            if (e.getMessage().contains("Unsupported protocol version")) {
+                throw e;
+            } else {
+                fail(MessageFormat.format("Incorrect exception message [{0}]", e.getMessage()));
+            }
+        }
+
     }
 }

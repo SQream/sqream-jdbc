@@ -19,22 +19,26 @@ public class SQPreparedStatementTest {
         String SELECT_ALL_SQL = "select * from test_max_rows;";
         int maxRows = 3;
         int totalRows = 10;
-        try (Connection conn = createConnection();
-             Statement stmt = conn.createStatement()) {
+        try (Connection conn = createConnection()) {
 
-            stmt.executeUpdate(CREATE_TABLE_SQL);
-            for (int i = 0; i < totalRows; i++) {
-                stmt.executeUpdate(String.format(INSERT_SQL_TEMPLATE, i));
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(CREATE_TABLE_SQL);
+                for (int i = 0; i < totalRows; i++) {
+                    stmt.executeUpdate(String.format(INSERT_SQL_TEMPLATE, i));
+                }
             }
 
-            stmt.setMaxRows(maxRows);
+            try (PreparedStatement pstmt = conn.prepareStatement(SELECT_ALL_SQL)) {
+                pstmt.setMaxRows(maxRows);
 
-            ResultSet rs = stmt.executeQuery(SELECT_ALL_SQL);
-            for (int i = 0; i < maxRows; i++) {
-                assertTrue(rs.next());
-                assertEquals(i, rs.getInt(1));
+                ResultSet rs = pstmt.executeQuery();
+                for (int i = 0; i < maxRows; i++) {
+                    assertTrue(rs.next());
+                    assertEquals(i, rs.getInt(1));
+                }
+                assertFalse(rs.next());
             }
-            assertFalse(rs.next());
+
         }
     }
 

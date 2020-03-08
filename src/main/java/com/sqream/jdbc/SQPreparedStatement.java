@@ -47,7 +47,7 @@ import com.sqream.jdbc.connector.ConnException;
 public class SQPreparedStatement implements PreparedStatement {
     private static final Logger LOGGER = Logger.getLogger(SQPreparedStatement.class.getName());
 
-    private Connector Client;
+    private Connector client;
     private SQResultSet SQRS = null;
     private SQResultSetMetaData metaData = null;
     private int statement_id;
@@ -63,10 +63,10 @@ public class SQPreparedStatement implements PreparedStatement {
         LOGGER.log(Level.FINE, MessageFormat.format("Construct SQPreparedStatement for [{0}]", sql));
         db_name = connParams.getDbName();
         is_closed = false;
-        Client = new ConnectorImpl(connParams.getIp(), connParams.getPort(), connParams.getCluster(), connParams.getUseSsl());
-        Client.connect(connParams.getDbName(), connParams.getUser(), connParams.getPassword(), "sqream");  // default service
-        statement_id = Client.execute(sql);
-        metaData = new SQResultSetMetaData(Client, connParams.getDbName());
+        client = new ConnectorImpl(connParams.getIp(), connParams.getPort(), connParams.getCluster(), connParams.getUseSsl());
+        client.connect(connParams.getDbName(), connParams.getUser(), connParams.getPassword(), "sqream");  // default service
+        statement_id = client.execute(sql);
+        metaData = new SQResultSetMetaData(client, connParams.getDbName());
     }
 
     
@@ -74,11 +74,11 @@ public class SQPreparedStatement implements PreparedStatement {
     public void close() throws SQLException {
     	LOGGER.log(Level.FINE,"Close prepared statement");
         try {
-        	if (Client!= null && Client.isOpen()) {
-				if (Client.isOpenStatement()) {
-					Client.close();
+        	if (client != null && client.isOpen()) {
+				if (client.isOpenStatement()) {
+					client.close();
 				}
-				Client.closeConnection();
+				client.closeConnection();
         	}
         } catch (IOException | ConnException | ScriptException e) {
             throw new SQLException(e);
@@ -108,7 +108,7 @@ public class SQPreparedStatement implements PreparedStatement {
         LOGGER.log(Level.FINEST, "add batch");
 
         try {
-            Client.next();
+            client.next();
             // Update nextRow counter
             rowsInBatch++;
             // Remember how many set commands were issued for this row in case it comes handy
@@ -123,17 +123,17 @@ public class SQPreparedStatement implements PreparedStatement {
     public boolean execute() {
         LOGGER.log(Level.FINE,"execute");
 
-        SQRS = new SQResultSet(Client, db_name);
+        SQRS = new SQResultSet(client, db_name);
 
         //TODO: Duplicate logic in SQStatement
-        return (!"INSERT".equals(Client.getQueryType())) && Client.getRowLength() > 0;
+        return (!"INSERT".equals(client.getQueryType())) && client.getRowLength() > 0;
     }
     
     @Override
     public ResultSet executeQuery() {
         LOGGER.log(Level.FINE,"execute query");
 
-        SQRS = new SQResultSet(Client, db_name);
+        SQRS = new SQResultSet(client, db_name);
         return SQRS;
     }
 
@@ -144,7 +144,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setBoolean(int arg0, boolean arg1) throws SQLException {
         
         try {
-			Client.setBoolean(arg0, arg1);
+			client.setBoolean(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++;      
@@ -154,7 +154,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setByte(int arg0, byte arg1) throws SQLException {
         
     	try {
-			Client.setUbyte(arg0, arg1);
+			client.setUbyte(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -163,7 +163,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setShort(int arg0, short arg1) throws SQLException {
 	    try {
-			Client.setShort(arg0, arg1);
+			client.setShort(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++;    
@@ -173,7 +173,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setInt(int arg0, int arg1) throws SQLException {
 
     	try {
-			Client.setInt(arg0, arg1);
+			client.setInt(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++;    
@@ -183,7 +183,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setLong(int arg0, long arg1) throws SQLException {
         
         try {
-			Client.setLong(arg0, arg1);
+			client.setLong(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -192,7 +192,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setFloat(int arg0, float arg1) throws SQLException {
         try {
-			Client.setFloat(arg0, arg1);
+			client.setFloat(arg0, arg1);
 		} catch (ConnException e) {
             throw new SQLException(e);
 		} setCounter++;    
@@ -202,7 +202,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setDouble(int arg0, double arg1) throws SQLException {
         
          try {
-			Client.setDouble(arg0, arg1);
+			client.setDouble(arg0, arg1);
 		} catch (ConnException e) {
              throw new SQLException(e);
 		} setCounter++;  
@@ -211,7 +211,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setDate(int colNum, Date date) throws SQLException {
         try {
-			Client.setDate(colNum, date);
+			client.setDate(colNum, date);
 		} catch (IllegalArgumentException | UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e.getMessage());
 		} setCounter++; 
@@ -221,7 +221,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setDate(int colNum, Date date, Calendar cal) throws SQLException {
     	
     	try {
-			Client.setDate(colNum, date, cal.getTimeZone().toZoneId());
+			client.setDate(colNum, date, cal.getTimeZone().toZoneId());
 		} catch (UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -231,7 +231,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setTimestamp(int colNum, Timestamp datetime) throws SQLException {
         
     	try {
-			Client.setDatetime(colNum, datetime);
+			client.setDatetime(colNum, datetime);
 		} catch (UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -240,7 +240,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setTimestamp(int colNum, Timestamp datetime, Calendar cal) throws SQLException {
     	try {
-			Client.setDatetime(colNum, datetime, cal.getTimeZone().toZoneId());
+			client.setDatetime(colNum, datetime, cal.getTimeZone().toZoneId());
 		} catch (UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e);
 		}
@@ -252,9 +252,9 @@ public class SQPreparedStatement implements PreparedStatement {
         String type = getMetaData().getColumnTypeName(colNum);
         try {
             if ("Varchar".equals(type)) {
-                Client.setVarchar(colNum, value);
+                client.setVarchar(colNum, value);
             } else if ("NVarchar".equals(type)) {
-                Client.setNvarchar(colNum, value);
+                client.setNvarchar(colNum, value);
             } else {
                 throw new IllegalArgumentException(
                         MessageFormat.format("Trying to set [{0}] on a column number [{1}] of type [{2}]",
@@ -269,7 +269,7 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setNString(int arg0, String arg1) throws SQLException {
         try {
-			Client.setNvarchar(arg0, arg1);
+			client.setNvarchar(arg0, arg1);
 		} catch (UnsupportedEncodingException | ConnException e) {
             throw new SQLException(e);
 		} setCounter++; 
@@ -281,41 +281,41 @@ public class SQPreparedStatement implements PreparedStatement {
     	String type = "";
     	
     	try {
-    	    type = Client.getColType(arg0);
+    	    type = client.getColType(arg0);
 
             switch (type) {
                 case "ftBool":
-                    Client.setBoolean(arg0, null);
+                    client.setBoolean(arg0, null);
                     break;
                 case "ftUByte":
-                    Client.setUbyte(arg0, null);
+                    client.setUbyte(arg0, null);
                     break;
                 case "ftShort":
-                    Client.setShort(arg0, null);
+                    client.setShort(arg0, null);
                     break;
                 case "ftInt":
-                    Client.setInt(arg0, null);
+                    client.setInt(arg0, null);
                     break;
                 case "ftLong":
-                    Client.setLong(arg0, null);
+                    client.setLong(arg0, null);
                     break;
                 case "ftFloat":
-                    Client.setFloat(arg0, null);
+                    client.setFloat(arg0, null);
                     break;
                 case "ftDouble":
-                    Client.setDouble(arg0, null);
+                    client.setDouble(arg0, null);
                     break;
                 case "ftDate":
-                    Client.setDate(arg0, null);
+                    client.setDate(arg0, null);
                     break;
                 case "ftDateTime":
-                    Client.setDatetime(arg0, null);
+                    client.setDatetime(arg0, null);
                     break;
                 case "ftVarchar":
-                    Client.setVarchar(arg0, null);
+                    client.setVarchar(arg0, null);
                     break;
                 case "ftBlob":
-                    Client.setNvarchar(arg0, null);
+                    client.setNvarchar(arg0, null);
                     break;
                 default:
                     throw new IllegalArgumentException(
@@ -429,7 +429,7 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public int getMaxRows() throws SQLException {
-        return 0;
+        return client.getFetchLimit();
     }
 
     @Override
@@ -509,7 +509,7 @@ public class SQPreparedStatement implements PreparedStatement {
     
     @Override
     public ParameterMetaData getParameterMetaData() throws SQLException {
-        return new SQParameterMetaData(Client);
+        return new SQParameterMetaData(client);
     }
     
     // Unsupported
@@ -747,11 +747,12 @@ public class SQPreparedStatement implements PreparedStatement {
     }
     
     @Override
-    public void setMaxRows(int arg0) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setMaxRows in SQPreparedStatement");
-
-        // if (arg0 != 0) // if zero, use default
-        // serverProcess_chunk_size = arg0;
+    public void setMaxRows(int maxRows) throws SQLException {
+        try {
+            client.setFetchLimit(maxRows);
+        } catch (ConnException e) {
+            throw new SQLException("Error in setMaxRows:" + e);
+        }
     }
     
     /*

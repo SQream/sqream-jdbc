@@ -31,6 +31,7 @@ public class SQPreparedStatementTest {
             try (PreparedStatement pstmt = conn.prepareStatement(SELECT_ALL_SQL)) {
                 pstmt.setMaxRows(maxRows);
 
+                assertEquals(maxRows, pstmt.getMaxRows());
                 ResultSet rs = pstmt.executeQuery();
                 for (int i = 0; i < maxRows; i++) {
                     assertTrue(rs.next());

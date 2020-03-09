@@ -51,7 +51,7 @@ public class SQSocket {
         return (useSsl) ? tlsChannel.isOpen() : socketChannel.isOpen();
     }
 
-    void close() throws IOException {
+    public void close() throws IOException {
         if (useSsl) {
             if (tlsChannel.isOpen()) {
                 tlsChannel.close(); // finish ssl communcication and close SSLEngine

@@ -30,30 +30,28 @@ import static org.mockito.ArgumentMatchers.any;
 @PrepareForTest({SQSocketConnector.class, SQSocket.class, SSLContext.class})
 public class SQSocketConnectorTest {
 
-                                                //TODO: Alex K 03/05/2020 rewrite this test
     @Test
     public void reconnectToNodeTest() throws NoSuchAlgorithmException, IOException, KeyManagementException {
-//        boolean USE_SSL = false;
-//        boolean CLUSTER = true;
-//        PowerMockito.mockStatic(SQSocketConnector.class);
-//        SQSocketConnector connectorMock = Mockito.mock(SQSocketConnector.class);
-//        Mockito.when(connectorMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Void>() {
-//            @Override
-//            public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
-//                ByteBuffer targetBuffer = invocationOnMock.getArgument(0);
-//                byte[] ip = IP.getBytes(StandardCharsets.UTF_8);
-//                targetBuffer.putInt(ip.length);
-//                targetBuffer.put(ip);
-//                targetBuffer.putInt(PORT);
-//                return null;
-//            }
-//        });
-//
-//        PowerMockito.when(SQSocketConnector.connect(IP, PORT, USE_SSL)).thenReturn(connectorMock);
-//
-//        new ConnectorImpl(IP, PORT, CLUSTER, USE_SSL);
-//
-//        Mockito.verify(connectorMock).reconnect(IP, PORT, USE_SSL);
+        boolean USE_SSL = false;
+        boolean CLUSTER = true;
+        SQSocket socketMock = Mockito.mock(SQSocket.class);
+        Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
+                ByteBuffer targetBuffer = invocationOnMock.getArgument(0);
+                byte[] ip = IP.getBytes(StandardCharsets.UTF_8);
+                targetBuffer.putInt(ip.length);
+                targetBuffer.put(ip);
+                targetBuffer.putInt(PORT);
+                return null;
+            }
+        });
+        PowerMockito.mockStatic(SQSocket.class);
+        PowerMockito.when(SQSocket.connect(IP, PORT, USE_SSL)).thenReturn(socketMock);
+
+        new ConnectorImpl(IP, PORT, CLUSTER, USE_SSL);
+
+        Mockito.verify(socketMock).close();
     }
 
 

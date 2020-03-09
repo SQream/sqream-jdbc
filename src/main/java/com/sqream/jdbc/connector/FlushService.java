@@ -30,8 +30,7 @@ public class FlushService {
     }
 
     public void process(TableMetadata metadata, BlockDto block, ByteBufferPool byteBufferPool) {
-        LOGGER.log(Level.FINE, MessageFormat.format(
-                "Process block: block=[{1}], asynchronous=[{2}]", block));
+        LOGGER.log(Level.FINE, MessageFormat.format("Process block: block=[{0}]", block));
 
         executorService.submit(() -> {
             try {

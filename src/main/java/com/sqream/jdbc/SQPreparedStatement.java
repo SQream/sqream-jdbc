@@ -511,16 +511,26 @@ public class SQPreparedStatement implements PreparedStatement {
     public ParameterMetaData getParameterMetaData() throws SQLException {
         return new SQParameterMetaData(client);
     }
-    
-    // Unsupported
-    // -----------
-    
+
     @Override
     public void setQueryTimeout(int arg0) throws SQLException {
         if (arg0 !=0)  // 0 means unlimited timeout
             throw new SQLFeatureNotSupportedException("setQueryTimeout in SQPreparedStatement");
     }
-    
+
+    @Override
+    public void setMaxRows(int maxRows) throws SQLException {
+        try {
+            client.setFetchLimit(maxRows);
+        } catch (ConnException e) {
+            throw new SQLException("Error in setMaxRows:" + e);
+        }
+    }
+
+    // Unsupported
+
+    // -----------
+
     @Override   
     public void addBatch(String arg0) throws SQLException {
         throw new SQLFeatureNotSupportedException("addBatch in SQPreparedStatement");
@@ -744,15 +754,6 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setUnicodeStream(int arg0, InputStream arg1, int arg2) throws SQLException {
         throw new SQLFeatureNotSupportedException("setUnicodeStream in SQPreparedStatement");
-    }
-    
-    @Override
-    public void setMaxRows(int maxRows) throws SQLException {
-        try {
-            client.setFetchLimit(maxRows);
-        } catch (ConnException e) {
-            throw new SQLException("Error in setMaxRows:" + e);
-        }
     }
     
     /*

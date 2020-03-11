@@ -237,8 +237,8 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public String getURL() throws SQLException {
 
 		return String.format("jdbc:Sqream://%s:%s/%s;user=%s;password=%s",
-				conn.getParams().getCluster() ? conn.getParams().getLbip() : conn.getParams().getIp(),
-				conn.getParams().getCluster() ? conn.getParams().getLbport() : conn.getParams().getPort(),
+				conn.getParams().getIp(),
+				conn.getParams().getPort(),
 				conn.getParams().getDbName(),
 				conn.getParams().getUser(),
 				conn.getParams().getPassword());

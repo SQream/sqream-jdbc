@@ -1,15 +1,10 @@
 package com.sqream.jdbc;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.script.ScriptException;
 
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnException;
@@ -39,8 +34,7 @@ public class SQConnection implements Connection {
 		globalClient = client;
 	}
 	
-	SQConnection(Properties connectionInfo)
-			throws ScriptException, SQLException, NumberFormatException, IOException, NoSuchAlgorithmException, KeyManagementException, ConnException {
+	SQConnection(Properties connectionInfo) throws ConnException {
 		if (Level.FINE == LOGGER.getParent().getLevel()) {
 			LOGGER.log(Level.FINE,"Construct SQConnection with properties");
 			logProperties(connectionInfo);

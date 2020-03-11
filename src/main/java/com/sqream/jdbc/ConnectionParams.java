@@ -1,12 +1,10 @@
 package com.sqream.jdbc;
 
-import java.sql.SQLException;
+import com.sqream.jdbc.connector.ConnException;
 
 public class ConnectionParams {
 
     private Boolean cluster;
-    private String lbip;
-    private int lbport;
     private String ip;
     private int port;
     private String user;
@@ -24,14 +22,6 @@ public class ConnectionParams {
 
     public Boolean getCluster() {
         return cluster;
-    }
-
-    public String getLbip() {
-        return lbip;
-    }
-
-    public int getLbport() {
-        return lbport;
     }
 
     public String getIp() {
@@ -70,8 +60,6 @@ public class ConnectionParams {
     public String toString() {
         return "ConnectionParams{" +
                 "cluster=" + cluster +
-                ", lbip='" + lbip + '\'' +
-                ", lbport=" + lbport +
                 ", ip='" + ip + '\'' +
                 ", port=" + port +
                 ", user='" + user + '\'' +
@@ -99,52 +87,52 @@ public class ConnectionParams {
             return this;
         }
 
-        public ConnectionParamsBuilder ipAddress(String ipAddress) throws SQLException {
+        public ConnectionParamsBuilder ipAddress(String ipAddress) throws ConnException {
             if ((this.ip = ipAddress) == null) {
-                throw new SQLException("missing host error");
+                throw new ConnException("missing host error");
             }
             return this;
         }
 
-        public ConnectionParamsBuilder port(String port) throws SQLException {
+        public ConnectionParamsBuilder port(String port) throws ConnException {
             if (port == null) {
-                throw new SQLException("missing port error");
+                throw new ConnException("missing port error");
             }
             this.port = Integer.parseInt(port);
             return this;
         }
 
-        public ConnectionParamsBuilder dbName(String dbName) throws SQLException {
+        public ConnectionParamsBuilder dbName(String dbName) throws ConnException {
             if ((this.dbName = dbName) == null) {
-                throw new SQLException("missing database name error");
+                throw new ConnException("missing database name error");
             }
             return this;
         }
 
-        public ConnectionParamsBuilder service(String service) throws SQLException {
+        public ConnectionParamsBuilder service(String service) throws ConnException {
             if((this.service = service) == null) {
-                throw new SQLException("missing service name error");
+                throw new ConnException("missing service name error");
             }
             return this;
         }
 
-        public ConnectionParamsBuilder schema(String schema) throws SQLException {
+        public ConnectionParamsBuilder schema(String schema) throws ConnException {
             if((this.schema = schema) == null) {
-                throw new SQLException("missing schema name error");
+                throw new ConnException("missing schema name error");
             }
             return this;
         }
 
-        public ConnectionParamsBuilder user(String user) throws SQLException {
+        public ConnectionParamsBuilder user(String user) throws ConnException {
             if ((this.user = user) == null) {
-                throw new SQLException("missing user");
+                throw new ConnException("missing user");
             }
             return this;
         }
 
-        public ConnectionParamsBuilder password(String password) throws SQLException {
+        public ConnectionParamsBuilder password(String password) throws ConnException {
             if ((this.password = password) == null) {
-                throw new SQLException("missing database name error");
+                throw new ConnException("missing database name error");
             }
             return this;
         }

@@ -1,17 +1,11 @@
 package com.sqream.jdbc;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.logging.*;
 import java.lang.reflect.Field;
-import javax.script.ScriptException;
 
-import com.sqream.jdbc.connector.ConnException;
-import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.logging.LoggingService;
 import com.sqream.jdbc.propsParser.PropsParser;
 
@@ -21,9 +15,6 @@ import static com.sqream.jdbc.enums.DriverProperties.*;
 
 public class SQDriver implements java.sql.Driver {
 	private static final Logger LOGGER = Logger.getLogger(SQDriver.class.getName());
-
-	//FIXME: remove it. Just for test.
-	private static final String JDBC_VERSION = "JDBC 4.1 Demo";
 
 	private static final String PREFIX = "jdbc:Sqream";
 	private static final int MAJOR_VERSION = 4;
@@ -80,14 +71,9 @@ public class SQDriver implements java.sql.Driver {
 				props.getProperty(LOGGER_LEVEL.toString()),
 				props.getProperty(LOG_FILE_PATH.toString()));
 
-		//FIXME: remove it. Just for test.
-		System.out.println("JDBC version: " + JDBC_VERSION);
-		LOGGER.info("JDBC version: " + JDBC_VERSION);
-
 		try {
 			return new SQConnection(props);
-		} catch (NumberFormatException | ScriptException | IOException | NoSuchAlgorithmException |
-		KeyManagementException | ConnException e) {
+		} catch (Exception e) {
 			throw new SQLException(e);
 		}
 	}

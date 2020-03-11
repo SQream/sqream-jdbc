@@ -65,8 +65,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
         System.out.println(printable);
     }
 	
-	public SQDatabaseMetaData(Connector client, SQConnection conn, String user_, String catalog) throws SQLException, NumberFormatException, UnknownHostException, IOException
-			 {
+	public SQDatabaseMetaData(Connector client, SQConnection conn, String user_, String catalog) {
 		this.client = client;
 		this.conn =conn;
 		user = user_;

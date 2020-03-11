@@ -1,10 +1,5 @@
 package com.sqream.jdbc.connector;
 
-import javax.script.ScriptException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.ZoneId;
@@ -12,20 +7,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface Connector extends AutoCloseable {
 
-    int connect(String _database, String _user, String _password, String _service) throws IOException, ScriptException, ConnException;
+    int connect(String _database, String _user, String _password, String _service) throws ConnException;
 
-    int execute(String statement) throws IOException, ScriptException, ConnException, KeyManagementException, NoSuchAlgorithmException;
+    int execute(String statement) throws ConnException;
 
-    int execute(String statement, int _chunk_size) throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException;
+    int execute(String statement, int _chunk_size) throws ConnException;
 
-    boolean next() throws ConnException, IOException, ScriptException;
+    boolean next() throws ConnException;
 
-    void close() throws IOException, ScriptException, ConnException;
+    void close() throws ConnException;
 
-    boolean closeConnection() throws IOException, ScriptException, ConnException;
+    boolean closeConnection() throws ConnException;
 
     // -o-o-o-o-o    By index -o-o-o-o-o
-    Boolean getBoolean(int col_num) throws ConnException;
+    Boolean getBoolean(int col_num);
 
     Byte getUbyte(int col_num) throws ConnException;  // .get().toUnsignedInt()  -->  to allow values between 127-255
 
@@ -39,7 +34,7 @@ public interface Connector extends AutoCloseable {
 
     Double getDouble(int col_num) throws ConnException;
 
-    String getVarchar(int col_num) throws ConnException, UnsupportedEncodingException;
+    String getVarchar(int col_num) throws ConnException;
 
     String getNvarchar(int col_num) throws ConnException;
 
@@ -66,7 +61,7 @@ public interface Connector extends AutoCloseable {
 
     Double getDouble(String col_name) throws ConnException;
 
-    String getVarchar(String col_name) throws ConnException, UnsupportedEncodingException;
+    String getVarchar(String col_name) throws ConnException;
 
     String getNvarchar(String col_name) throws ConnException;
 
@@ -92,17 +87,17 @@ public interface Connector extends AutoCloseable {
 
     boolean setDouble(int col_num, Double value) throws ConnException;
 
-    boolean setVarchar(int col_num, String value) throws ConnException, UnsupportedEncodingException;
+    boolean setVarchar(int col_num, String value) throws ConnException;
 
-    boolean setNvarchar(int col_num, String value) throws ConnException, UnsupportedEncodingException;
+    boolean setNvarchar(int col_num, String value) throws ConnException;
 
-    boolean setDate(int col_num, Date date, ZoneId zone) throws ConnException, UnsupportedEncodingException;
+    boolean setDate(int col_num, Date date, ZoneId zone) throws ConnException;
 
-    boolean setDatetime(int col_num, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException;
+    boolean setDatetime(int col_num, Timestamp ts, ZoneId zone) throws ConnException;
 
-    boolean setDate(int col_num, Date value) throws ConnException, UnsupportedEncodingException;
+    boolean setDate(int col_num, Date value) throws ConnException;
 
-    boolean setDatetime(int col_num, Timestamp value) throws ConnException, UnsupportedEncodingException;
+    boolean setDatetime(int col_num, Timestamp value) throws ConnException;
 
     int getStatementId();
 

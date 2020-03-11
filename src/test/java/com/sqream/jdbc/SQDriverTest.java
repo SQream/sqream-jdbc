@@ -1,5 +1,6 @@
 package com.sqream.jdbc;
 
+import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnectorImpl;
@@ -166,7 +167,7 @@ public class SQDriverTest {
             when(ConnectorFactory.initConnector(
                     any(String.class), any(Integer.class), any(Boolean.class), any(Boolean.class)))
                     .thenReturn(connectorMock);
-        } catch (KeyManagementException | ScriptException | NoSuchAlgorithmException | IOException e) {
+        } catch (ConnException e) {
             throw new RuntimeException(e);
         }
     }

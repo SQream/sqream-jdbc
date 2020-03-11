@@ -31,7 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 public class SQSocketConnectorTest {
 
     @Test
-    public void reconnectToNodeTest() throws NoSuchAlgorithmException, IOException, KeyManagementException {
+    public void reconnectToNodeTest() throws ConnException {
         boolean USE_SSL = false;
         boolean CLUSTER = true;
         SQSocket socketMock = Mockito.mock(SQSocket.class);

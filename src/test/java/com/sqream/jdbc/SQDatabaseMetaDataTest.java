@@ -1,5 +1,6 @@
 package com.sqream.jdbc;
 
+import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.Before;
@@ -17,7 +18,7 @@ public class SQDatabaseMetaDataTest {
     private static SQDatabaseMetaData metadata;
 
     @Before
-    public void setUp() throws KeyManagementException, NoSuchAlgorithmException, IOException, SQLException {
+    public void setUp() throws ConnException {
 
         Connector connector = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
         SQConnection connection = new SQConnection(connector);

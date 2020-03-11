@@ -164,7 +164,7 @@ public class SQConnection implements Connection {
 		SQPreparedStatement SQPS = null;
 		try {
 			SQPS = new SQPreparedStatement(sql, params);
-		} catch (KeyManagementException | NoSuchAlgorithmException | IOException | SQLException | ScriptException | ConnException e) {
+		} catch (Exception e) {
 			throw new SQLException(e);
 		} return SQPS;
 	}
@@ -184,7 +184,7 @@ public class SQConnection implements Connection {
 		SQPreparedStatement SQPS = null;
 		try {
 			SQPS = new SQPreparedStatement(sql, params);
-		} catch (KeyManagementException | NoSuchAlgorithmException | IOException | ScriptException | ConnException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new SQLException(e);
 		} 
@@ -206,7 +206,7 @@ public class SQConnection implements Connection {
 				globalClient.closeConnection();      // Closing Connector
 			isClosed.set(true);
 
-		} catch (IOException | ScriptException | ConnException e) {
+		} catch (Exception e) {
 			throw new SQLException(e);
 		}
 	}

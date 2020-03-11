@@ -793,7 +793,7 @@ public class JDBC_Positive {
                 ps.setObject(1, (byte) -1);
                 ps.addBatch();
                 ps.executeBatch();
-            } catch (IllegalArgumentException e) {
+            } catch (SQLException e) {
                 if (!e.getMessage().contains("Trying to set a negative byte value on an unsigned byte column")) {
                     throw new RuntimeException(
                             "Wrong exception when set a negative byte");
@@ -803,7 +803,7 @@ public class JDBC_Positive {
                 ps.setObject(1, (short) -1);
                 ps.addBatch();
                 ps.executeBatch();
-            } catch (IllegalArgumentException e) {
+            } catch (SQLException e) {
                 if (!e.getMessage().contains("Trying to set wrong value")) {
                     throw new RuntimeException(
                             "Wrong exception when set a negative short");
@@ -813,7 +813,7 @@ public class JDBC_Positive {
                 ps.setObject(1, (short) 256);
                 ps.addBatch();
                 ps.executeBatch();
-            } catch (IllegalArgumentException e) {
+            } catch (SQLException e) {
                 if (!e.getMessage().contains("Trying to set wrong value")) {
                     throw new RuntimeException(
                             "Wrong exception when set too big short");

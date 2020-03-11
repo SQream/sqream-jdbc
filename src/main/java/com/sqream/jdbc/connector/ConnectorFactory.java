@@ -7,8 +7,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class ConnectorFactory {
 
-    public static Connector initConnector(String ip, int port, boolean cluster, boolean ssl) throws KeyManagementException, ScriptException,
-            NoSuchAlgorithmException, IOException {
+    public static Connector initConnector(String ip, int port, boolean cluster, boolean ssl) throws ConnException {
         return new ConnectorImpl(ip, port, cluster, ssl);
     }
 }

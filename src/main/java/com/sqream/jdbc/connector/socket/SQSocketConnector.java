@@ -2,7 +2,6 @@ package com.sqream.jdbc.connector.socket;
 
 import com.sqream.jdbc.connector.ConnException;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +23,7 @@ public class SQSocketConnector {
 
     private SQSocket socket;
 
-    private SQSocketConnector(String ip, int port, boolean useSsl, boolean cluster) throws IOException {
+    private SQSocketConnector(String ip, int port, boolean useSsl, boolean cluster) throws ConnException {
         socket = SQSocket.connect(ip, port, useSsl);
         // Clustered connection - reconnect to actual ip and port
         if (cluster) {
@@ -32,11 +31,11 @@ public class SQSocketConnector {
         }
     }
 
-    public static SQSocketConnector connect(String ip, int port, boolean useSsl, boolean cluster) throws IOException {
+    public static SQSocketConnector connect(String ip, int port, boolean useSsl, boolean cluster) throws ConnException {
         return new SQSocketConnector(ip, port, useSsl, cluster);
     }
 
-    public void reconnect(String ip, int port, boolean useSsl) throws IOException {
+    public void reconnect(String ip, int port, boolean useSsl) throws ConnException {
         socket.close();
         socket = SQSocket.connect(ip, port, useSsl);
     }
@@ -49,7 +48,7 @@ public class SQSocketConnector {
     }
     // (3)  /* Used by _send_data()  (merge if only one )  */
 
-    public int parseHeader() throws IOException, ConnException {
+    public int parseHeader() throws ConnException {
 
         this.header.clear();
         readData(header, HEADER_SIZE);
@@ -73,7 +72,7 @@ public class SQSocketConnector {
     }
     // (4) /* Manage actual sending and receiving of ByteBuffers over exising socket  */
 
-    public String sendData(ByteBuffer data, boolean get_response) throws IOException, ConnException {
+    public String sendData(ByteBuffer data, boolean get_response) throws ConnException {
 
         if (data != null ) {
             data.flip();
@@ -95,7 +94,7 @@ public class SQSocketConnector {
         return (get_response) ? decode(responseMessage) : "" ;
     }
     // (5)   /* Send a JSON string to SQream over socket  */
-    public int readData(ByteBuffer response, int msgLen) throws IOException, ConnException {
+    public int readData(ByteBuffer response, int msgLen) throws ConnException {
         /* Read either a specific amount of data, or until socket is empty if msg_len is 0.
          * response ByteBuffer of a fitting size should be supplied.
          */
@@ -108,7 +107,7 @@ public class SQSocketConnector {
         while (totalBytesRead < msgLen || msgLen == 0) {
             int bytesRead = socket.read(response);
             if (bytesRead == -1) {
-                throw new IOException("Socket closed. Last buffer written: " + response);
+                throw new ConnException("Socket closed. Last buffer written: " + response);
             }
             totalBytesRead += bytesRead;
 
@@ -122,7 +121,7 @@ public class SQSocketConnector {
         return totalBytesRead;
     }
 
-    public void close() throws IOException {
+    public void close() throws ConnException {
         socket.close();
     }
 
@@ -130,7 +129,7 @@ public class SQSocketConnector {
         return socket.isOpen();
     }
 
-    private void reconnectToNode(boolean useSsl) throws IOException {
+    private void reconnectToNode(boolean useSsl) throws ConnException {
         ByteBuffer response_buffer = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);
         // Get data from server picker
         response_buffer.clear();
@@ -138,7 +137,7 @@ public class SQSocketConnector {
         int bytes_read = socket.read(response_buffer);
         response_buffer.flip();
         if (bytes_read == -1) {
-            throw new IOException("Socket closed When trying to connect to server picker");
+            throw new ConnException("Socket closed When trying to connect to server picker");
         }
 
         // Read size of IP address (7-15 bytes) and get the IP

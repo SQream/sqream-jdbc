@@ -223,106 +223,40 @@ public class Negative {
 		//*
 		while(conn.next())
 		{
-			if (table_type == "bool") 
-				try {
-					res_ubyte = conn.getUbyte(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "tinyint") 
-				try {
-					res_double = conn.getDouble(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "smallint") 
-				try {
-					res_ubyte = conn.getUbyte(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "int") 
-				try {
-					res_short = conn.getShort(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "bigint")
-				try {
-					res_int = conn.getInt(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "real")	
-				try {
-					res_long = conn.getLong(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "double")
-				try {
-					res_real = conn.getFloat(1);
-					//res_double = conn.get_double(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "varchar(100)")
-				try {
-					res_nvarchar = conn.getNvarchar(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "nvarchar(100)")
-				try {
-					res_int = conn.getInt(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "date")
-				try {
-					res_datetime = conn.getDatetime(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
-			else if (table_type == "datetime")
-				try {
-					res_date = conn.getDate(1);
-				}catch (ConnException e) {
-					if (e.getMessage().contains("Trying to get")) {
-						log.info("Correct error message on wrong get function");
-						a_ok = true;
-					}
-				}
+			if (table_type == "bool") {
+				res_ubyte = conn.getUbyte(1);
+			}
+			else if (table_type == "tinyint") {
+				res_double = conn.getDouble(1);
+			}
+			else if (table_type == "smallint") {
+				res_ubyte = conn.getUbyte(1);
+			}
+			else if (table_type == "int") {
+				res_short = conn.getShort(1);
+			}
+			else if (table_type == "bigint") {
+				res_int = conn.getInt(1);
+			}
+			else if (table_type == "real") {
+				res_long = conn.getLong(1);
+			}
+			else if (table_type == "double") {
+				res_real = conn.getFloat(1);
+				//res_double = conn.get_double(1);
+			}
+			else if (table_type == "varchar(100)") {
+				res_nvarchar = conn.getNvarchar(1);
+			}
+			else if (table_type == "nvarchar(100)") {
+				res_int = conn.getInt(1);
+			}
+			else if (table_type == "date") {
+				res_datetime = conn.getDatetime(1);
+			}
+			else if (table_type == "datetime") {
+				res_date = conn.getDate(1);
+			}
 		}  //*/	
 		// Check for appropriate wrong get error
 		conn.close();

@@ -1,20 +1,14 @@
 package com.sqream.jdbc;
 
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Array;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.script.ScriptException;
 
 import java.util.ArrayList;
 import java.sql.Blob;
@@ -53,12 +47,10 @@ public class SQPreparedStatement implements PreparedStatement {
     private int statement_id;
     private String db_name;
     private int setCounter = 0;
-    private int rowsInBatch = 0;
     private List<Integer> setsPerBatch = new ArrayList<>();
     private boolean is_closed = true;
 
-    public SQPreparedStatement(String sql, ConnectionParams connParams) throws SQLException, IOException,
-            KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
+    public SQPreparedStatement(String sql, ConnectionParams connParams) throws ConnException {
 
         LOGGER.log(Level.FINE, MessageFormat.format("Construct SQPreparedStatement for [{0}]", sql));
         db_name = connParams.getDbName();
@@ -80,7 +72,7 @@ public class SQPreparedStatement implements PreparedStatement {
 				}
 				client.closeConnection();
         	}
-        } catch (IOException | ConnException | ScriptException e) {
+        } catch (Exception e) {
             throw new SQLException(e);
         } 
         is_closed = true;
@@ -93,7 +85,6 @@ public class SQPreparedStatement implements PreparedStatement {
         int[] res = new int[setsPerBatch.size()];
         Arrays.fill(res, 1);
         setsPerBatch.clear();
-        rowsInBatch = 0;
 
         return res;
     }
@@ -109,13 +100,11 @@ public class SQPreparedStatement implements PreparedStatement {
 
         try {
             client.next();
-            // Update nextRow counter
-            rowsInBatch++;
             // Remember how many set commands were issued for this row in case it comes handy
             setsPerBatch.add(setCounter);  
             setCounter = 0;
-        } catch (IOException | ConnException | ScriptException e) {
-            throw new SQLException(e.getMessage());
+        } catch (Exception e) {
+            throw new SQLException(e);
         }
     }
 
@@ -145,7 +134,7 @@ public class SQPreparedStatement implements PreparedStatement {
         
         try {
 			client.setBoolean(arg0, arg1);
-		} catch (ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;      
     }
@@ -155,7 +144,7 @@ public class SQPreparedStatement implements PreparedStatement {
         
     	try {
 			client.setUbyte(arg0, arg1);
-		} catch (ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++; 
     }
@@ -164,7 +153,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setShort(int arg0, short arg1) throws SQLException {
 	    try {
 			client.setShort(arg0, arg1);
-		} catch (ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;    
     }
@@ -174,7 +163,7 @@ public class SQPreparedStatement implements PreparedStatement {
 
     	try {
 			client.setInt(arg0, arg1);
-		} catch (ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;    
     }
@@ -184,7 +173,7 @@ public class SQPreparedStatement implements PreparedStatement {
         
         try {
 			client.setLong(arg0, arg1);
-		} catch (ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++; 
     }
@@ -193,7 +182,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setFloat(int arg0, float arg1) throws SQLException {
         try {
 			client.setFloat(arg0, arg1);
-		} catch (ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;    
     }
@@ -203,7 +192,7 @@ public class SQPreparedStatement implements PreparedStatement {
         
          try {
 			client.setDouble(arg0, arg1);
-		} catch (ConnException e) {
+		} catch (Exception e) {
              throw new SQLException(e);
 		} setCounter++;  
     }
@@ -212,7 +201,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setDate(int colNum, Date date) throws SQLException {
         try {
 			client.setDate(colNum, date);
-		} catch (IllegalArgumentException | UnsupportedEncodingException | ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e.getMessage());
 		} setCounter++; 
     }
@@ -222,7 +211,7 @@ public class SQPreparedStatement implements PreparedStatement {
     	
     	try {
 			client.setDate(colNum, date, cal.getTimeZone().toZoneId());
-		} catch (UnsupportedEncodingException | ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++; 
     }
@@ -232,7 +221,7 @@ public class SQPreparedStatement implements PreparedStatement {
         
     	try {
 			client.setDatetime(colNum, datetime);
-		} catch (UnsupportedEncodingException | ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++; 
     }
@@ -241,7 +230,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setTimestamp(int colNum, Timestamp datetime, Calendar cal) throws SQLException {
     	try {
 			client.setDatetime(colNum, datetime, cal.getTimeZone().toZoneId());
-		} catch (UnsupportedEncodingException | ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		}
     	setCounter++;
@@ -260,7 +249,7 @@ public class SQPreparedStatement implements PreparedStatement {
                         MessageFormat.format("Trying to set [{0}] on a column number [{1}] of type [{2}]",
                                 type, colNum, type));
             }
-        } catch (ConnException | UnsupportedEncodingException e) {
+        } catch (Exception e) {
             throw new SQLException(e);
         }
         setCounter++;   
@@ -270,7 +259,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setNString(int arg0, String arg1) throws SQLException {
         try {
 			client.setNvarchar(arg0, arg1);
-		} catch (UnsupportedEncodingException | ConnException e) {
+		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++; 
     }
@@ -322,7 +311,7 @@ public class SQPreparedStatement implements PreparedStatement {
                             MessageFormat.format("Unsupported column type [{0}]", type));
             }
     	    setCounter++;   
-        } catch (ConnException | UnsupportedEncodingException e) {
+        } catch (Exception e) {
             throw new SQLException(e);
 		} 
     }
@@ -522,7 +511,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setMaxRows(int maxRows) throws SQLException {
         try {
             client.setFetchLimit(maxRows);
-        } catch (ConnException e) {
+        } catch (Exception e) {
             throw new SQLException("Error in setMaxRows:" + e);
         }
     }

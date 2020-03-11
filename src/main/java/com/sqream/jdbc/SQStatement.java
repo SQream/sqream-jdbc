@@ -60,9 +60,8 @@ public class SQStatement implements Statement {
 			cancel.connect(connection.getParams().getDbName(), connection.getParams().getUser(), connection.getParams().getPassword(), connection.getParams().getService());
 			cancel.execute(sql);	
 			client.setOpenStatement(false);
-		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			e.printStackTrace();
-			throw new SQLException(e.getMessage());
+		} catch (Exception e) {
+			throw new SQLException(e);
 		} 
 		finally  {
 			// TODO Auto-generated catch block
@@ -71,12 +70,11 @@ public class SQStatement implements Statement {
 					if (cancel.isOpenStatement())
 						cancel.close();
 					cancel.closeConnection();
-				} catch (IOException | ConnException | ScriptException e) {
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					String message = e.getMessage();
 					if (!message.contains("The statement has already ended")) {
-						e.printStackTrace();
-						throw new SQLException(e.getMessage());
+						throw new SQLException(e);
 					}
 				}
 			IsCancelStatement.set(false);
@@ -93,9 +91,8 @@ public class SQStatement implements Statement {
 			}
             if(connection !=null)
 			   connection.removeItem(this);
-		} catch (IOException | ConnException | ScriptException e) {
-			e.printStackTrace();
-			throw new SQLException("Statement already closed. Error: " + e);
+		} catch (Exception e) {
+			throw new SQLException("Statement already closed. Error: " + e, e);
 		} 
 	    isClosed = true;
 	}	
@@ -165,7 +162,7 @@ public class SQStatement implements Statement {
 			
 			return resultSet;
 
-		} catch (IOException | ConnException | ScriptException | KeyManagementException | NoSuchAlgorithmException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			throw new SQLException(e.getMessage(), e);
 		}
@@ -175,7 +172,7 @@ public class SQStatement implements Statement {
 	public int executeUpdate(String sql) throws SQLException {
 		try {
 			statementId = client.execute(sql);
-		} catch (IOException | ConnException | ScriptException | KeyManagementException | NoSuchAlgorithmException e) {
+		} catch (Exception e) {
 			throw new SQLException(e);
 		} 
 		return 0;
@@ -190,7 +187,7 @@ public class SQStatement implements Statement {
 	public void setMaxRows(int max_rows) throws SQLException {
 		try {
 			client.setFetchLimit(max_rows);
-		} catch (ConnException e) {
+		} catch (Exception e) {
 			throw new SQLException("Error in setMaxRows:" + e);
 		}
 	}

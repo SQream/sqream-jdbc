@@ -216,4 +216,16 @@ public class SQStatementTest {
             assertEquals(0, rs.getLong(1));
         }
     }
+
+    @Test
+    public void closeClosedStatementTest() throws SQLException {
+        Statement stmtCopy;
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmtCopy = stmt;
+        }
+
+        stmtCopy.close();
+    }
 }

@@ -4,7 +4,6 @@ import com.sqream.jdbc.connector.*;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.MessageFormat;
@@ -30,7 +29,7 @@ public class FetchService {
         return new FetchService(socket, messenger, metadata);
     }
 
-    public List<BlockDto> process(int rowAmount) throws IOException, ConnException {
+    public List<BlockDto> process(int rowAmount) throws ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format("Fetch [{0}]", rowAmount));
 
         if (rowAmount < 0) {
@@ -50,7 +49,7 @@ public class FetchService {
         return resultBlocks;
     }
 
-    private int fetch(List<BlockDto> resultList) throws IOException, ConnException {
+    private int fetch(List<BlockDto> resultList) throws ConnException {
 
         FetchMetadataDto fetchMeta = messenger.fetch();
 

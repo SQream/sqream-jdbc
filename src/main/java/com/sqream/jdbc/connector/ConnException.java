@@ -7,4 +7,8 @@ public class ConnException extends Exception {
     public ConnException(String message) {
         super(message);
     }
+
+    public ConnException(Throwable e) {
+        super(e);
+    }
 }

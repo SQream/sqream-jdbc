@@ -84,8 +84,7 @@ public class ConnectorImpl implements Connector {
     private FetchService fetchService;
     private ByteBufferPool byteBufferPool;
 
-    public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl)
-            throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl) throws ConnException {
         /* JSON parsing engine setup, initial socket connection */
         useSsl = ssl;
         socket = SQSocketConnector.connect(ip, port, useSsl, cluster);
@@ -158,7 +157,7 @@ public class ConnectorImpl implements Connector {
      *
      */
     @Override
-    public int connect(String database, String user, String password, String service) throws IOException, ScriptException, ConnException {
+    public int connect(String database, String user, String password, String service) throws ConnException {
         //"'{'\"username\":\"{0}\", \"password\":\"{1}\", \"connectDatabase\":\"{2}\", \"service\":\"{3}\"'}'";
 
         this.database = database;
@@ -174,7 +173,7 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public int execute(String statement) throws IOException, ScriptException, ConnException, KeyManagementException, NoSuchAlgorithmException {
+    public int execute(String statement) throws ConnException {
         /* Retains behavior of original execute()  */
 
         int defaultChunksize = (int) Math.pow(10,6);
@@ -182,8 +181,7 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public int execute(String statement, int chunkSize)
-            throws IOException, ConnException, NoSuchAlgorithmException, KeyManagementException {
+    public int execute(String statement, int chunkSize) throws ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format("Statement=[{0}], ChunkSize=[{1}]", statement, chunkSize));
 
         if (chunkSize < 0) {
@@ -272,7 +270,7 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public void close() throws IOException, ConnException {
+    public void close() throws ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format("Close statement: openStatement=[{0}], statementType=[{1}]]", openStatement, statementType));
 
     	if (isOpen()) {
@@ -289,7 +287,7 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean closeConnection() throws IOException, ScriptException, ConnException {
+    public boolean closeConnection() throws ConnException {
         if (isOpen()) {
             if (openStatement) { // Close open statement if exists
                 close();
@@ -305,43 +303,43 @@ public class ConnectorImpl implements Connector {
 
     // -o-o-o-o-o    By index -o-o-o-o-o
     @Override
-    public Boolean getBoolean(int colNum) throws ConnException {
+    public Boolean getBoolean(int colNum) {
         validator.validateColumnIndex(colNum - 1);
         return fetchStorage.getBoolean(colNum - 1);
     }
 
     @Override
-    public Byte getUbyte(int colNum) throws ConnException {
+    public Byte getUbyte(int colNum) {
         validator.validateColumnIndex(colNum - 1);
         return fetchStorage.getUbyte(colNum - 1);
     }
 
     @Override
-    public Short getShort(int colNum) throws ConnException {
+    public Short getShort(int colNum) {
         validator.validateColumnIndex(colNum - 1);
         return fetchStorage.getShort(colNum - 1);
     }
 
     @Override
-    public Integer getInt(int colNum) throws ConnException {
+    public Integer getInt(int colNum) {
         validator.validateColumnIndex(colNum - 1);
         return fetchStorage.getInt(colNum - 1);
     }
 
     @Override
-    public Long getLong(int colNum) throws ConnException {
+    public Long getLong(int colNum) {
         validator.validateColumnIndex(colNum - 1);
         return fetchStorage.getLong(colNum - 1);
     }
 
     @Override
-    public Float getFloat(int colNum) throws ConnException {
+    public Float getFloat(int colNum) {
         validator.validateColumnIndex(colNum - 1);
         return fetchStorage.getFloat(colNum - 1);
     }
 
     @Override
-    public Double getDouble(int colNum) throws ConnException {
+    public Double getDouble(int colNum) {
         validator.validateColumnIndex(colNum - 1);
         return fetchStorage.getDouble(colNum - 1);
     }
@@ -354,109 +352,109 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public String getNvarchar(int colNum) throws ConnException {
+    public String getNvarchar(int colNum) {
         int colIndex = colNum - 1;
         validator.validateColumnIndex(colIndex);
         return fetchStorage.getNvarchar(colIndex, UTF8);
     }
 
     @Override
-    public Date getDate(int colNum, ZoneId zone) throws ConnException {
+    public Date getDate(int colNum, ZoneId zone) {
         validator.validateColumnIndex(colNum - 1);
         return fetchStorage.getDate(colNum - 1, zone);
     }
 
     @Override
-    public Timestamp getDatetime(int colNum, ZoneId zone) throws ConnException {
+    public Timestamp getDatetime(int colNum, ZoneId zone) {
         validator.validateColumnIndex(colNum - 1);
         return fetchStorage.getTimestamp(colNum - 1, zone);
     }
 
     @Override
-    public Date getDate(int colNum) throws ConnException {
+    public Date getDate(int colNum) {
         return getDate(colNum, SYSTEM_TZ); // system_tz, UTC
     }
 
     @Override
-    public Timestamp getDatetime(int colNum) throws ConnException {
+    public Timestamp getDatetime(int colNum) {
         return getDatetime(colNum, SYSTEM_TZ); // system_tz, UTC
     }
 
     // -o-o-o-o-o  By column name -o-o-o-o-o
     @Override
-    public Boolean getBoolean(String colName) throws ConnException {
+    public Boolean getBoolean(String colName) {
 
         return getBoolean(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public Byte getUbyte(String colName) throws ConnException {
+    public Byte getUbyte(String colName) {
 
         return getUbyte(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public Short getShort(String colName) throws ConnException {
+    public Short getShort(String colName) {
 
         return getShort(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public Integer getInt(String colName) throws ConnException {
+    public Integer getInt(String colName) {
 
         return getInt(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public Long getLong(String colName) throws ConnException {
+    public Long getLong(String colName) {
 
         return getLong(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public Float getFloat(String colName) throws ConnException {
+    public Float getFloat(String colName) {
 
         return getFloat(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public Double getDouble(String colName) throws ConnException {
+    public Double getDouble(String colName) {
 
         return getDouble(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public String getVarchar(String colName) throws ConnException, UnsupportedEncodingException {
+    public String getVarchar(String colName) {
 
         return getVarchar(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public String getNvarchar(String colName) throws ConnException {
+    public String getNvarchar(String colName) {
 
         return getNvarchar(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public Date getDate(String colName) throws ConnException {
+    public Date getDate(String colName) {
 
         return getDate(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public Date getDate(String colName, ZoneId zone) throws ConnException {
+    public Date getDate(String colName, ZoneId zone) {
 
         return getDate(tableMetadata.getColNumByName(colName), zone);
     }
 
     @Override
-    public Timestamp getDatetime(String colName) throws ConnException {
+    public Timestamp getDatetime(String colName) {
 
         return getDatetime(tableMetadata.getColNumByName(colName));
     }
 
     @Override
-    public Timestamp getDatetime(String colName, ZoneId zone) throws ConnException {
+    public Timestamp getDatetime(String colName, ZoneId zone) {
 
         return getDatetime(tableMetadata.getColNumByName(colName), zone);
     }
@@ -465,14 +463,14 @@ public class ConnectorImpl implements Connector {
     // ----
 
     @Override
-    public boolean setBoolean(int colNum, Boolean value) throws ConnException {
+    public boolean setBoolean(int colNum, Boolean value) {
         validator.validateSet(colNum - 1, value, "ftBool");
         flushStorage.setBoolean(colNum - 1, value);
         return true;
     }
 
     @Override
-    public boolean setUbyte(int colNum, Byte value) throws ConnException {
+    public boolean setUbyte(int colNum, Byte value) {
         return setUbyte(colNum, value, true);
     }
 
@@ -486,7 +484,7 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean setShort(int colNum, Short value) throws ConnException {
+    public boolean setShort(int colNum, Short value) {
         if ("ftUByte".equals(tableMetadata.getType(colNum - 1))) {
             if (value < 0 || value > 255) {
                 throw new IllegalArgumentException(MessageFormat.format(
@@ -502,45 +500,49 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean setInt(int colNum, Integer value) throws ConnException {
+    public boolean setInt(int colNum, Integer value) {
         validator.validateSet(colNum - 1, value, "ftInt");
         flushStorage.setInt(colNum - 1, value);
         return true;
     }
 
     @Override
-    public boolean setLong(int colNum, Long value) throws ConnException {
+    public boolean setLong(int colNum, Long value) {
         validator.validateSet(colNum - 1, value, "ftLong");
         flushStorage.setLong(colNum - 1, value);
         return true;
     }
 
     @Override
-    public boolean setFloat(int colNum, Float value) throws ConnException {
+    public boolean setFloat(int colNum, Float value) {
         validator.validateSet(colNum - 1, value, "ftFloat");
         flushStorage.setFloat(colNum - 1, value);
         return true;
     }
 
     @Override
-    public boolean setDouble(int colNum, Double value) throws ConnException {
+    public boolean setDouble(int colNum, Double value) {
         validator.validateSet(colNum - 1, value, "ftDouble");
         flushStorage.setDouble(colNum - 1, value);
         return true;
     }
 
     @Override
-    public boolean setVarchar(int colNum, String value) throws ConnException, UnsupportedEncodingException {
-        validator.validateSet(colNum - 1, value, "ftVarchar");
-        // converting to byte array before validation
-        byte[] stringBytes = value == null ? "".getBytes(varcharEncoding) : value.getBytes(varcharEncoding);
-        validator.validateVarchar(colNum - 1, stringBytes.length);
-        flushStorage.setVarchar(colNum - 1, stringBytes, value);
-        return true;
+    public boolean setVarchar(int colNum, String value) throws ConnException {
+        try {
+            validator.validateSet(colNum - 1, value, "ftVarchar");
+            // converting to byte array before validation
+            byte[] stringBytes = value == null ? "".getBytes(varcharEncoding) : value.getBytes(varcharEncoding);
+            validator.validateVarchar(colNum - 1, stringBytes.length);
+            flushStorage.setVarchar(colNum - 1, stringBytes, value);
+            return true;
+        } catch (UnsupportedEncodingException e) {
+            throw new ConnException(e);
+        }
     }
 
     @Override
-    public boolean setNvarchar(int colNum, String value) throws ConnException, UnsupportedEncodingException {
+    public boolean setNvarchar(int colNum, String value) {
         validator.validateSet(colNum - 1, value, "ftBlob");
         // Convert string to bytes
         byte[] stringBytes = value == null ? "".getBytes(UTF8) : value.getBytes(UTF8);
@@ -549,26 +551,26 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean setDate(int colNum, Date date, ZoneId zone) throws ConnException, UnsupportedEncodingException {
+    public boolean setDate(int colNum, Date date, ZoneId zone) {
         validator.validateSet(colNum - 1, date, "ftDate");
         flushStorage.setDate(colNum - 1, date, zone);
         return true;
     }
 
     @Override
-    public boolean setDatetime(int colNum, Timestamp ts, ZoneId zone) throws ConnException, UnsupportedEncodingException {
+    public boolean setDatetime(int colNum, Timestamp ts, ZoneId zone) {
         validator.validateSet(colNum - 1, ts, "ftDateTime");
         flushStorage.setDatetime(colNum - 1, ts, zone);
         return true;
     }
 
     @Override
-    public boolean setDate(int colNum, Date value) throws ConnException, UnsupportedEncodingException {
+    public boolean setDate(int colNum, Date value) {
         return setDate(colNum, value, SYSTEM_TZ); // system_tz, UTC
     }
 
     @Override
-    public boolean setDatetime(int colNum, Timestamp value) throws ConnException, UnsupportedEncodingException {
+    public boolean setDatetime(int colNum, Timestamp value) {
         return setDatetime(colNum, value, SYSTEM_TZ); // system_tz, UTC
     }
 

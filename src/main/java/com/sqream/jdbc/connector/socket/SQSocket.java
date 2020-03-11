@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector.socket;
 
+import com.sqream.jdbc.connector.ConnException;
 import tlschannel.ClientTlsChannel;
 import tlschannel.TlsChannel;
 
@@ -24,26 +25,34 @@ public class SQSocket {
     private int port;
     private boolean useSsl;
 
-    private SQSocket(String ip, int port, boolean useSsl) throws IOException {
+    private SQSocket(String ip, int port, boolean useSsl) throws ConnException {
         this.ip = ip;
         this.port = port;
         this.useSsl = useSsl;
         openSocket();
     }
 
-    public static SQSocket connect(String ip, int port, boolean useSsl) throws IOException {
+    public static SQSocket connect(String ip, int port, boolean useSsl) throws ConnException {
         return new SQSocket(ip, port, useSsl);
     }
 
-    public int read(ByteBuffer result) throws IOException {
-        return (useSsl) ? tlsChannel.read(result) : socketChannel.read(result);
+    public int read(ByteBuffer result) throws ConnException {
+        try {
+            return (useSsl) ? tlsChannel.read(result) : socketChannel.read(result);
+        } catch (IOException e) {
+            throw new ConnException(e);
+        }
     }
 
-    void write(ByteBuffer data) throws IOException {
-        if (useSsl) {
-            tlsChannel.write(data);
-        } else {
-            socketChannel.write(data);
+    void write(ByteBuffer data) throws ConnException {
+        try {
+            if (useSsl) {
+                tlsChannel.write(data);
+            } else {
+                socketChannel.write(data);
+            }
+        } catch (IOException e) {
+            throw new ConnException(e);
         }
     }
 
@@ -51,15 +60,20 @@ public class SQSocket {
         return (useSsl) ? tlsChannel.isOpen() : socketChannel.isOpen();
     }
 
-    public void close() throws IOException {
-        if (useSsl) {
-            if (tlsChannel.isOpen()) {
-                tlsChannel.close(); // finish ssl communcication and close SSLEngine
+    public void close() throws ConnException {
+        try {
+            if (useSsl) {
+                if (tlsChannel.isOpen()) {
+                    tlsChannel.close(); // finish ssl communcication and close SSLEngine
+                }
             }
+            if (socketChannel.isOpen()) {
+                socketChannel.close();
+            }
+        } catch (IOException e) {
+            throw new ConnException(e);
         }
-        if (socketChannel.isOpen()) {
-            socketChannel.close();
-        }
+
     }
 
     private void openSocket() {

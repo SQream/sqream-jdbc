@@ -1,9 +1,7 @@
 package com.sqream.jdbc;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Array;
@@ -25,8 +23,6 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Map;
-
-import javax.script.ScriptException;
 
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
@@ -73,7 +69,7 @@ class SQResultSet implements ResultSet {
 
 		try (Connector client = this.client) {
 			return client.next();
-		} catch (IOException | ScriptException | ConnException e) {
+		} catch (ConnException e) {
 			throw new SQLException(e);
 		}
 	}
@@ -123,7 +119,7 @@ class SQResultSet implements ResultSet {
 					}
 					client.closeConnection();
 				}
-			} catch (IOException | ConnException | ScriptException e) {
+			} catch (ConnException e) {
 				throw new SQLException(e);
 			}
 			isClosed = true;
@@ -171,13 +167,9 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public boolean getBoolean(int columnIndex) throws SQLException {
-		try {
-			Boolean res = client.getBoolean(columnIndex);
-			isNull = res == null;
-			return (res == null) ? false : res;
-		} catch (ConnException e) {
-			throw new SQLException(e);
-		}
+		Boolean res = client.getBoolean(columnIndex);
+		isNull = res == null;
+		return (res == null) ? false : res;
 	}
 
 	@Override
@@ -435,7 +427,7 @@ class SQResultSet implements ResultSet {
 		else if (type.equals("ftVarchar")) {
 			try {
 				res = client.getVarchar(columnLabel);
-			}catch (ConnException | UnsupportedEncodingException e) {
+			}catch (ConnException e) {
 				e.printStackTrace();
 			}
 		}
@@ -468,7 +460,7 @@ class SQResultSet implements ResultSet {
 		else if (type.equals("ftVarchar")) {
 			try {
 				res = client.getVarchar(columnIndex);
-			}catch (ConnException | UnsupportedEncodingException e) {
+			}catch (ConnException e) {
 				e.printStackTrace();
 			}
 		}

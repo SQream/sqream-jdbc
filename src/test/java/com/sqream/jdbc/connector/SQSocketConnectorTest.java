@@ -54,33 +54,30 @@ public class SQSocketConnectorTest {
         Mockito.verify(socketMock).close();
     }
 
+    @Test(expected = ConnException.class)
+    public void whenReconnectToNodeButDidNotReadBytesFromSocketThenThrowExceptionTest() throws ConnException {
 
-                                                //TODO: Alex K 03/05/2020 rewrite this test
-//    @Test(expected = IOException.class)
-    public void whenReconnectToNodeButDidNotReadBytesFromSocketThenThrowExceptionTest()
-            throws NoSuchAlgorithmException, IOException, KeyManagementException {
+        String CORRECT_MESSAGE = "Socket closed When trying to connect to server picker";
 
-//        String CORRECT_MESSAGE = "Socket closed When trying to connect to server picker";
-//
-//        try {
-//
-//            boolean USE_SSL = false;
-//            boolean CLUSTER = true;
-//            PowerMockito.mockStatic(SQSocketConnector.class);
-//            SQSocketConnector connectorMock = Mockito.mock(SQSocketConnector.class);
-//            Mockito.when(connectorMock.read(any(ByteBuffer.class))).thenReturn(-1);
-//
-//            PowerMockito.when(SQSocketConnector.connect(IP, PORT, USE_SSL)).thenReturn(connectorMock);
-//
-//            new ConnectorImpl(IP, PORT, CLUSTER, USE_SSL);
-//        } catch (IOException e) {
-//            if (CORRECT_MESSAGE.equals(e.getMessage())) {
-//                throw e;
-//            } else {
-//                fail(MessageFormat.format("Method throws incorrect exception message [{0}}. Should be [{1}]", e.getMessage(), CORRECT_MESSAGE));
-//            }
-//        }
-//        fail("Method should throw exception");
+        try {
+
+            boolean USE_SSL = false;
+            boolean CLUSTER = true;
+            SQSocket socketMock = Mockito.mock(SQSocket.class);
+            Mockito.when(socketMock.read(any(ByteBuffer.class))).thenReturn(-1);
+            PowerMockito.mockStatic(SQSocket.class);
+            PowerMockito.when(SQSocket.connect(IP, PORT, USE_SSL)).thenReturn(socketMock);
+
+            new ConnectorImpl(IP, PORT, CLUSTER, USE_SSL);
+        } catch (ConnException e) {
+            if (CORRECT_MESSAGE.equals(e.getMessage())) {
+                throw e;
+            } else {
+                fail(MessageFormat.format("Method throws incorrect exception message [{0}}. Should be [{1}]",
+                        e.getMessage(), CORRECT_MESSAGE));
+            }
+        }
+        fail("Method should throw exception");
     }
 
     //TODO: When we connect to server picker BUT did not provide param 'cluster=true', then read wrong data from socket.

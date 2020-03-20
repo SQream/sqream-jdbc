@@ -65,7 +65,6 @@ public class ConnectorImpl implements Connector {
     private boolean openStatement = false;
 
     // Column Storage
-    private List<BlockDto> fetchedBlocks = new ArrayList<>();
     private int fetchLimit = 0;
     private int fetchSize = 0; // 0 means no limit.
 
@@ -225,15 +224,15 @@ public class ConnectorImpl implements Connector {
         }
         // First fetch on the house, auto close statement if no data returned
         if (statementType.equals(SELECT)) {
-            fetchedBlocks = fetchService.process(fetchLimit);
-            if (fetchedBlocks.size() > 0) {
-                fetchStorage = new FetchStorageImpl(tableMetadata, fetchedBlocks.remove(0));
+            fetchService.process(fetchLimit);
+            BlockDto fetchedBlock = fetchService.getBlock();
+            if (fetchedBlock != null) {
+                fetchStorage = new FetchStorageImpl(tableMetadata, fetchedBlock);
             } else {
                 fetchStorage = new EmptyFetchStorage();
             }
             close();
         }
-
         return statementId;
     }
 
@@ -249,15 +248,12 @@ public class ConnectorImpl implements Connector {
                 return false;  // MaxRow limit reached, stop even if more data was fetched
             }
         	if (!fetchStorage.next()) {
-        		if (fetchedBlocks.size() == 0) {
+        	    BlockDto fetchedBlock = fetchService.getBlock();
+        		if (fetchedBlock == null || fetchedBlock.getFillSize() == 0) {
                     return false; // No more data and we've read all we have
                 }
                 // Set new active buffer to be reading data from
-                BlockDto block = fetchedBlocks.remove(0);
-                if (block.getFillSize() == 0) {
-                    return false;
-                }
-                fetchStorage.setBlock(block);
+                fetchStorage.setBlock(fetchedBlock);
             }
             totalRowCounter++;
         } else if (statementType.equals(DML)) {

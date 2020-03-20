@@ -18,6 +18,7 @@ public class FetchService {
     private SQSocketConnector socket;
     private Messenger messenger;
     private TableMetadata metadata;
+    private List<BlockDto> fetchedBlocks = new ArrayList<>();
 
     private FetchService(SQSocketConnector socket, Messenger messenger, TableMetadata metadata) {
         this.socket = socket;
@@ -29,27 +30,29 @@ public class FetchService {
         return new FetchService(socket, messenger, metadata);
     }
 
-    public List<BlockDto> process(int rowAmount) throws ConnException {
+    public void process(int rowAmount) throws ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format("Fetch [{0}]", rowAmount));
 
         if (rowAmount < 0) {
             throw new ConnException(MessageFormat.format("Row amount [{0}] should be positive", rowAmount));
         }
 
-        List<BlockDto> resultBlocks = new ArrayList<>();
         int totalFetched = 0;
         int newRowsFetched;
 
         while (rowAmount == 0 || totalFetched < rowAmount) {
-            newRowsFetched = fetch(resultBlocks);
+            newRowsFetched = fetch();
             if (newRowsFetched ==0)
                 break;
             totalFetched += newRowsFetched;
         }
-        return resultBlocks;
     }
 
-    private int fetch(List<BlockDto> resultList) throws ConnException {
+    public BlockDto getBlock() {
+        return fetchedBlocks.size() > 0 ? fetchedBlocks.remove(0) : null;
+    }
+
+    private int fetch() throws ConnException {
 
         FetchMetadataDto fetchMeta = messenger.fetch();
 
@@ -68,7 +71,7 @@ public class FetchService {
             socket.readData(fetchBuffer, fetchBuffer.capacity());
         }
 
-        resultList.add(parse(fetch_buffers, metadata, fetchMeta.getNewRowsFetched()));
+        fetchedBlocks.add(parse(fetch_buffers, metadata, fetchMeta.getNewRowsFetched()));
 
         return fetchMeta.getNewRowsFetched();  // counter nullified by next()
     }

@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -116,7 +117,8 @@ public class JDBC_Positive {
 			
 		return Timestamp.valueOf(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
 	}
-	
+
+	@Ignore
 	@Test
 	public void hundredMilFetch() throws SQLException {
         String createSql = "create or replace table test_fetch (ints int)";

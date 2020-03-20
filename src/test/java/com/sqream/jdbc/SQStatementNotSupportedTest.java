@@ -83,11 +83,6 @@ public class SQStatementNotSupportedTest {
     }
 
     @Test(expected = SQLFeatureNotSupportedException.class)
-    public void getFetchSize() throws SQLException {
-        stmt.getFetchSize();
-    }
-
-    @Test(expected = SQLFeatureNotSupportedException.class)
     public void getGeneratedKeys() throws SQLException {
         stmt.getGeneratedKeys();
     }

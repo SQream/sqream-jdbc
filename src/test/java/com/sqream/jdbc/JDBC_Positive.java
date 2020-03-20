@@ -118,7 +118,6 @@ public class JDBC_Positive {
 		return Timestamp.valueOf(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
 	}
 
-	@Ignore
 	@Test
 	public void hundredMilFetch() throws SQLException {
         String createSql = "create or replace table test_fetch (ints int)";

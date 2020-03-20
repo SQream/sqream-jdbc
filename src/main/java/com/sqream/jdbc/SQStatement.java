@@ -1,8 +1,5 @@
 package com.sqream.jdbc;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,7 +7,6 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.script.ScriptException;
 
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
@@ -20,8 +16,6 @@ import com.sqream.jdbc.connector.ConnException;
 
 public class SQStatement implements Statement {
 
-	private int NO_LIMIT = 0;
-	private int SIZE_RESULT = NO_LIMIT; // 0 means no limit.
 	private Connector client;
 	private SQResultSet resultSet = null;
 	private SQConnection connection;
@@ -63,14 +57,12 @@ public class SQStatement implements Statement {
 			throw new SQLException(e);
 		} 
 		finally  {
-			// TODO Auto-generated catch block
 			if(cancel !=null && cancel.isOpen())
 				try {
 					if (cancel.isOpenStatement())
 						cancel.close();
 					cancel.closeConnection();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					String message = e.getMessage();
 					if (!message.contains("The statement has already ended")) {
 						throw new SQLException(e);
@@ -119,7 +111,6 @@ public class SQStatement implements Statement {
 			}
 
 			resultSet = new SQResultSet(client, dbName);
-			resultSet.setMaxRows(SIZE_RESULT);
 
 			//TODO: Duplicate logic in SQPreparedStatement
 			return (!"INSERT".equals(client.getQueryType())) && client.getRowLength() > 0;
@@ -153,7 +144,6 @@ public class SQStatement implements Statement {
 			}
 
 			resultSet = new SQResultSet(client, dbName);
-			resultSet.setMaxRows(SIZE_RESULT);
 			// Related to bug BG-910 - Set as empty since there is no need to
 			// return result
 			if ((!"INSERT".equals(client.getQueryType())) && client.getRowLength() == 0)
@@ -178,8 +168,8 @@ public class SQStatement implements Statement {
 	}
 
 	@Override
-	public void setFetchSize(int arg0) throws SQLException {
-		SIZE_RESULT = arg0;
+	public void setFetchSize(int fetchSize) throws SQLException {
+		client.setFetchSize(fetchSize);
 	}
 
 	@Override
@@ -350,7 +340,7 @@ public class SQStatement implements Statement {
 
 	@Override
 	public int getFetchSize() throws SQLException {
-		throw new SQLFeatureNotSupportedException("getFetchSize in SQStatement");
+		return client.getFetchSize();
 	}
 
 	@Override

@@ -30,7 +30,6 @@ import com.sqream.jdbc.connector.Connector;
 class SQResultSet implements ResultSet {
 
 	private Connector client = null;
-	private int maxRows = 0;
 	private String dbName;
 	private boolean empty = false;
 	private boolean isNull = true;
@@ -136,10 +135,6 @@ class SQResultSet implements ResultSet {
 	public int findColumn(String columnLabel) {
 		this.baseUsageError();
 		return 0;
-	}
-
-	void setMaxRows(int maxRows) {
-		this.maxRows = maxRows;
 	}
 
 	void setEmpty(boolean empty) {

@@ -126,4 +126,8 @@ public interface Connector extends AutoCloseable {
     boolean setFetchLimit(int _fetch_limit) throws ConnException;
 
     int getFetchLimit();
+
+    void setFetchSize(int fetchSize);
+
+    int getFetchSize();
 }

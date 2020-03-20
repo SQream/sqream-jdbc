@@ -16,17 +16,12 @@ import java.text.MessageFormat;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.ArrayList;
 
-import javax.script.ScriptException;
-
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,6 +67,7 @@ public class ConnectorImpl implements Connector {
     // Column Storage
     private List<BlockDto> fetchedBlocks = new ArrayList<>();
     private int fetchLimit = 0;
+    private int fetchSize = 0; // 0 means no limit.
 
     // Get / Set related
     private int totalRowCounter;
@@ -137,6 +133,9 @@ public class ConnectorImpl implements Connector {
         }
         if (statementType.equals(SELECT)) {
             fetchService = FetchService.getInstance(socket, messenger, tableMetadata);
+            if (fetchSize > 0) {
+                byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, fetchSize, tableMetadata);
+            }
             totalRowCounter = 0;
         }
     }
@@ -667,4 +666,13 @@ public class ConnectorImpl implements Connector {
         return fetchLimit;
     }
 
+    @Override
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
+    @Override
+    public int getFetchSize() {
+        return fetchSize;
+    }
 }

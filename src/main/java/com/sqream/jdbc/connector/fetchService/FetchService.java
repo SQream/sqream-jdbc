@@ -19,6 +19,7 @@ public class FetchService {
     private Messenger messenger;
     private TableMetadata metadata;
     private List<BlockDto> fetchedBlocks = new ArrayList<>();
+    private boolean closed = true;
 
     private FetchService(SQSocketConnector socket, Messenger messenger, TableMetadata metadata) {
         this.socket = socket;
@@ -32,7 +33,7 @@ public class FetchService {
 
     public void process(int rowAmount) throws ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format("Fetch [{0}]", rowAmount));
-
+        closed = false;
         if (rowAmount < 0) {
             throw new ConnException(MessageFormat.format("Row amount [{0}] should be positive", rowAmount));
         }
@@ -46,10 +47,18 @@ public class FetchService {
                 break;
             totalFetched += newRowsFetched;
         }
+        closed = true;
     }
 
     public BlockDto getBlock() {
         return fetchedBlocks.size() > 0 ? fetchedBlocks.remove(0) : null;
+    }
+
+    /**
+     * Service closes when all data has been read.
+     */
+    public boolean isClosed() {
+        return closed;
     }
 
     private int fetch() throws ConnException {

@@ -132,9 +132,6 @@ public class ConnectorImpl implements Connector {
         }
         if (statementType.equals(SELECT)) {
             fetchService = FetchService.getInstance(socket, messenger, tableMetadata);
-            if (fetchSize > 0) {
-                byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, fetchSize, tableMetadata);
-            }
             totalRowCounter = 0;
         }
     }
@@ -231,7 +228,9 @@ public class ConnectorImpl implements Connector {
             } else {
                 fetchStorage = new EmptyFetchStorage();
             }
-            close();
+            if (fetchService.isClosed()) {
+                close();
+            }
         }
         return statementId;
     }

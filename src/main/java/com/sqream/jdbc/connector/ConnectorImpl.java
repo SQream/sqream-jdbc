@@ -218,7 +218,7 @@ public class ConnectorImpl implements Connector {
         }
         // First fetch on the house, auto close statement if no data returned
         if (statementType.equals(SELECT)) {
-            FetchServiceFactory.getService(socket, messenger, tableMetadata, fetchSize);
+            fetchService = FetchServiceFactory.getService(socket, messenger, tableMetadata, fetchSize);
             totalRowCounter = 0;
             fetchService.process(fetchLimit);
             BlockDto fetchedBlock = fetchService.getBlock();

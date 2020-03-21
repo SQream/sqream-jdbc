@@ -1,7 +1,6 @@
 package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.enums.StatementType;
-import com.sqream.jdbc.connector.fetchService.EagerFetchService;
 import com.sqream.jdbc.connector.fetchService.FetchService;
 import com.sqream.jdbc.connector.fetchService.FetchServiceFactory;
 import com.sqream.jdbc.connector.messenger.Messenger;
@@ -53,7 +52,7 @@ public class ConnectorImpl implements Connector {
     private boolean useSsl;
 
     // Binary data related
-    private static final int ROWS_PER_FLUSH = 100_000;
+    public static final int ROWS_PER_FLUSH = 100_000;
 
     // Column metadata
     private StatementType statementType;
@@ -224,11 +223,9 @@ public class ConnectorImpl implements Connector {
             BlockDto fetchedBlock = fetchService.getBlock();
             if (fetchedBlock != null) {
                 fetchStorage = new FetchStorageImpl(tableMetadata, fetchedBlock);
+                close();
             } else {
                 fetchStorage = new EmptyFetchStorage();
-            }
-            if (fetchService.isClosed()) {
-                close();
             }
         }
         return statementId;
@@ -247,7 +244,8 @@ public class ConnectorImpl implements Connector {
             }
         	if (!fetchStorage.next()) {
         	    BlockDto fetchedBlock = fetchService.getBlock();
-        		if (fetchedBlock == null || fetchedBlock.getFillSize() == 0) {
+        		if (fetchedBlock == null) {
+        		    close();
                     return false; // No more data and we've read all we have
                 }
                 // Set new active buffer to be reading data from

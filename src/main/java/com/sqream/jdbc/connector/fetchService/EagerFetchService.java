@@ -25,22 +25,17 @@ public class EagerFetchService extends BaseFetchService implements FetchService 
 
     @Override
     public void process(int rowAmount) throws ConnException {
-        LOGGER.log(Level.FINE, MessageFormat.format("Fetch [{0}]", rowAmount));
-        closed = false;
-        if (rowAmount < 0) {
-            throw new ConnException(MessageFormat.format("Row amount [{0}] should be positive", rowAmount));
-        }
+        LOGGER.log(Level.FINE, MessageFormat.format("Process: rowAmount=[{0}]", rowAmount));
+        validateRowAmount(rowAmount);
 
         int totalFetched = 0;
-        int newRowsFetched;
-
         while (rowAmount == 0 || totalFetched < rowAmount) {
-            newRowsFetched = fetch();
-            if (newRowsFetched ==0)
+            int newRowsFetched = fetch();
+            if (newRowsFetched ==0) {
                 break;
+            }
             totalFetched += newRowsFetched;
         }
-        closed = true;
     }
 
     @Override

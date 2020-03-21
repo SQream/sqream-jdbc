@@ -9,6 +9,7 @@ import com.sqream.jdbc.connector.socket.SQSocketConnector;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,20 +18,11 @@ public abstract class BaseFetchService implements FetchService{
     private Messenger messenger;
     private TableMetadata metadata;
     protected List<BlockDto> fetchedBlocks = new ArrayList<>();
-    protected boolean closed = true;
 
     BaseFetchService(SQSocketConnector socket, Messenger messenger, TableMetadata metadata) {
         this.socket = socket;
         this.messenger = messenger;
         this.metadata = metadata;
-    }
-
-    /**
-     * Service closes when all data has been read.
-     */
-    @Override
-    public boolean isClosed() {
-        return closed;
     }
 
     protected int fetch() throws ConnException {
@@ -79,5 +71,11 @@ public abstract class BaseFetchService implements FetchService{
         BlockDto resultBlock = new BlockDto(dataColumns, nullColumns, nvarcLenColumns, rowsFetched);
         resultBlock.setFillSize(rowsFetched);
         return resultBlock;
+    }
+
+    protected void validateRowAmount(int rowAmount) throws ConnException {
+        if (rowAmount < 0) {
+            throw new ConnException(MessageFormat.format("Row amount [{0}] should be positive", rowAmount));
+        }
     }
 }

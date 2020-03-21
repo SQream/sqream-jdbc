@@ -1,5 +1,7 @@
 package com.sqream.jdbc;
 
+import com.sqream.jdbc.connector.ConnectorImpl;
+import com.sqream.jdbc.connector.enums.StatementType;
 import org.junit.Test;
 
 import java.sql.*;
@@ -227,5 +229,124 @@ public class SQStatementTest {
         }
 
         stmtCopy.close();
+    }
+
+    @Test
+    public void setFetchSizeTest() throws SQLException {
+        int FETCH_SIZE = 1;
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.setFetchSize(FETCH_SIZE);
+            ResultSet rs = stmt.executeQuery("select 1;");
+
+            assertEquals(FETCH_SIZE, stmt.getFetchSize());
+            assertTrue(rs.next());
+            assertEquals("1", rs.getString(1));
+            assertFalse(rs.next());
+        }
+    }
+
+    @Test
+    public void whenFetchSizeLessThanFetchedBlockProcessingOneByOneTest() throws SQLException {
+        int FETCH_SIZE = 1;
+        int AMOUNT_OF_ROWS = ConnectorImpl.ROWS_PER_FLUSH * 3;
+        String CREATE_TABLE_SQL = "create or replace table fetch_size_test(col1 int);";
+        String INSERT_SQL = "insert into fetch_size_test values (?);";
+        String SELECT_SQL = "select * from fetch_size_test;";
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(CREATE_TABLE_SQL);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(INSERT_SQL)) {
+                for (int i = 0; i < AMOUNT_OF_ROWS; i++) {
+                    pstmt.setInt(1, i);
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.setFetchSize(FETCH_SIZE);
+                ResultSet rs = stmt.executeQuery(SELECT_SQL);
+                for (int i = 0; i < AMOUNT_OF_ROWS; i++) {
+                    assertTrue(rs.next());
+                    assertEquals(i, rs.getInt(1));
+                }
+                assertFalse(rs.next());
+            }
+        }
+    }
+
+    @Test
+    public void whenFetchSizeMoreThanFetchedBlockProcessingFewBlocksAtOneFetchTest() throws SQLException {
+        int FETCH_SIZE = ConnectorImpl.ROWS_PER_FLUSH * 3 + 1;
+        int AMOUNT_OF_ROWS = ConnectorImpl.ROWS_PER_FLUSH * 10;
+        String CREATE_TABLE_SQL = "create or replace table fetch_size_test(col1 int);";
+        String INSERT_SQL = "insert into fetch_size_test values (?);";
+        String SELECT_SQL = "select * from fetch_size_test;";
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(CREATE_TABLE_SQL);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(INSERT_SQL)) {
+                for (int i = 0; i < AMOUNT_OF_ROWS; i++) {
+                    pstmt.setInt(1, i);
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.setFetchSize(FETCH_SIZE);
+                ResultSet rs = stmt.executeQuery(SELECT_SQL);
+                for (int i = 0; i < AMOUNT_OF_ROWS; i++) {
+                    assertTrue(rs.next());
+                    assertEquals(i, rs.getInt(1));
+                }
+                assertFalse(rs.next());
+            }
+        }
+    }
+
+    @Test
+    public void whenFetchSizeMoreThanAmountOfRowsInTableTest() throws SQLException {
+        int FETCH_SIZE = 100;
+        int AMOUNT_OF_ROWS = 10;
+        String CREATE_TABLE_SQL = "create or replace table fetch_size_test(col1 int);";
+        String INSERT_SQL = "insert into fetch_size_test values (?);";
+        String SELECT_SQL = "select * from fetch_size_test;";
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(CREATE_TABLE_SQL);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(INSERT_SQL)) {
+                for (int i = 0; i < AMOUNT_OF_ROWS; i++) {
+                    pstmt.setInt(1, i);
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.setFetchSize(FETCH_SIZE);
+                ResultSet rs = stmt.executeQuery(SELECT_SQL);
+                for (int i = 0; i < AMOUNT_OF_ROWS; i++) {
+                    assertTrue(rs.next());
+                    assertEquals(i, rs.getInt(1));
+                }
+                assertFalse(rs.next());
+            }
+        }
     }
 }

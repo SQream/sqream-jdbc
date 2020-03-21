@@ -15,7 +15,7 @@ public class FetchServiceFactory {
         if (fetchSize == UNLIMITED_FETCH) {
             return EagerFetchService.getInstance(socket, messenger, metadata);
         } else {
-            return LazyFetchService.getInstance(socket, messenger, metadata);
+            return LazyFetchService.getInstance(socket, messenger, metadata, fetchSize);
         }
     }
 }

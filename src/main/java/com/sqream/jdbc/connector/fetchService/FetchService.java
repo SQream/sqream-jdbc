@@ -6,7 +6,5 @@ import com.sqream.jdbc.connector.ConnException;
 public interface FetchService {
     void process(int rowAmount) throws ConnException;
 
-    BlockDto getBlock();
-
-    boolean isClosed();
+    BlockDto getBlock() throws ConnException;
 }

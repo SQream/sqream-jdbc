@@ -1,7 +1,9 @@
 package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.enums.StatementType;
+import com.sqream.jdbc.connector.fetchService.EagerFetchService;
 import com.sqream.jdbc.connector.fetchService.FetchService;
+import com.sqream.jdbc.connector.fetchService.FetchServiceFactory;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.messenger.MessengerImpl;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
@@ -20,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.ZoneId;
-import java.util.ArrayList;
 
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
@@ -130,10 +131,6 @@ public class ConnectorImpl implements Connector {
 
             byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, ROWS_PER_FLUSH, tableMetadata);
         }
-        if (statementType.equals(SELECT)) {
-            fetchService = FetchService.getInstance(socket, messenger, tableMetadata);
-            totalRowCounter = 0;
-        }
     }
 
     private int flush() {
@@ -221,6 +218,8 @@ public class ConnectorImpl implements Connector {
         }
         // First fetch on the house, auto close statement if no data returned
         if (statementType.equals(SELECT)) {
+            FetchServiceFactory.getService(socket, messenger, tableMetadata, fetchSize);
+            totalRowCounter = 0;
             fetchService.process(fetchLimit);
             BlockDto fetchedBlock = fetchService.getBlock();
             if (fetchedBlock != null) {

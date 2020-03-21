@@ -40,32 +40,26 @@ public class LazyFetchService extends BaseFetchService implements FetchService {
 
     @Override
     public BlockDto getBlock() throws ConnException {
-        if (closed) {
-            return null;
-        }
-        if (fetchedBlocks.size() == 0) {
-            totalFetched += fetch(rowsFetch());
+        int fetchedInCurrentSession = 0;
+        if (fetchedBlocks.size() == 0 && !closed) {
+            while (maxRows == 0 || totalFetched < maxRows) {
+                int newRowsFetched = fetch();
+                fetchedInCurrentSession += newRowsFetched;
+                if (newRowsFetched == 0) {
+                    closed = true;
+                    break;
+                }
+                totalFetched += newRowsFetched;
+                if (fetchedInCurrentSession >= fetchSize) {
+                    break;
+                }
+            }
         }
         return fetchedBlocks.size() > 0 ? fetchedBlocks.remove(0) : null;
     }
 
-    private int fetch(int rowAmount) throws ConnException {
-        int rowFetched = 0;
-        while (rowAmount == 0 || rowFetched < rowAmount) {
-            int newRowsFetched = fetch();
-            if (newRowsFetched == 0) {
-                closed = true;
-                break;
-            }
-            rowFetched += newRowsFetched;
-        }
-        return rowFetched;
-    }
-
-    private int rowsFetch() {
-        if (totalFetched >= maxRows) {
-            return 0;
-        }
-        return Math.min(totalFetched - maxRows, fetchSize);
+    @Override
+    public boolean isClosed() {
+        return closed;
     }
 }

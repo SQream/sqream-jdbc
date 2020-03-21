@@ -7,4 +7,6 @@ public interface FetchService {
     void process(int rowAmount) throws ConnException;
 
     BlockDto getBlock() throws ConnException;
+
+    boolean isClosed();
 }

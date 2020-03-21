@@ -66,11 +66,12 @@ class SQResultSet implements ResultSet {
 			return false;
 		}
 
-		try (Connector client = this.client) {
+		try {
 			return client.next();
 		} catch (ConnException e) {
 			throw new SQLException(e);
 		}
+
 	}
 
 	/**

@@ -42,4 +42,9 @@ public class EagerFetchService extends BaseFetchService implements FetchService 
     public BlockDto getBlock() {
         return fetchedBlocks.size() > 0 ? fetchedBlocks.remove(0) : null;
     }
+
+    @Override
+    public boolean isClosed() {
+        return true;
+    }
 }

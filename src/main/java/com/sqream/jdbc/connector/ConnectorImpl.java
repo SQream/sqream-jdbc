@@ -223,9 +223,11 @@ public class ConnectorImpl implements Connector {
             BlockDto fetchedBlock = fetchService.getBlock();
             if (fetchedBlock != null) {
                 fetchStorage = new FetchStorageImpl(tableMetadata, fetchedBlock);
-                close();
             } else {
                 fetchStorage = new EmptyFetchStorage();
+            }
+            if (fetchService.isClosed()) {
+                close();
             }
         }
         return statementId;

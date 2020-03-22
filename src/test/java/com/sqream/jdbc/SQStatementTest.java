@@ -9,8 +9,7 @@ import java.text.MessageFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.sqream.jdbc.TestEnvironment.URL;
-import static com.sqream.jdbc.TestEnvironment.createConnection;
+import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.*;
 
 public class SQStatementTest {
@@ -347,6 +346,17 @@ public class SQStatementTest {
                 }
                 assertFalse(rs.next());
             }
+        }
+    }
+
+    @Test
+    public void URLParamFetchSizeProvidedToStatementTest() throws SQLException {
+        int FETCH_SIZE = 42;
+        String URL_WITH_FETCH_SIZE = MessageFormat.format("{0};fetchSize={1}", URL, FETCH_SIZE);
+        try (Connection conn = DriverManager.getConnection(URL_WITH_FETCH_SIZE,USER,PASS);
+             Statement stmt = conn.createStatement()) {
+
+            assertEquals(FETCH_SIZE, stmt.getFetchSize());
         }
     }
 }

@@ -79,6 +79,9 @@ public class SQConnection implements Connection {
 		SQStatement SQS;
 		try {
 			SQS = new SQStatement(this, params.getDbName());
+			if (params.getFetchSize() != null && params.getFetchSize() > 0) {
+				SQS.setFetchSize(params.getFetchSize());
+			}
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);

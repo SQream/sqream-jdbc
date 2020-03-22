@@ -50,6 +50,7 @@ public class SQConnection implements Connection {
 				.user(connectionInfo.getProperty("user"))
 				.password(connectionInfo.getProperty("password"))
 				.useSsl(connectionInfo.getProperty("ssl"))
+				.fetchSize(connectionInfo.getProperty("fetchSize"))
 				.build();
 
 		globalClient = ConnectorFactory.initConnector(

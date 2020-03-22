@@ -13,6 +13,7 @@ public class ConnectionParams {
     private String dbName;
     private Boolean useSsl;
     private String service;
+    private Integer fetchSize;
 
     private ConnectionParams() { }
 
@@ -56,6 +57,10 @@ public class ConnectionParams {
         return service;
     }
 
+    public Integer getFetchSize() {
+        return fetchSize;
+    }
+
     @Override
     public String toString() {
         return "ConnectionParams{" +
@@ -81,6 +86,7 @@ public class ConnectionParams {
         private String user;
         private String password;
         private boolean ssl;
+        private Integer fetchSize = null;
 
         public ConnectionParamsBuilder cluster(String cluster) {
             this.cluster = "true".equalsIgnoreCase(cluster);
@@ -142,6 +148,13 @@ public class ConnectionParams {
             return this;
         }
 
+        public ConnectionParamsBuilder fetchSize(String fetchSize) {
+            if (fetchSize != null) {
+                this.fetchSize = Integer.parseInt(fetchSize);
+            }
+            return this;
+        }
+
         public ConnectionParams build() {
             ConnectionParams result = new ConnectionParams();
             result.cluster = this.cluster;
@@ -153,6 +166,7 @@ public class ConnectionParams {
             result.user = this.user;
             result.password = this.password;
             result.useSsl = this.ssl;
+            result.fetchSize = this.fetchSize;
             return result;
         }
     }

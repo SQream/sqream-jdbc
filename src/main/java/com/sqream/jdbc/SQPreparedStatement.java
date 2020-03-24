@@ -57,6 +57,9 @@ public class SQPreparedStatement implements PreparedStatement {
         is_closed = false;
         client = new ConnectorImpl(connParams.getIp(), connParams.getPort(), connParams.getCluster(), connParams.getUseSsl());
         client.connect(connParams.getDbName(), connParams.getUser(), connParams.getPassword(), "sqream");  // default service
+        if (connParams.getFetchSize() != null && connParams.getFetchSize() > 0) {
+            client.setFetchSize(connParams.getFetchSize());
+        }
         statement_id = client.execute(sql);
         metaData = new SQResultSetMetaData(client, connParams.getDbName());
     }
@@ -408,7 +411,7 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public int getFetchSize() throws SQLException {
-        return 0;
+        return client.getFetchSize();
     }
     
     @Override

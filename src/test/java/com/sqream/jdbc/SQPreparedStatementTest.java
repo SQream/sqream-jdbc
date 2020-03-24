@@ -3,6 +3,7 @@ package com.sqream.jdbc;
 import org.junit.Test;
 
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -310,6 +311,17 @@ public class SQPreparedStatementTest {
             } else {
                 fail("Could not read data from table");
             }
+        }
+    }
+
+    @Test
+    public void URLParamFetchSizeProvidedToPreparedStatementTest() throws SQLException {
+        int FETCH_SIZE = 42;
+        String URL_WITH_FETCH_SIZE = MessageFormat.format("{0};fetchSize={1}", URL, FETCH_SIZE);
+        try (Connection conn = DriverManager.getConnection(URL_WITH_FETCH_SIZE,USER,PASS);
+             PreparedStatement pstmt = conn.prepareStatement("Select 1;")) {
+
+            assertEquals(FETCH_SIZE, pstmt.getFetchSize());
         }
     }
 }

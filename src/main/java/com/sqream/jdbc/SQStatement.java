@@ -24,13 +24,16 @@ public class SQStatement implements Statement {
 	private String dbName;
 	private boolean isClosed;
 
-	SQStatement(SQConnection conn, String catalog) throws ConnException {
+	SQStatement(SQConnection conn, ConnectionParams connParams) throws ConnException {
 		this.connection = conn;
-		this.dbName = catalog;
+		this.dbName = connParams.getDbName();
 		this.client = ConnectorFactory.initConnector(conn.getParams().getIp(), conn.getParams().getPort(),
 				conn.getParams().getCluster(), conn.getParams().getUseSsl());
 		this.client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(),
 				conn.getParams().getService());
+        if (connParams.getFetchSize() != null && connParams.getFetchSize() > 0) {
+            client.setFetchSize(connParams.getFetchSize());
+        }
 		this.isClosed = false;
 	}
 	

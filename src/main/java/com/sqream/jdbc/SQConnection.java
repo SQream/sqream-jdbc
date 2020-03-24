@@ -78,10 +78,7 @@ public class SQConnection implements Connection {
 
 		SQStatement SQS;
 		try {
-			SQS = new SQStatement(this, params.getDbName());
-			if (params.getFetchSize() != null && params.getFetchSize() > 0) {
-				SQS.setFetchSize(params.getFetchSize());
-			}
+			SQS = new SQStatement(this, params);
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -103,7 +100,7 @@ public class SQConnection implements Connection {
 
 		SQStatement SQS = null;
 		try {
-			SQS = new SQStatement(this, params.getDbName());
+			SQS = new SQStatement(this, params);
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -141,7 +138,7 @@ public class SQConnection implements Connection {
 
 		SQStatement SQS;
 		try {
-			SQS = new SQStatement(this, params.getDbName());
+			SQS = new SQStatement(this, params);
 			Statement_list.addElement(SQS);
 			
 		} catch (Exception e) {

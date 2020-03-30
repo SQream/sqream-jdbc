@@ -80,6 +80,11 @@ public class SQDriverTest {
         assertFalse(driver.acceptsURL(ANOTHER_PROVIDER_URI));
     }
 
+    public void whenConnectWithAnotherProviderReturnNullTest() throws SQLException {
+        Connection conn = driver.connect(ANOTHER_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
+        assertNull(conn);
+    }
+
     @Test
     public void getMinorVersionTest() {
         assertEquals(MINOR_VERSION, driver.getMinorVersion());
@@ -106,9 +111,10 @@ public class SQDriverTest {
         assertEquals(0, propertyInfo.length);
     }
 
-    @Test(expected = SQLException.class)
-    public void whenProviderLowerCaseConnectThrowExceptionTest() throws SQLException {
-        driver.connect(LOWER_CASE_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
+    @Test
+    public void whenProviderLowerCaseConnectReturnNullTest() throws SQLException {
+        Connection conn = driver.connect(LOWER_CASE_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
+        assertNull(conn);
     }
 
     @Test(expected = SQLException.class)

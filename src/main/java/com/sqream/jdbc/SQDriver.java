@@ -52,8 +52,9 @@ public class SQDriver implements java.sql.Driver {
 
 		String urlPrefix = url.trim().substring(0, PREFIX.length());
 		if (!urlPrefix.equals(PREFIX)) {
-			throw new SQLException(MessageFormat.format(
-					"Wrong prefix for connection string. Should be jdbc:Sqream but got: [{0}]", urlPrefix));
+			LOGGER.log(Level.FINE,
+					"Wrong prefix for connection string. Should be jdbc:Sqream but got: [{0}]", urlPrefix);
+			return null;
 		}
 
 		if (driverProps == null) {

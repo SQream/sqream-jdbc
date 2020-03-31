@@ -64,8 +64,9 @@ public class SQDriver implements java.sql.Driver {
 		Properties props = PropsParser.parse(url, driverProps, createDefaultProps());
 
 		if (!validProvider(props)) {
-			throw new SQLException("Bad provider in connection string. Should be sqream but got: "
-					+ props.getProperty(PROVIDER.toString()));
+			LOGGER.log(Level.FINE, "Bad provider in connection string. Should be sqream but got: [{0}]",
+					props.getProperty(PROVIDER.toString()));
+			return null;
 		}
 
 		loggingService.set(

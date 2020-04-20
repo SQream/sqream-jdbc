@@ -1109,4 +1109,22 @@ public class JDBC_Positive {
             }
         }
     }
+
+    @Test
+    public void whenCloseResultSetThenConnectionIsNotClosedTest() throws SQLException {
+        String SQL = "Select 1;";
+        int expected = 1;
+	    try (Connection conn = createConnection()) {
+	        try (Statement stmt = conn.createStatement()) {
+	            try (ResultSet rs = stmt.executeQuery(SQL);) {
+                    assertTrue(rs.next());
+                    assertEquals(expected, rs.getInt(1));
+                }
+	            try (ResultSet rs = stmt.executeQuery(SQL);) {
+                    assertTrue(rs.next());
+                    assertEquals(expected, rs.getInt(1));
+                }
+            }
+        }
+    }
 }

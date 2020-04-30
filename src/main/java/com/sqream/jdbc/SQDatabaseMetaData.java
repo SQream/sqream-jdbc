@@ -499,7 +499,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	
 	@Override
 	public String getIdentifierQuoteString() throws SQLException {
-		return " ";
+		return "\"";
 	}
 	
 	@Override

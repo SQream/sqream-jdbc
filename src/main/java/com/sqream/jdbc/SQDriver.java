@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 
 import com.sqream.jdbc.logging.LoggingService;
 import com.sqream.jdbc.propsParser.PropsParser;
+import com.sqream.jdbc.utils.Utils;
 
 import java.nio.charset.Charset;
 
@@ -73,6 +74,7 @@ public class SQDriver implements java.sql.Driver {
 				props.getProperty(LOGGER_LEVEL.toString()),
 				props.getProperty(LOG_FILE_PATH.toString()));
 
+		LOGGER.log(Level.FINE, Utils.getMemoryInfo());
 		try {
 			return new SQConnection(props);
 		} catch (Exception e) {

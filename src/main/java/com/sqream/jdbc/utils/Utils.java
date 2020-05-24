@@ -119,6 +119,16 @@ public class Utils {
         return total_bytes;
     }
 
+    public static String getMemoryInfo() {
+        int MB = 1024*1024;
+        Runtime runtime = Runtime.getRuntime();
+        return MessageFormat.format("Runtime memory info (Mb): Used Memory: [{0}], Free Memory: [{1}], Total Memory: [{2}], Max Memory: [{3}]",
+                ((runtime.totalMemory() - runtime.freeMemory()) / MB),
+                runtime.freeMemory() / MB,
+                runtime.totalMemory() / MB,
+                runtime.maxMemory() / MB);
+    }
+
     private static long calculateBuffersSize(ByteBuffer[] array) {
         long result = 0;
         for (int i = 0; i < array.length; i++) {

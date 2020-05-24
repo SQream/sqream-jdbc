@@ -71,8 +71,8 @@ public class ByteBufferPool {
             logBlockInfo(block);
         }
         if (LOGGER.getParent().getLevel() == Level.FINE) {
-            LOGGER.log(Level.FINE, MessageFormat.format("Created block. Allocated [{0}]",
-                    calculateAllocation(block) / 1_000_000));
+            LOGGER.log(Level.FINE, MessageFormat.format("Created block. Allocated [{0}] Mb",
+                    calculateAllocation(block) / (1024 * 1024)));
         }
 
         return block;

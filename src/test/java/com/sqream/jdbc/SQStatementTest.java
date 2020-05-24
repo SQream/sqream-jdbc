@@ -193,7 +193,7 @@ public class SQStatementTest {
         }
     }
 
-    @Test
+    @Test(expected = SQLException.class)
     public void cancelStatementAfterExecuteTest() throws SQLException {
         String CREATE_TABLE_SQL = "create or replace table cancel_statement_test (col1 int);";
         String INSERT_SQL = "insert into cancel_statement_test values (42);";

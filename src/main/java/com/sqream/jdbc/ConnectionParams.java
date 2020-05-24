@@ -144,7 +144,7 @@ public class ConnectionParams {
         }
 
         public ConnectionParamsBuilder useSsl(String ssl) {
-            this.ssl = ssl == null || ssl.isEmpty() || "ture".equalsIgnoreCase(ssl);
+            this.ssl = "true".equalsIgnoreCase(ssl);
             return this;
         }
 

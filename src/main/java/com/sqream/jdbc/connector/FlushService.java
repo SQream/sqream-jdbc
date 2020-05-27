@@ -72,7 +72,7 @@ public class FlushService {
             LOGGER.log(Level.FINE, "Shutdown executor service");
             executorService.shutdown();
             try {
-                if (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
+                if (!executorService.awaitTermination(10, TimeUnit.MINUTES)) {
                     throw new RuntimeException("Could not stop executor service");
                 }
                 LOGGER.log(Level.FINE, "Executor service terminated");

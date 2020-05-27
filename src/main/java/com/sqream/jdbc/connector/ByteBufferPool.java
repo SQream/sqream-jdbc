@@ -36,6 +36,10 @@ public class ByteBufferPool {
                 "Released block in the pool. Blocks in the pool [{0}] (after releasing)", queue.size()));
     }
 
+    public void close() {
+        this.queue.clear();
+    }
+
     private void initByteBuffers(TableMetadata metadata, int blockSize, int queueSize) {
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Start to init byteBuffer pool. Params: blockSize=[{0}], queueSize=[{1}]", blockSize, queueSize));

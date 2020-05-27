@@ -28,7 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -839,6 +839,20 @@ public class JDBC_Positive {
         }
     }
 
+    @Test
+    public void handleOutOfMemoryErrorTest() throws SQLException {
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("create or replace table text_columns_table (col1 text, col2 text, col3 text, col4 text, col5 text, col6 text, col7 text, col8 text, col9 text, col10 text," +
+                        "col11 text, col12 text, col13 text, col14 text, col15 text, col16 text, col17 text, col18 text, col19 text, col20 text);");
+            }
+            try (PreparedStatement pstmt = conn.prepareStatement("insert into text_columns_table values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")) {}
+        } catch (OutOfMemoryError error) {
+            return;
+        }
+        Assert.fail("Should get OutOfMemory error");
+    }
+
     private void insert(String table_type) throws IOException, SQLException {
 
         String table_name = table_type.contains("varchar(100)") ?  table_type.substring(0,7) : table_type;
@@ -1123,6 +1137,30 @@ public class JDBC_Positive {
 	            try (ResultSet rs = stmt.executeQuery(SQL);) {
                     assertTrue(rs.next());
                     assertEquals(expected, rs.getInt(1));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void whenPreparedStatementExecutedThenMemoryReleasedTest() throws SQLException {
+	    try (Connection conn = createConnection()) {
+
+	        try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("create or replace table memory_leak_test (col1 text, col2 text, col3 text, col4 text, col5 text);");
+            }
+
+            for (int i = 0; i < 10; i++) {
+                try (PreparedStatement pstmt = conn.prepareStatement("insert into memory_leak_test values(?, ?, ?, ?, ?);")) {
+                    for (int j = 0; j < 100; j++) {
+                        pstmt.setString(1, "1");
+                        pstmt.setString(2, "1");
+                        pstmt.setString(3, "1");
+                        pstmt.setString(4, "1");
+                        pstmt.setString(5, "1");
+                        pstmt.addBatch();
+                    }
+                    pstmt.executeBatch();
                 }
             }
         }

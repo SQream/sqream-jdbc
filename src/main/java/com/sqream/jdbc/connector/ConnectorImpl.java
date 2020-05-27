@@ -106,7 +106,7 @@ public class ConnectorImpl implements Connector {
 
     // ()  /* Unpack the json of column data arriving via queryType/(named). Called by prepare()  */
     //@SuppressWarnings("rawtypes") // "Map is a raw type" @ col_data = (Map)query_type.get(idx);
-    private void parseQueryType(List<ColumnMetadataDto> columnsMetadata) {
+    private void parseQueryType(List<ColumnMetadataDto> columnsMetadata) throws ConnException {
 
         rowLength = columnsMetadata.size();
         if(rowLength ==0) {
@@ -128,7 +128,18 @@ public class ConnectorImpl implements Connector {
             flushService = FlushService.getInstance(socket, messenger);
             flushStorage = new FlushStorage(tableMetadata, block);
 
-            byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, ROWS_PER_FLUSH, tableMetadata);
+            try {
+                byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, ROWS_PER_FLUSH, tableMetadata);
+            } catch (OutOfMemoryError error) {
+                try {
+                    this.closeConnection();
+                    long maxMemory = Runtime.getRuntime().maxMemory() / (1024 * 1024);
+                    LOGGER.log(Level.FINE, MessageFormat.format("Not enough heap memory [{0} Mb] to process", maxMemory));
+                    throw new OutOfMemoryError(MessageFormat.format("Not enough heap memory [{0} Mb] to process", maxMemory));
+                } catch (ConnException e) {
+                    throw new ConnException(e);
+                }
+            }
         }
     }
 
@@ -271,6 +282,9 @@ public class ConnectorImpl implements Connector {
     			if (statementType != null && statementType.equals(INSERT)) {
     	            flush();
     	            flushService.close();
+    	            if (byteBufferPool != null) {
+                        byteBufferPool.close();
+                    }
     	        }
     	            // Statement is finished so no need to reset row_counter etc
                 messenger.closeStatement();

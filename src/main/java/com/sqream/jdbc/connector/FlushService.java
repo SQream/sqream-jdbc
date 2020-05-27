@@ -34,7 +34,7 @@ public class FlushService {
 
         executorService.submit(() -> {
             try {
-                Thread.currentThread().setName("flush-service");
+                Thread.currentThread().setName(MessageFormat.format("flush-service-{0}", Thread.currentThread().getId()));
                 flush(metadata, block);
 
                 clearBuffers(block);

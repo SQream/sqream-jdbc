@@ -6,7 +6,10 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
@@ -15,6 +18,7 @@ import com.sqream.jdbc.connector.ConnException;
 
 
 public class SQStatement implements Statement {
+	private static final Logger LOGGER = Logger.getLogger(SQStatement.class.getName());
 
 	private Connector client;
 	private SQResultSet resultSet = null;
@@ -39,6 +43,7 @@ public class SQStatement implements Statement {
 	
 	@Override
 	public void cancel() throws SQLException  {
+		LOGGER.log(Level.FINE, MessageFormat.format("Cancel statement [{0}]", statementId));
 
 		if (client.checkCancelStatement().getAndSet(true)) {
 			return;
@@ -77,6 +82,7 @@ public class SQStatement implements Statement {
 
 	@Override
 	public void close() throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("Close statement [{0}]", statementId));
 		try {
 			if(client !=null && client.isOpen()) {
 				if (client.isOpenStatement())
@@ -89,10 +95,12 @@ public class SQStatement implements Statement {
 			throw new SQLException("Statement already closed. Error: " + e, e);
 		} 
 	    isClosed = true;
+		LOGGER.log(Level.FINE, MessageFormat.format("Statement [{0}] was closed", statementId));
 	}	
 	
 	@Override
 	public Connection getConnection() throws SQLException {
+		LOGGER.log(Level.FINE, "Get connection. StatementId=[{0}]", statementId);
 		//TODO razi
 		SQConnection conn = new SQConnection(client);
 		conn.setParams(connection.getParams());
@@ -101,6 +109,7 @@ public class SQStatement implements Statement {
 	
 	@Override
 	public boolean execute(String sql) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("Execute [{0}], statement [{1}]", sql, statementId));
 		// Related to bug BG-469 - return true only if this sql should return
 		// result
 		try {
@@ -114,7 +123,7 @@ public class SQStatement implements Statement {
 			}
 
 			resultSet = new SQResultSet(client, dbName);
-
+			LOGGER.log(Level.FINE, MessageFormat.format("Statement [{0}] was executed", statementId));
 			//TODO: Duplicate logic in SQPreparedStatement
 			return (!"INSERT".equals(client.getQueryType())) && client.getRowLength() > 0;
 
@@ -131,6 +140,7 @@ public class SQStatement implements Statement {
 
 	@Override
 	public ResultSet executeQuery(String sql) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("ExecuteQuery [{0}], statement [{1}]", sql, statementId));
 		try {
 			statementId = client.execute(sql);
 
@@ -151,7 +161,7 @@ public class SQStatement implements Statement {
 			// return result
 			if ((!"INSERT".equals(client.getQueryType())) && client.getRowLength() == 0)
 				resultSet.setEmpty(true);
-			
+			LOGGER.log(Level.FINE, MessageFormat.format("Statement [{0}] was executed", statementId));
 			return resultSet;
 
 		} catch (Exception e) {
@@ -162,23 +172,27 @@ public class SQStatement implements Statement {
 
 	@Override
 	public int executeUpdate(String sql) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("ExecuteUpdate [{0}], statement [{1}]", sql, statementId));
 		try {
 			statementId = client.execute(sql);
 		} catch (Exception e) {
 			throw new SQLException(e);
-		} 
+		}
+		LOGGER.log(Level.FINE, MessageFormat.format("Statement [{0}] was executed", statementId));
 		return 0;
 	}
 
 	@Override
 	public void setFetchSize(int fetchSize) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("Set fetch size [{0}] for statement [{1}]", fetchSize, statementId));
 		client.setFetchSize(fetchSize);
 	}
 
 	@Override
-	public void setMaxRows(int max_rows) throws SQLException {
+	public void setMaxRows(int maxRows) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("Set max rows [{0}] for statement [{1}]", maxRows, statementId));
 		try {
-			client.setFetchLimit(max_rows);
+			client.setFetchLimit(maxRows);
 		} catch (Exception e) {
 			throw new SQLException("Error in setMaxRows:" + e);
 		}
@@ -186,6 +200,7 @@ public class SQStatement implements Statement {
 	
 	@Override
 	public int getMaxRows() throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("getMaxRows return  [{0}] for statement [{1}]", client.getFetchLimit(), statementId));
 		return client.getFetchLimit();
 	}
 
@@ -220,7 +235,7 @@ public class SQStatement implements Statement {
 	
 	@Override
 	public ResultSet getResultSet() throws SQLException {
-
+		LOGGER.log(Level.FINE, MessageFormat.format("getResultSet [{0}] for statement [{1}]", resultSet, statementId));
 		return resultSet;
 	}
 	

@@ -370,19 +370,20 @@ public class JDBC_Positive {
     }
     
     @Test
-     public void getUDF() throws SQLException {
+    public void getUDFTest() throws SQLException {
         String createSql = "CREATE OR REPLACE FUNCTION fud () RETURNS int as $$ return 1 $$ LANGUAGE PYTHON";
 
         try (Connection conn = createConnection();
              Statement stmt = conn.createStatement()) {
 
             stmt.execute(createSql);
-            DatabaseMetaData metaData = conn.getMetaData();
+        }
 
-            try (ResultSet rs = metaData.getProcedures(null, null, null)) {
-                while(rs.next()) {
-                    assertEquals("fud", rs.getString("procedure_name"));
-                }
+        try (Connection conn = createConnection()) {
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet rs = metaData.getProcedures(null, null, null);
+            while (rs.next()) {
+                assertEquals("fud", rs.getString("procedure_name"));
             }
         }
     }

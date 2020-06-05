@@ -25,8 +25,8 @@ public class LoggerUtil {
                     shortClassName = record.getSourceClassName();
                 }
 
-                return MessageFormat.format("{0} {1}: {2}#{3}: {4}\n",
-                        java.time.LocalTime.now(), threadName,  shortClassName, record.getSourceMethodName(), record.getMessage());
+                return MessageFormat.format("{0}: {1}#{2}: {3}\n",
+                        threadName,  shortClassName, record.getSourceMethodName(), record.getMessage());
             }
         };
     }

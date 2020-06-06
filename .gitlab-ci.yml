@@ -22,7 +22,7 @@ tests_and_benchmark:
     - "git pull"
     - "mvn clean package"
     - "targetCoverage=$(cat target/site/jacoco/index.html | grep -o '<tfoot>.*</tfoot>' | grep -o -P 'Total.*?([0-9]{1,3})%' | grep -o -P '([0-9]{1,3})%' | grep -o -P '([0-9]{1,3})')"
-    - "sudo killall -9 metadata_server"
+    - "sudo killall -9 metadata_server sqreamd"
     - "echo 'Coverage in ' $CI_MERGE_REQUEST_TARGET_BRANCH_NAME ' branch:' $targetCoverage"
     - "echo 'Coverage in ' $CI_COMMIT_REF_NAME ' branch:' $curCoverage"
     - "if [ $curCoverage -lt $targetCoverage ];then return 1 ; fi"

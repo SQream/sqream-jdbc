@@ -34,3 +34,18 @@ mvn -f pom-fat-jar.xml package
 ```
 mvn install
 ```
+
+## How to upload artifact to maven repository manually
+build jar
+signed files
+```
+gpg -ab pom.xml
+gpg -ab sqream-jdbc-<release_version>.jar
+gpg -ab sqream-jdbc-<release_version>-javadoc.jar
+gpg -ab  sqream-jdbc-<release_version>-sources.jar
+```
+package in single file
+```
+jar -cvf bundle.jar <files>
+```
+open nexus repository manager, upload bundle.jar and if test passed promote release.

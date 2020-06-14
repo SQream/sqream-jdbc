@@ -1166,4 +1166,184 @@ public class JDBC_Positive {
             }
         }
     }
+
+    @Test
+    public void tinyIntCastingTest() throws SQLException {
+        String createTableSQL = "create or replace table casting_test_table " +
+                "(col1 tinyint, col2 tinyint, col3 tinyint, col4 tinyint, col5 tinyint, col6 tinyint, col7 tinyint, col8 tinyint)";
+        String insertSQL = "insert into casting_test_table values(?, ?, ?, ?, ?, ?, ?, ?);";
+        String selectSQL = "select * from casting_test_table;";
+        byte expectedByte = (byte) 5;
+        short expectedShort = (short) 255;
+        int expectedInt = 255;
+        int expectedLong = 255;
+
+	    try (Connection conn = createConnection()) {
+
+	        try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+            }
+
+	        try (PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
+	            pstmt.setByte(1, expectedByte);
+	            pstmt.setShort(2, expectedShort);
+	            pstmt.setInt(3, expectedInt);
+	            pstmt.setLong(4, expectedLong);
+	            pstmt.setNull(5, NULL);
+	            pstmt.setNull(6, NULL);
+	            pstmt.setNull(7, NULL);
+	            pstmt.setNull(8, NULL);
+	            pstmt.addBatch();
+	            pstmt.executeBatch();
+            }
+
+	        try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(selectSQL);
+                Assert.assertTrue(rs.next());
+                Assert.assertEquals(expectedByte, rs.getByte(1));
+                Assert.assertEquals(expectedShort, rs.getShort(2));
+                Assert.assertEquals(expectedInt, rs.getInt(3));
+                Assert.assertEquals(expectedLong, rs.getLong(4));
+                Assert.assertNull(rs.getObject(5));
+                Assert.assertNull(rs.getObject(6));
+                Assert.assertNull(rs.getObject(7));
+                Assert.assertNull(rs.getObject(8));
+            }
+        }
+    }
+
+    @Test
+    public void smallIntCastingTest() throws SQLException {
+        String createTableSQL = "create or replace table casting_test_table " +
+                "(col1 smallint, col2 smallint, col3 smallint, col4 smallint, col5 smallint, col6 smallint, col7 smallint, col8 smallint)";
+        String insertSQL = "insert into casting_test_table values(?, ?, ?, ?, ?, ?, ?, ?);";
+        String selectSQL = "select * from casting_test_table;";
+        byte expectedByte = (byte) 5;
+        short expectedShort = (short) 255;
+        int expectedInt = 255;
+        int expectedLong = 255;
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
+                pstmt.setByte(1, expectedByte);
+                pstmt.setShort(2, expectedShort);
+                pstmt.setInt(3, expectedInt);
+                pstmt.setLong(4, expectedLong);
+                pstmt.setNull(5, NULL);
+                pstmt.setNull(6, NULL);
+                pstmt.setNull(7, NULL);
+                pstmt.setNull(8, NULL);
+                pstmt.addBatch();
+                pstmt.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(selectSQL);
+                Assert.assertTrue(rs.next());
+                Assert.assertEquals(expectedByte, rs.getShort(1));
+                Assert.assertEquals(expectedShort, rs.getShort(2));
+                Assert.assertEquals(expectedInt, rs.getInt(3));
+                Assert.assertEquals(expectedLong, rs.getLong(4));
+                Assert.assertNull(rs.getObject(5));
+                Assert.assertNull(rs.getObject(6));
+                Assert.assertNull(rs.getObject(7));
+                Assert.assertNull(rs.getObject(8));
+            }
+        }
+    }
+
+    @Test
+    public void intCastingTest() throws SQLException {
+        String createTableSQL = "create or replace table casting_test_table " +
+                "(col1 int, col2 int, col3 int, col4 int, col5 int, col6 int, col7 int, col8 int)";
+        String insertSQL = "insert into casting_test_table values(?, ?, ?, ?, ?, ?, ?, ?);";
+        String selectSQL = "select * from casting_test_table;";
+        byte expectedByte = (byte) 5;
+        short expectedShort = (short) 255;
+        int expectedInt = 255;
+        int expectedLong = 255;
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
+                pstmt.setByte(1, expectedByte);
+                pstmt.setShort(2, expectedShort);
+                pstmt.setInt(3, expectedInt);
+                pstmt.setLong(4, expectedLong);
+                pstmt.setNull(5, NULL);
+                pstmt.setNull(6, NULL);
+                pstmt.setNull(7, NULL);
+                pstmt.setNull(8, NULL);
+                pstmt.addBatch();
+                pstmt.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(selectSQL);
+                Assert.assertTrue(rs.next());
+                Assert.assertEquals(expectedByte, rs.getInt(1));
+                Assert.assertEquals(expectedShort, rs.getInt(2));
+                Assert.assertEquals(expectedInt, rs.getInt(3));
+                Assert.assertEquals(expectedLong, rs.getLong(4));
+                Assert.assertNull(rs.getObject(5));
+                Assert.assertNull(rs.getObject(6));
+                Assert.assertNull(rs.getObject(7));
+                Assert.assertNull(rs.getObject(8));
+            }
+        }
+    }
+
+    @Test
+    public void longCastingTest() throws SQLException {
+        String createTableSQL = "create or replace table casting_test_table " +
+                "(col1 bigint, col2 bigint, col3 bigint, col4 bigint, col5 bigint, col6 bigint, col7 bigint, col8 bigint)";
+        String insertSQL = "insert into casting_test_table values(?, ?, ?, ?, ?, ?, ?, ?);";
+        String selectSQL = "select * from casting_test_table;";
+        byte expectedByte = (byte) 5;
+        short expectedShort = (short) 255;
+        int expectedInt = 255;
+        int expectedLong = 255;
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(insertSQL)) {
+                pstmt.setByte(1, expectedByte);
+                pstmt.setShort(2, expectedShort);
+                pstmt.setInt(3, expectedInt);
+                pstmt.setLong(4, expectedLong);
+                pstmt.setNull(5, NULL);
+                pstmt.setNull(6, NULL);
+                pstmt.setNull(7, NULL);
+                pstmt.setNull(8, NULL);
+                pstmt.addBatch();
+                pstmt.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(selectSQL);
+                Assert.assertTrue(rs.next());
+                Assert.assertEquals(expectedByte, rs.getLong(1));
+                Assert.assertEquals(expectedShort, rs.getLong(2));
+                Assert.assertEquals(expectedInt, rs.getLong(3));
+                Assert.assertEquals(expectedLong, rs.getLong(4));
+                Assert.assertNull(rs.getObject(5));
+                Assert.assertNull(rs.getObject(6));
+                Assert.assertNull(rs.getObject(7));
+                Assert.assertNull(rs.getObject(8));
+            }
+        }
+    }
 }

@@ -129,6 +129,20 @@ public class Utils {
                 runtime.maxMemory() / MB);
     }
 
+    public static short toShortExact(long value) {
+        if ((short)value != value) {
+            throw new ArithmeticException("short overflow");
+        }
+        return (short)value;
+    }
+
+    public static int toIntExact(long value) {
+        if ((int)value != value) {
+            throw new ArithmeticException("short overflow");
+        }
+        return (int)value;
+    }
+
     private static long calculateBuffersSize(ByteBuffer[] array) {
         long result = 0;
         for (int i = 0; i < array.length; i++) {

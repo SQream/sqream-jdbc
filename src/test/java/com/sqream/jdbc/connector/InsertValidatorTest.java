@@ -125,7 +125,7 @@ public class InsertValidatorTest {
         when(metadata.getRowLength()).thenReturn(3);
         when(metadata.getType(columnIndex)).thenReturn(columnType);
 
-        validator.validateSet(columnIndex, null, columnType);
+        validator.validateSet(columnIndex, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -136,7 +136,7 @@ public class InsertValidatorTest {
         when(metadata.getRowLength()).thenReturn(3);
 
         try {
-            validator.validateSet(columnIndex, value, "columnType");
+            validator.validateSet(columnIndex, value);
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("Trying to set null on non nullable column")) {
                 throw new IllegalArgumentException(e);
@@ -155,27 +155,6 @@ public class InsertValidatorTest {
         when(metadata.getRowLength()).thenReturn(3);
         when(metadata.getType(columnIndex)).thenReturn(columnType);
 
-        validator.validateSet(columnIndex, value, columnType);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void whenWrongTypeTest() {
-        int columnIndex = 1;
-        Object value = 10;
-        String columnType = "columnType";
-        String anotherColumnType = "wrongColumnType";
-        when(metadata.isNullable(columnIndex)).thenReturn(false);
-        when(metadata.getRowLength()).thenReturn(3);
-        when(metadata.getType(columnIndex)).thenReturn(columnType);
-
-        try {
-            validator.validateSet(columnIndex, value, anotherColumnType);
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("Trying to set")) {
-                throw e;
-            } else {
-                throw new RuntimeException("Wrong exception message");
-            }
-        }
+        validator.validateSet(columnIndex, value);
     }
 }

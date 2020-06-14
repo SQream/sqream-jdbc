@@ -471,65 +471,49 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean setBoolean(int colNum, Boolean value) {
-        validator.validateSet(colNum - 1, value, "ftBool");
+        validator.validateSet(colNum - 1, value);
         flushStorage.setBoolean(colNum - 1, value);
         return true;
     }
 
     @Override
     public boolean setUbyte(int colNum, Byte value) {
-        return setUbyte(colNum, value, true);
-    }
-
-    private boolean setUbyte(int colNum, Byte value, boolean validateValue) {
-        validator.validateSet(colNum - 1, value, "ftUByte");
-        if (validateValue) {
-            validator.validateUbyte(value);
-        }
+        validator.validateSet(colNum - 1, value);
         flushStorage.setUbyte(colNum - 1, value);
         return true;
     }
 
     @Override
     public boolean setShort(int colNum, Short value) {
-        if ("ftUByte".equals(tableMetadata.getType(colNum - 1))) {
-            if (value < 0 || value > 255) {
-                throw new IllegalArgumentException(MessageFormat.format(
-                        "Trying to set wrong value [{0}] on an unsigned byte column", value));
-            }
-            setUbyte(colNum, value.byteValue(), false);
-        } else {
-            validator.validateSet(colNum - 1, value, "ftShort");
-            flushStorage.setShort(colNum - 1, value);
-        }
-
+        validator.validateSet(colNum - 1, value);
+        flushStorage.setShort(colNum - 1, value);
         return true;
     }
 
     @Override
     public boolean setInt(int colNum, Integer value) {
-        validator.validateSet(colNum - 1, value, "ftInt");
+        validator.validateSet(colNum - 1, value);
         flushStorage.setInt(colNum - 1, value);
         return true;
     }
 
     @Override
     public boolean setLong(int colNum, Long value) {
-        validator.validateSet(colNum - 1, value, "ftLong");
+        validator.validateSet(colNum - 1, value);
         flushStorage.setLong(colNum - 1, value);
         return true;
     }
 
     @Override
     public boolean setFloat(int colNum, Float value) {
-        validator.validateSet(colNum - 1, value, "ftFloat");
+        validator.validateSet(colNum - 1, value);
         flushStorage.setFloat(colNum - 1, value);
         return true;
     }
 
     @Override
     public boolean setDouble(int colNum, Double value) {
-        validator.validateSet(colNum - 1, value, "ftDouble");
+        validator.validateSet(colNum - 1, value);
         flushStorage.setDouble(colNum - 1, value);
         return true;
     }
@@ -537,7 +521,7 @@ public class ConnectorImpl implements Connector {
     @Override
     public boolean setVarchar(int colNum, String value) throws ConnException {
         try {
-            validator.validateSet(colNum - 1, value, "ftVarchar");
+            validator.validateSet(colNum - 1, value);
             // converting to byte array before validation
             byte[] stringBytes = value == null ? "".getBytes(varcharEncoding) : value.getBytes(varcharEncoding);
             validator.validateVarchar(colNum - 1, stringBytes.length);
@@ -550,7 +534,7 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean setNvarchar(int colNum, String value) {
-        validator.validateSet(colNum - 1, value, "ftBlob");
+        validator.validateSet(colNum - 1, value);
         // Convert string to bytes
         byte[] stringBytes = value == null ? "".getBytes(UTF8) : value.getBytes(UTF8);
         flushStorage.setNvarchar(colNum - 1, stringBytes, value);
@@ -559,14 +543,14 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public boolean setDate(int colNum, Date date, ZoneId zone) {
-        validator.validateSet(colNum - 1, date, "ftDate");
+        validator.validateSet(colNum - 1, date);
         flushStorage.setDate(colNum - 1, date, zone);
         return true;
     }
 
     @Override
     public boolean setDatetime(int colNum, Timestamp ts, ZoneId zone) {
-        validator.validateSet(colNum - 1, ts, "ftDateTime");
+        validator.validateSet(colNum - 1, ts);
         flushStorage.setDatetime(colNum - 1, ts, zone);
         return true;
     }

@@ -10,10 +10,9 @@ public class InsertValidator {
         this.metadata = metadata;
     }
 
-    public void validateSet(int index, Object value, String type) {
+    public void validateSet(int index, Object value) {
         validateColumnIndex(index);
         validateNullable(index, value);
-        validateSetType(index, type);
     }
 
     public void validateColumnIndex(int index) {
@@ -30,13 +29,6 @@ public class InsertValidator {
                     MessageFormat.format("Trying to set null on non nullable column number [{0}] of type [{1}]",
                             index + 1, metadata.getType(index)));
         }
-    }
-
-    private void validateSetType(int index, String type) {
-        if (!validType(index, type))
-            throw new IllegalArgumentException(
-                    MessageFormat.format("Trying to set [{0}] on a column number [{1}] of type [{2}]",
-                            type, index + 1, metadata.getType(index)));
     }
 
     public void validateGetType(int index, String type) {

@@ -249,8 +249,8 @@ public class SQPreparedStatement implements PreparedStatement {
                 client.setNvarchar(colNum, value);
             } else {
                 throw new IllegalArgumentException(
-                        MessageFormat.format("Trying to set [{0}] on a column number [{1}] of type [{2}]",
-                                type, colNum, type));
+                        MessageFormat.format("Trying to set string on a column number [{0}] of type [{1}]",
+                                colNum, type));
             }
         } catch (Exception e) {
             throw new SQLException(e);

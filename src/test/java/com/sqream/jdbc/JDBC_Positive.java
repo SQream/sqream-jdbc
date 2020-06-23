@@ -188,25 +188,6 @@ public class JDBC_Positive {
             }
         }
 	}
-	
-	@Test
-	public void displaySize() throws SQLException {
-	    String createSql = "create or replace table test_display (x varchar(11))";
-	    String selectSql = "select * from test_display";
-
-        ResultSetMetaData rsmeta;
-        try (Connection conn = createConnection();
-             Statement stmt = conn.createStatement()) {
-
-            stmt.execute(createSql);
-            ResultSet rs = stmt.executeQuery(selectSql);
-            rsmeta = rs.getMetaData();
-            rs.close();
-        }
-
-        assertNotNull(rsmeta);
-        assertEquals(11, rsmeta.getColumnDisplaySize(1));
-    }
 
     @Test
     public void parameter_metadata() throws SQLException {

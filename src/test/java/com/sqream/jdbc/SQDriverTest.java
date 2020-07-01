@@ -1,5 +1,9 @@
 package com.sqream.jdbc;
 
+
+import java.io.File;
+import java.text.MessageFormat;
+import static com.sqream.jdbc.TestEnvironment.URL;
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
@@ -20,6 +24,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.Properties;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import static org.junit.Assert.*;
@@ -58,6 +63,38 @@ public class SQDriverTest {
     @After
     public void setPreviousDebugLevel() throws SQLFeatureNotSupportedException {
         driver.getParentLogger().setLevel(logLevelBeforeTest);
+    }
+
+	@Test
+    public void logfileLockTest() throws SQLException {
+        mockConnector();
+        String TEMP_DIR = "logs_temp";
+        int connAmount = 200;
+        File dir = new File(TEMP_DIR);
+        if (!dir.exists()) {
+            boolean mkdir = new File(TEMP_DIR).mkdir();
+            assertTrue("Can not create temp folder for logs", mkdir);
+        }
+
+        for (int i = 0; i < connAmount; i++) {
+            driver.connect(
+                    MessageFormat.format("{0};loggerLevel=DEBUG;logFile={1}/test.log", URL, TEMP_DIR),
+                    new Properties());
+        }
+        // necessary to remove lock from file
+        for (Handler handler : driver.getParentLogger().getHandlers()) {
+            handler.close();
+        }
+
+        File[] files = dir.listFiles();
+        assertNotNull("Temp folder should contains at least one log file", files);
+        assertEquals("Logs should be written in one file", 1, files.length);
+        for (File file : files) {
+            boolean rmLogFile = file.delete();
+            assertTrue("Can not remove log file: " + file.getName(), rmLogFile);
+        }
+        boolean rmdir = dir.delete();
+        assertTrue("Can not remove temp folder", rmdir);
     }
 
     @Test

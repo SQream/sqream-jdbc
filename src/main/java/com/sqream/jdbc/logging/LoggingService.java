@@ -58,6 +58,7 @@ public class LoggingService {
 
     private void setDefaultConsoleHandler() {
         for (Handler handler : PARENT_LOGGER.getHandlers()) {
+            handler.close();
             PARENT_LOGGER.removeHandler(handler);
         }
         ConsoleHandler consoleHandler = new ConsoleHandler();

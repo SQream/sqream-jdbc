@@ -12,12 +12,13 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.BitSet;
 
 import static com.sqream.jdbc.utils.Utils.*;
 
 public class FlushStorage {
+    private static final int MAX_BUFFER_SIZE = 500_000_000;
+
     private TableMetadata metadata;
     private BlockDto curBlock;
     private BitSet columns_set;
@@ -37,7 +38,7 @@ public class FlushStorage {
                     columns_set.cardinality(), metadata.getRowLength()));
         }
         columns_set.clear();
-        return rowIterator.next();
+        return rowIterator.next() && !curBlock.isLimitReached();
     }
 
     public void setBlock(BlockDto block) {
@@ -139,7 +140,7 @@ public class FlushStorage {
         columns_set.set(colIndex);
     }
 
-    public void setNvarchar(int colIndex, byte[] stringBytes, String originalString) {
+    public void setNvarchar(int colIndex, byte[] stringBytes, String originalString) throws ConnException {
         // Add string length to lengths column
         curBlock.getNvarcLenBuffers()[colIndex].putInt(stringBytes.length);
         // Set actual value
@@ -152,6 +153,9 @@ public class FlushStorage {
 
         if (originalString == null) {
             markAsNull(colIndex);
+        }
+        if (curBlock.getDataBuffers()[colIndex].position() > MAX_BUFFER_SIZE) {
+            curBlock.setLimitReached(true);
         }
         columns_set.set(colIndex);
     }
@@ -185,11 +189,33 @@ public class FlushStorage {
         curBlock.getNullBuffers()[index].put((byte) 1);
     }
 
-    private void increaseBuffer(int index, int puttingStringLength) {
-        ByteBuffer new_text_buf = ByteBuffer.allocateDirect((curBlock.getDataBuffers()[index].capacity() + puttingStringLength) * 2)
+    private void increaseBuffer(int index, int puttingStringLength) throws ConnException {
+        int oldSize = curBlock.getDataBuffers()[index].capacity();
+        int newSize;
+        if (oldSize >= MAX_BUFFER_SIZE) {
+            curBlock.setLimitReached(true);
+        }
+        try {
+            newSize = Math.multiplyExact(Math.addExact(oldSize, puttingStringLength), 2);
+        } catch (ArithmeticException e) {
+            if (Integer.MAX_VALUE - oldSize > puttingStringLength) {
+                newSize = Integer.MAX_VALUE;
+            } else {
+                throw new ConnException(MessageFormat.format("Data buffer size exceeds maximum size supported", Integer.MAX_VALUE));
+            }
+        }
+        ByteBuffer newTextBuf = ByteBuffer.allocateDirect(newSize)
                 .order(ByteOrder.LITTLE_ENDIAN);
-        new_text_buf.put(curBlock.getDataBuffers()[index]);
-        curBlock.getDataBuffers()[index] = new_text_buf;
+
+        final ByteBuffer readOnlyCopy = curBlock.getDataBuffers()[index];
+
+        readOnlyCopy.flip();
+        newTextBuf.put(readOnlyCopy);
+
+        newTextBuf.position(readOnlyCopy.position());
+
+        newTextBuf.put(curBlock.getDataBuffers()[index]);
+        curBlock.getDataBuffers()[index] = newTextBuf;
     }
 
     private static long dtToLong(Timestamp ts, ZoneId zone) {  // ZonedDateTime

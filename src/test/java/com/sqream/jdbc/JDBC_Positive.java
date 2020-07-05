@@ -1327,4 +1327,37 @@ public class JDBC_Positive {
             }
         }
     }
+
+//    @Test FIXME: Alex K 05-07-2020 comment out until we do not have enough memory on Gitlab CI machine
+    public void nvarcharBufferLimitTest() throws SQLException {
+        int rowAmount = 100_000;
+        int testValueLength = 21_474; // 2,147,483,647 (buffer limit) / 100,000 (rows)
+        String testValue = String.join("", Collections.nCopies(testValueLength, "a"));
+
+        String create = "create or replace table test_text_table (col1 text)";
+        String insert = "insert into test_text_table values(?);";
+        String select = "select * from test_text_table";
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(create);
+            }
+            try (PreparedStatement pstmt = conn.prepareStatement(insert)) {
+                for (int i = 0; i < rowAmount; i++) {
+                    pstmt.setString(1, testValue);
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+            }
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(select);
+                int rowCounter = 0;
+                while(rs.next()) {
+                    Assert.assertEquals(testValue, rs.getString(1));
+                    rowCounter++;
+                }
+                Assert.assertEquals(rowAmount, rowCounter);
+            }
+        }
+    }
 }

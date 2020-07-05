@@ -109,8 +109,8 @@ public class Utils {
         return totalAllocated;
     }
 
-    public static int totalLengthForHeader(TableMetadata metadata, BlockDto block) {
-        int total_bytes = 0;
+    public static long totalLengthForHeader(TableMetadata metadata, BlockDto block) {
+        long total_bytes = 0;
         for(int idx=0; idx < metadata.getRowLength(); idx++) {
             total_bytes += (block.getNullBuffers()[idx] != null) ? block.getFillSize() : 0;
             total_bytes += (block.getNvarcLenBuffers()[idx] != null) ? 4 * block.getFillSize() : 0;

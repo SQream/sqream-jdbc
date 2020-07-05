@@ -10,6 +10,7 @@ public class BlockDto {
     private ByteBuffer[] nvarcLenBuffers;
     private int capacity;
     private int fillSize = 0;
+    private boolean limitReached = false;
 
     public BlockDto(ByteBuffer[] dataBuffers, ByteBuffer[] nullBuffers, ByteBuffer[] nvarcLenBuffers, int capacity) {
         this.dataBuffers = dataBuffers;
@@ -56,6 +57,14 @@ public class BlockDto {
 
     public void setFillSize(int fillSize) {
         this.fillSize = fillSize;
+    }
+
+    public boolean isLimitReached() {
+        return limitReached;
+    }
+
+    public void setLimitReached(boolean limitReached) {
+        this.limitReached = limitReached;
     }
 
     @Override

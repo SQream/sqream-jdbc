@@ -11,6 +11,7 @@ import com.sqream.jdbc.connector.storage.fetchStorage.EmptyFetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorageImpl;
 
+import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
 import java.text.MessageFormat;
@@ -533,7 +534,7 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
-    public boolean setNvarchar(int colNum, String value) {
+    public boolean setNvarchar(int colNum, String value) throws ConnException {
         validator.validateSet(colNum - 1, value);
         // Convert string to bytes
         byte[] stringBytes = value == null ? "".getBytes(UTF8) : value.getBytes(UTF8);

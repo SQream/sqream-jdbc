@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 public class ColumnStorageTest {
 
     @Test
-    public void increaseBufferTextBufferTest() {
+    public void increaseBufferTextBufferTest() throws ConnException {
         int rowLength = 1;
         int blockSize = 1;
         List<ColumnMetadataDto> columnMetadataDtos =  Collections.singletonList(

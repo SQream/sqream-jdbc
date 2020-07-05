@@ -15,7 +15,7 @@ public class UtilsTest {
     @Test
     public void getTotalLengthForHeaderTest() throws ConnException {
         int rowsPerFlush = 10;
-        int expectedTotalLength = 0;
+        long expectedTotalLength = 0;
 
         List<ColumnMetadataDto> columnMetadataList = new ArrayList<>();
 
@@ -44,7 +44,7 @@ public class UtilsTest {
         storage.setLong(2, 123L);
         storage.next();
 
-        int actualTotalLength = Utils.totalLengthForHeader(metadata, storage.getBlock());
+        long actualTotalLength = Utils.totalLengthForHeader(metadata, storage.getBlock());
 
         assertEquals(expectedTotalLength, actualTotalLength);
     }

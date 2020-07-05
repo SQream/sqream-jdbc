@@ -46,6 +46,11 @@ public class SQSocketConnector {
 
         return ByteBuffer.allocate(10 + (int) dataLength).order(ByteOrder.LITTLE_ENDIAN).put(PROTOCOL_VERSION).put(is_text_msg ? (byte)1:(byte)2).putLong(dataLength);
     }
+
+    public ByteBuffer generateHeader(long dataLength, boolean is_text_msg) {
+
+        return ByteBuffer.allocate(10).order(ByteOrder.LITTLE_ENDIAN).put(PROTOCOL_VERSION).put(is_text_msg ? (byte)1:(byte)2).putLong(dataLength);
+    }
     // (3)  /* Used by _send_data()  (merge if only one )  */
 
     public int parseHeader() throws ConnException {

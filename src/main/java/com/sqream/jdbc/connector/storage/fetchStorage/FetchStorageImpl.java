@@ -118,10 +118,10 @@ public class FetchStorageImpl implements FetchStorage {
         if (repeatedly) {
             curBlock.getDataBuffers()[colIndex].position(curBlock.getDataBuffers()[colIndex].position() - colSize);
         }
-        return isNotNull(colIndex, rowIterator.getRowIndex()) ?
-                ByteReaderFactory
-                        .getReader(metadata.getType(colIndex))
-                        .readVarchar(curBlock.getDataBuffers()[colIndex], colSize, varcharEncoding) : null;
+        String result = ByteReaderFactory
+                .getReader(metadata.getType(colIndex))
+                .readVarchar(curBlock.getDataBuffers()[colIndex], colSize, varcharEncoding);
+        return isNotNull(colIndex, rowIterator.getRowIndex()) ? result : null;
     }
 
     public String getNvarchar(int colIndex, Charset varcharEncoding) {

@@ -1360,4 +1360,102 @@ public class JDBC_Positive {
             }
         }
     }
+
+    @Test
+    public void wrongValueAfterNullTest() throws SQLException {
+        String CREATE_TABLE_SQL = "create or replace table check_after_null " +
+                "(t_bool bool, t_ubyte tinyint, t_short smallint, t_int int, t_long bigint, " +
+                "t_double double, t_varchar varchar(10), t_nvarchar nvarchar(10), " +
+                "t_real real, t_date date, t_datetime datetime, t_text text);";
+        String SELECT = "select * from check_after_null;";
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.executeUpdate(CREATE_TABLE_SQL);
+            stmt.executeUpdate("insert into check_after_null values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);");
+            stmt.executeUpdate("insert into check_after_null values(true, 1, 1, 1, 1, 1.1, '1', '1', 1.1, '1955-11-05', '1955-11-05 01:24:00.000', '1');");
+            stmt.executeUpdate("insert into check_after_null values(false, 2, 2, 2, 2, 2.2, '2', '2', 2.2, '1956-11-05', '1956-11-05 01:24:00.000', '2');");
+
+            ResultSet rs = stmt.executeQuery(SELECT);
+
+            assertTrue(rs.next());
+            assertFalse(rs.getBoolean(1));
+            assertTrue(rs.wasNull());
+            assertEquals(0, rs.getByte(2));
+            assertTrue(rs.wasNull());
+            assertEquals(0, rs.getShort(3));
+            assertTrue(rs.wasNull());
+            assertEquals(0, rs.getInt(4));
+            assertTrue(rs.wasNull());
+            assertEquals(0, rs.getLong(5));
+            assertTrue(rs.wasNull());
+            assertEquals(0, rs.getDouble(6), 0);
+            assertTrue(rs.wasNull());
+            assertNull(rs.getString(7));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getString(8));
+            assertTrue(rs.wasNull());
+            assertEquals(0, rs.getFloat(9), 0);
+            assertTrue(rs.wasNull());
+            assertNull(rs.getDate(9));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getDate(10));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getString(11));
+            assertTrue(rs.wasNull());
+
+            assertTrue(rs.next());
+            assertTrue(rs.getBoolean(1));
+            assertFalse(rs.wasNull());
+            assertEquals(1, rs.getByte(2));
+            assertFalse(rs.wasNull());
+            assertEquals(1, rs.getShort(3));
+            assertFalse(rs.wasNull());
+            assertEquals(1, rs.getInt(4));
+            assertFalse(rs.wasNull());
+            assertEquals(1, rs.getLong(5));
+            assertFalse(rs.wasNull());
+            assertEquals(1.1d, rs.getDouble(6), 0);
+            assertFalse(rs.wasNull());
+            assertEquals("1", rs.getString(7));
+            assertFalse(rs.wasNull());
+            assertEquals("1", rs.getString(8));
+            assertFalse(rs.wasNull());
+            assertEquals(1.1f, rs.getFloat(9), 0);
+            assertFalse(rs.wasNull());
+            assertEquals("1955-11-05", rs.getDate(10).toString());
+            assertFalse(rs.wasNull());
+            assertEquals("1955-11-05 01:24:00.0", rs.getTimestamp(11).toString());
+            assertFalse(rs.wasNull());
+            assertEquals("1", rs.getString(12));
+            assertFalse(rs.wasNull());
+
+            assertTrue(rs.next());
+            assertFalse(rs.getBoolean(1));
+            assertFalse(rs.wasNull());
+            assertEquals(2, rs.getByte(2));
+            assertFalse(rs.wasNull());
+            assertEquals(2, rs.getShort(3));
+            assertFalse(rs.wasNull());
+            assertEquals(2, rs.getInt(4));
+            assertFalse(rs.wasNull());
+            assertEquals(2, rs.getLong(5));
+            assertFalse(rs.wasNull());
+            assertEquals(2.2d, rs.getDouble(6), 0);
+            assertFalse(rs.wasNull());
+            assertEquals("2", rs.getString(7));
+            assertFalse(rs.wasNull());
+            assertEquals("2", rs.getString(8));
+            assertFalse(rs.wasNull());
+            assertEquals(2.2f, rs.getFloat(9), 0);
+            assertFalse(rs.wasNull());
+            assertEquals("1956-11-05", rs.getDate(10).toString());
+            assertFalse(rs.wasNull());
+            assertEquals("1956-11-05 01:24:00.0", rs.getTimestamp(11).toString());
+            assertFalse(rs.wasNull());
+            assertEquals("2", rs.getString(12));
+            assertFalse(rs.wasNull());
+        }
+    }
 }

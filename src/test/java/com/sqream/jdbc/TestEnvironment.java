@@ -23,11 +23,12 @@ public class TestEnvironment {
     public static final String SHORT_URL = MessageFormat.format(
             "jdbc:Sqream://{0}:{1}/{2};user={3};password={4}", IP, String.valueOf(PORT), DATABASE, USER, PASS);
 
-    public static Connection createConnection() {
+    public static Connection createConnection() throws SQLException {
         try {
             Class.forName("com.sqream.jdbc.SQDriver");
             return DriverManager.getConnection(URL,USER,PASS);
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

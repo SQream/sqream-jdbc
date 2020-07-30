@@ -1,297 +1,449 @@
 package com.sqream.jdbc;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.sql.Timestamp;
+import de.vandermeer.asciitable.AsciiTable;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.sql.*;
 import java.text.MessageFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
-import javax.script.Bindings;
-import javax.script.Invocable;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
+import static com.sqream.jdbc.Perf.ColType.*;
+import static com.sqream.jdbc.TestEnvironment.createConnection;
 
 public class Perf {
-    
-    // Replace with your respective URL
-    //static final String url_dst = "jdbc:Sqream://192.168.0.223:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
-    //here sonoo is database name, root is username and password  
-    
-    Connection mysql_con;
-    Connection conn  = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-    DatabaseMetaData dbmeta = null;
-    PreparedStatement ps = null;
-    String sql;
-    
-    int res = 0;
-   
-    static void print(Object printable) {
-        System.out.println(printable);
-    }
-    
-    static String format(String pattern, String value) {
-    	
-    	return MessageFormat.format(pattern, value);
-    	
-    }
-    static void printbuf(ByteBuffer to_print, String description) {
-        System.out.println(description + " : " + to_print);
-    }
-    
-    static long time() {
-        return System.currentTimeMillis();
-    }
-    
-    static Date date_from_tuple(int year, int month, int day) {
-        
-        return Date.valueOf(LocalDate.of(year, month, day));
-    }
-    
-    static Timestamp datetime_from_tuple(int year, int month, int day, int hour, int minutes, int seconds, int ms) {
-            
-        return Timestamp.valueOf(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
+    private static final int[] columnCounts = new int[]{1, 10, 100};
+    private static final int[] varcharSizes = new int[]{10, 100, 400};
+    private static final int[] rowCounts = new int[]{1, 1000, 10000, 100000, 1000000};
+    private static final int selectAllColAmount = 200;
+    private static final int varcharSizeForSelectAll = 10;
+    private static final int limitForSelectAll = 100000;
+    private static final Map<ColType, BiConsumer<ResultSet, Integer>> gettersMap = new HashMap<>();
+    private static final Map<ColType, BiConsumer<PreparedStatement, Integer>> settersMap = new HashMap<>();
+    private static int index = 0;
+    private static AsciiTable resultTable;
+
+    private static final Date testDate = new Date(System.currentTimeMillis());
+    private static final Timestamp testDateTime = new Timestamp(System.currentTimeMillis());
+    private static String testText = "";
+
+    enum ColType {
+        BOOL("bool", Byte.BYTES),
+        TINYINT("tinyint", Byte.BYTES),
+        SMALLINT("smallint", Short.BYTES),
+        INT("int", Integer.BYTES),
+        BIGINT("bigint", Long.BYTES),
+        REAL("real", Float.BYTES),
+        DOUBLE("double", Double.BYTES),
+        DATE("date", Integer.BYTES),
+        DATETIME("datetime", Long.BYTES),
+        VARCHAR("varchar", Byte.BYTES),
+        NVARCHAR("nvarchar", Byte.BYTES);
+
+        private final String value;
+        private final int size;
+
+        ColType(String value, int size) {
+            this.value = value;
+            this.size = size;
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+
+        public int getSize() {
+            return this.size;
+        }
     }
 
-    public void perf(String url_src) throws SQLException, IOException {
-        
-        conn = DriverManager.getConnection(url_src,"sqream","sqream");
-        //mysql_con=DriverManager.getConnection("jdbc:mysql://192.168.0.219:3306/perf","eliy","bladerfuK~1");  
-        String sql;
-        /*
-        sql = "insert into perf_t2 values (?, ?)";
-        ps = mysql_con.prepareStatement(sql);
-        print ("before network insert");
-        for(int i=1; i < 100000000; i++) {
-            ps.setInt(1, 6);
-            ps.setInt(2, 8);
-            ps.addBatch();
-            //ps.executeUpdate();m
-            if (i % 10000 == 0) {
-                print ("added batch number " + i);
-                //ps.executeBatch();
+    {
+        gettersMap.put(BOOL, this::getBool);
+        gettersMap.put(TINYINT, this::getTinyInt);
+        gettersMap.put(SMALLINT, this::getSmallInt);
+        gettersMap.put(INT, this::getInt);
+        gettersMap.put(BIGINT, this::getBigInt);
+        gettersMap.put(REAL, this::getReal);
+        gettersMap.put(DOUBLE, this::getDouble);
+        gettersMap.put(DATE, this::getDate);
+        gettersMap.put(DATETIME, this::getDatetime);
+        gettersMap.put(VARCHAR, this::getText);
+        gettersMap.put(NVARCHAR, this::getText);
+
+        settersMap.put(BOOL, this::setBool);
+        settersMap.put(TINYINT, this::setTinyInt);
+        settersMap.put(SMALLINT, this::setSmallInt);
+        settersMap.put(INT, this::setInt);
+        settersMap.put(BIGINT, this::setBigInt);
+        settersMap.put(REAL, this::setReal);
+        settersMap.put(DOUBLE, this::setDouble);
+        settersMap.put(DATE, this::setDate);
+        settersMap.put(DATETIME, this::setDatetime);
+        settersMap.put(VARCHAR, this::setText);
+        settersMap.put(NVARCHAR, this::setText);
+    }
+
+    @Test
+    public void selectTest() {
+        resultTable = new AsciiTable();
+        resultTable.addRule();
+        resultTable.addRow("index", "field", "row length", "columns", "rows", "total ms", "per 1Mb");
+        resultTable.addRule();
+        Arrays.stream(values()).forEach(this::select);
+        selectAll();
+        resultTable.addRule();
+        System.out.println(resultTable.render());
+    }
+
+    @Test
+    public void insertTest() {
+        resultTable = new AsciiTable();
+        resultTable.addRule();
+        resultTable.addRow("index", "field", "row length", "columns", "rows", "total ms", "per 1Mb");
+        resultTable.addRule();
+        Arrays.stream(values()).forEach(this::insert);
+        resultTable.addRule();
+        System.out.println(resultTable.render());
+    }
+
+    private void select(ColType type) {
+        BiConsumer<ResultSet, Integer> getter = gettersMap.get(type);
+        try (Connection conn = createConnection(); Statement stmt = conn.createStatement()) {
+            for (int colAmount : columnCounts) {
+                for (int rowAmount : rowCounts) {
+                    for (int textLength : varcharSizes) {
+                        if (isTextType(type) || textLength == varcharSizes[0]) {
+                            long startTime = System.currentTimeMillis();
+                            stmt.setFetchSize(1);
+                            ResultSet rs = stmt.executeQuery(generateSelectQuery(type, colAmount, rowAmount, textLength));
+                            int rowCounter = 0;
+                            while (rs.next()) {
+                                for (int i = 0; i < colAmount; i++) {
+                                    getter.accept(rs, i);
+                                }
+                                rowCounter++;
+                            }
+                            long totalTime = System.currentTimeMillis() - startTime;
+                            long rowLength = rowLength(type, colAmount, textLength);
+                            resultTable.addRow(index, type, rowLength, colAmount, rowAmount, totalTime, (1024 * 1024 * totalTime) / (rowLength * rowAmount));
+                            Assert.assertEquals(rowAmount, rowCounter);
+                            index++;
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void selectAll() {
+        int colAmountPerType = selectAllColAmount / ColType.values().length;
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            long startTime = System.currentTimeMillis();
+            ResultSet rs = stmt.executeQuery(generateSelectAllQuery(colAmountPerType));
+            BiConsumer<ResultSet, Integer> getter;
+            int rowCounter = 0;
+            int colIndex;
+            while (rs.next()) {
+                colIndex = 0;
+                for (ColType type : ColType.values()) {
+                    getter = gettersMap.get(type);
+                    for (int i = 0; i < colAmountPerType; i++) {
+                        getter.accept(rs, colIndex);
+                        colIndex++;
+                    }
+                }
+                rowCounter++;
+            }
+            Assert.assertEquals(limitForSelectAll, rowCounter);
+            long totalTime = System.currentTimeMillis() - startTime;
+            long rowLength = rowLengthAll(colAmountPerType);
+            resultTable.addRow(index, "ALL", rowLength, ColType.values().length * colAmountPerType, limitForSelectAll, totalTime, (1024 * 1024 * totalTime) / (rowLength * limitForSelectAll));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void insert(ColType type) {
+        BiConsumer<PreparedStatement, Integer> setter = settersMap.get(type);
+        try (Connection conn = createConnection()) {
+            for (int colAmount : columnCounts) {
+                for (int rowAmount : rowCounts) {
+//                    for (int textLength : varcharSizes) {
+                        if (!isTextType(type) || colAmount <= 10) {
+                            testText = String.join("", Collections.nCopies(varcharSizes[0], "a"));
+                            int rowCounter = 0;
+                            long startTime = System.currentTimeMillis();
+                            try (PreparedStatement pstmt = conn.prepareStatement(generateInsertQuery(type, colAmount, varcharSizes[0]))) {
+                                for (int rowIndex = 0; rowIndex < rowAmount; rowIndex++) {
+                                    for (int colIndex = 0; colIndex < colAmount; colIndex++) {
+                                        setter.accept(pstmt, colIndex);
+                                    }
+                                    pstmt.addBatch();
+                                    if (((rowIndex + 1) % 100_000 == 0 && rowIndex > 1) || rowIndex == rowAmount - 1) {
+                                        pstmt.executeBatch();
+                                    }
+                                    rowCounter++;
+                                }
+                            }
+                            long totalTime = System.currentTimeMillis() - startTime;
+                            long rowLength = rowLength(type, colAmount, varcharSizes[0]);
+                            resultTable.addRow(index, type, rowLength, colAmount, rowAmount, totalTime, (1024 * 1024 * totalTime) / (rowLength * rowAmount));
+                            Assert.assertEquals(rowAmount, rowCounter);
+                            index++;
+//                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String generateSelectQuery(ColType type, int colAmount, int rowAmount, int textLength) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("select ");
+        for (int i = 0; i < colAmount; i++) {
+            sb.append(generateColDefinition(type, textLength, i));
+            if (i < colAmount - 1) {
+                sb.append(", ");
             }
         }
-        print ("after loop");
-        //ps.executeBatch();  // Should be done automatically
-        ps.close();
-        print ("after network insert");
-        //*/
-        
-        //*
-        // create table
-        sql = "create or replace table perf (bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, strings varchar(10), strangs nvarchar(10))"; //, dates date, dts datetime)";
+        sb.append(" from random limit ");
+        sb.append(rowAmount);
+        sb.append(";");
+        return sb.toString();
+    }
 
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        
-        // Network insert 10 million rows
-        int amount = (int)Math.pow(10, 7);
-        long start = time();
-        sql = "insert into perf values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        ps = conn.prepareStatement(sql);
-        
-        for (int i=0; i < amount; i++) {
-            ps.setBoolean(1, true);
-            ps.setByte(2, (byte)120);
-            ps.setShort(3, (short) 1400);
-            ps.setInt(4, 140000);
-            ps.setLong(5, (long) 5);
-            ps.setFloat(6, (float)56.0);
-            ps.setDouble(7, 57.0);
-            ps.setString(8, "bla");
-            ps.setString(9, "bla2");
-            // ps.setDate(10, date_from_tuple(2019, 11, 26));
-            // ps.setTimestamp(11, datetime_from_tuple(2019, 11, 26, 16, 45, 23, 45));
-            ps.addBatch();
+    private String generateInsertQuery(ColType type, int colAmount, int textLength) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("insert into random values(");
+        for (int i = 0; i < colAmount; i++) {
+            sb.append(generateColDefinition(type, textLength, i));
+            if (i < colAmount - 1) {
+                sb.append(", ");
+            }
         }
-        ps.executeBatch();  // Should be done automatically
-        ps.close();
+        sb.append(");");
+        return sb.toString();
+    }
 
-        print ("total network insert: " + (time() -start));
-        
-        // Check amount inserted
-        sql = "select count(*) from perf";
-        stmt = conn.createStatement();
-        rs = stmt.executeQuery(sql);
-        while(rs.next()) 
-            print("row count: " + rs.getLong(1));
-        rs.close();
-        stmt.close();
-        //*/
-      
-        /*
-        sql = "create or replace table dt (dt datetime)";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        
-        // Network insert 10 million rows
-        sql = "insert into dt values (?)";
-        ps = conn.prepareStatement(sql);
-        Timestamp test = datetime_from_tuple(2018, 3, 23, 3, 54, 38, 0);
-        print (test);
-        
-        for (int i=0; i < 1; i++) {
-            ps.setTimestamp(1, test);
-            ps.addBatch();
+    private String generateColDefinition(ColType colType, int textLength, int colIndex) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(colType.getValue());
+        sb.append("?name=col");
+        sb.append(colIndex + 1);
+        if (isTextType(colType)) {
+            sb.append("&length=");
+            sb.append(textLength);
         }
-        ps.executeBatch();  // Should be done automatically
-        ps.close();
+        return sb.toString();
+    }
 
-        
-        // Check amount inserted
-        sql = "select * from dt";
-        stmt = conn.createStatement();
-        rs = stmt.executeQuery(sql);
-        while(rs.next()) 
-            print(rs.getTimestamp(1));
-        rs.close();
-        stmt.close();
-        //*/
-        
-      /*
-        sql = "create or replace table excape (s varchar(50))";
-        stmt = conn.createStatement();
-        stmt.execute(sql);
-        stmt.close();
-        
-        /*
-        // Network insert 10 million rows
-        sql = "insert into excape values (\"bla bla\")";
-        ps = conn.prepareStatement(sql);
-        ps.executeBatch();  // Should be done automatically
-        ps.close();
-		//*/
-        
-        /*  
-        // Check amount inserted
-        // sql = "select case when xint2%2=0 then xdate else '2015-01-01' end from t_a";
-        StringBuilder s_sql = new StringBuilder("create or replace table t_test(x0 int");
-        for(int i = 0; i < 59; i++)
-        {
-        	s_sql.append(",x" + (i+1) + " int");
+    private String generateSelectAllQuery(int colAmountPerType) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("select ");
+        for (ColType type : ColType.values()) {
+            for (int i = 0; i < colAmountPerType; i++) {
+                sb.append(generateColDefinition(type, varcharSizeForSelectAll, i));
+                if (i < colAmountPerType - 1) {
+                    sb.append(", ");
+                }
+            }
+            sb.append(", ");
         }
-        s_sql.append(")");
-        stmt = conn.createStatement();
-        rs = stmt.executeQuery(s_sql.toString());
-        while(rs.next()) 
-            print(rs.getInt(1));
-        rs.close();
-        stmt.close();
-        
-        StringBuilder ss_sql = new StringBuilder("insert into t_test values(?");
-        for(int i = 0; i < 59; i++)
-        {
-        	ss_sql.append(",?");
+        sb.append(" from random limit ");
+        sb.append(limitForSelectAll);
+        sb.append(";");
+        return sb.toString();
+    }
+
+    private void getBool(ResultSet rs, int colIndex) {
+        try {
+            rs.getBoolean(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        ss_sql.append(")");
-        PreparedStatement p_stmt = conn.prepareStatement(ss_sql.toString());
-        for(int i=0; i < 10; i++)
-        {
-        	for(int j = 0; j < 60; j++)
-        	{
-        		p_stmt.setInt(j+1, 11);
-        	}
-        	p_stmt.addBatch();
+    }
+
+    private void getTinyInt(ResultSet rs, int colIndex) {
+        try {
+            rs.getByte(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        p_stmt.executeBatch();
-        p_stmt.close();
-        
-        //conn.close();
-        //*/
-        
-        
-    	//*/
-    }     
-    
-    public static void main(String[] args) throws SQLException, KeyManagementException, NoSuchAlgorithmException, IOException, ClassNotFoundException, ScriptException, NoSuchMethodException{
-        
-        // Load JDBC driver - not needed with newer version
-        Class.forName("com.sqream.jdbc.SQDriver");
-        //Class.forName("com.mysql.jdbc.Driver");  
-        String url_src = "jdbc:Sqream://192.168.1.4:5000/master;user=sqream;password=sqream;cluster=false;ssl=false";
-        //String url_src = "jdbc:Sqream://192.168.1.4:3108/master;user=sqream;password=sqream;cluster=true;service=sqream";
+    }
 
-        
-        Perf test = new Perf();   
-        test.perf(url_src);
-        
-        /*
-        //  --------
-        String message = "'{'\"bla\":\"bla\"'}'"; 
-        ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
-        
-        Invocable inv = (Invocable) engine;
-        String message = "'{'\"bla\":\"bla\"'}'"; 
-        
-        //engine.put("input", new String(sample));
-        String parse = "JSON.parse({0});";
-        engine.put("input", message);
-        String stringify = "JSON.stringify({0});";
+    private void getSmallInt(ResultSet rs, int colIndex) {
+        try {
+            rs.getShort(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        // Object inputjson = engine.eval(MessageFormat.format(parse, message));
-        Object inputjson = engine.eval("JSON.parse(input);");
+    private void getInt(ResultSet rs, int colIndex) {
+        try {
+            rs.getInt(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
- 
-        print(inputjson);
-        
-        //print(JSONFunctions.parse((Object)message, (Object)message));
-        
-        //JSONParser parser = new JSONParser(message, Context.getGlobal(), false);        
-        //JSONObject(message).toString();
-        //print(parser.parse());
-        // Map<String, String> map1 = (Map<String, Object>)engine.eval(
-        //"JSON.parse('{ \"x\": 343, \"y\": \"hello\", \"z\": [2,4,5] }');");
-        //print(map1);
-         Map<String, String> prep = new HashMap<>();
-         prep.put("prepareStatement", "insert into excape values (\"bla bla\")");
-         
-        ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
-        ScriptObjectMirror json = (ScriptObjectMirror) engine.eval("JSON");
-        engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE).put ("statement", "insert into excape values (\"bla \n bla\")");
+    private void getBigInt(ResultSet rs, int colIndex) {
+        try {
+            rs.getLong(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        
-        //String stmt = "{\"prepareStatement\":\"insert into excape values (\\\"bla \\n bla\\\")\", \"chunkSize\":0}";
-        //Bindings bindings = engine.createBindings();
-        //bindings.put("prepareStatement", "insert into excape values (\"bla bla\")");
-        //Object bindingsResult = engine.eval("JSON.parse(prepareStatement)", bindings);
-        
-        //Object parsed = json.callMember("parse", stmt);
+    private void getReal(ResultSet rs, int colIndex) {
+        try {
+            rs.getFloat(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        //Object parsed =  json.callMember("stringify", prep);
-        //Object obj = engine.eval("var j = Java.asJSONCompatible({ prepareStatement: 'insert into excape values (\"bla bla\")'}); JSON.stringify(j);");
-        String parsed = (String) engine.eval("var prop = {prepareStatement: statement}; JSON.stringify(prop)");
+    private void getDouble(ResultSet rs, int colIndex) {
+        try {
+            rs.getDouble(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        //Map<String, Object> map = (Map<String, Object>)obj;
-        //print (bindingsResult);
-        //String map_maker = "var prep = {prepareStatement: \"insert into excape values (\"bla bla\")\")};" + 
-      //                 "JSON.Stringify(preps);";
-        
-        print (parsed);
-        //*/
+    private void getDate(ResultSet rs, int colIndex) {
+        try {
+            rs.getDate(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void getDatetime(ResultSet rs, int colIndex) {
+        try {
+            rs.getTimestamp(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void getText(ResultSet rs, int colIndex) {
+        try {
+            rs.getString(colIndex + 1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setBool(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setBoolean(colIndex + 1, true);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setTinyInt(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setByte(colIndex + 1, Byte.MAX_VALUE);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setSmallInt(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setShort(colIndex + 1, Short.MAX_VALUE);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setInt(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setInt(colIndex + 1, Integer.MAX_VALUE);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setBigInt(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setLong(colIndex + 1, Long.MAX_VALUE);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setReal(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setFloat(colIndex + 1, Float.MAX_VALUE);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setDouble(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setDouble(colIndex + 1, Double.MAX_VALUE);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setDate(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setDate(colIndex + 1, testDate);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setDatetime(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setTimestamp(colIndex + 1, testDateTime);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setText(PreparedStatement pstmt, int colIndex) {
+        try {
+            pstmt.setString(colIndex + 1, testText);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean isTextType(ColType type) {
+        return type.equals(VARCHAR) || type.equals(NVARCHAR);
+    }
+
+    private long rowLength(ColType type, int colAmount, int textLength) {
+        return isTextType(type) ?
+                textLength * Byte.BYTES * colAmount :
+                type.getSize() * colAmount;
+    }
+
+    private long rowLengthAll(int colAmountPerType) {
+        long result = 0;
+        for (ColType colType: ColType.values()) {
+            for (int i = 0; i < colAmountPerType; i++) {
+                result += isTextType(colType) ?
+                        varcharSizeForSelectAll * Byte.BYTES :
+                        colType.getSize();
+            }
+        }
+        return result;
     }
 }
-
-

@@ -2,7 +2,15 @@ package com.sqream.jdbc.connector.byteReaders;
 
 import java.nio.ByteBuffer;
 
+import static com.sqream.jdbc.utils.Utils.toByteExact;
+
 public class FtShortReader extends BaseReader {
+
+    @Override
+    public Byte readUbyte(ByteBuffer buffer, int rowIndex) {
+        return toByteExact(read(buffer, rowIndex));
+    }
+
     @Override
     public Integer readInt(ByteBuffer buffer, int rowIndex) {
         return (int) read(buffer, rowIndex);

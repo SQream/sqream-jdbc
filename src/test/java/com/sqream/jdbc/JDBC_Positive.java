@@ -1135,7 +1135,7 @@ public class JDBC_Positive {
     }
 
     @Test
-    public void tinyIntCastingTest() throws SQLException {
+    public void setTinyIntCastingTest() throws SQLException {
         String createTableSQL = "create or replace table casting_test_table " +
                 "(col1 tinyint, col2 tinyint, col3 tinyint, col4 tinyint, col5 tinyint, col6 tinyint, col7 tinyint, col8 tinyint)";
         String insertSQL = "insert into casting_test_table values(?, ?, ?, ?, ?, ?, ?, ?);";
@@ -1180,7 +1180,7 @@ public class JDBC_Positive {
     }
 
     @Test
-    public void smallIntCastingTest() throws SQLException {
+    public void setSmallIntCastingTest() throws SQLException {
         String createTableSQL = "create or replace table casting_test_table " +
                 "(col1 smallint, col2 smallint, col3 smallint, col4 smallint, col5 smallint, col6 smallint, col7 smallint, col8 smallint)";
         String insertSQL = "insert into casting_test_table values(?, ?, ?, ?, ?, ?, ?, ?);";
@@ -1225,7 +1225,7 @@ public class JDBC_Positive {
     }
 
     @Test
-    public void intCastingTest() throws SQLException {
+    public void setIntCastingTest() throws SQLException {
         String createTableSQL = "create or replace table casting_test_table " +
                 "(col1 int, col2 int, col3 int, col4 int, col5 int, col6 int, col7 int, col8 int)";
         String insertSQL = "insert into casting_test_table values(?, ?, ?, ?, ?, ?, ?, ?);";
@@ -1270,7 +1270,7 @@ public class JDBC_Positive {
     }
 
     @Test
-    public void longCastingTest() throws SQLException {
+    public void setLongCastingTest() throws SQLException {
         String createTableSQL = "create or replace table casting_test_table " +
                 "(col1 bigint, col2 bigint, col3 bigint, col4 bigint, col5 bigint, col6 bigint, col7 bigint, col8 bigint)";
         String insertSQL = "insert into casting_test_table values(?, ?, ?, ?, ?, ?, ?, ?);";
@@ -1310,6 +1310,155 @@ public class JDBC_Positive {
                 Assert.assertNull(rs.getObject(6));
                 Assert.assertNull(rs.getObject(7));
                 Assert.assertNull(rs.getObject(8));
+            }
+        }
+    }
+
+    @Test
+    public void getTinyIntCastingTest() throws SQLException {
+        byte testValue = Byte.MAX_VALUE;
+        String createTableSQL = "create or replace table casting_test_table (col1 tinyint);";
+        String insertSQL = String.format("insert into casting_test_table values(%s);", testValue);
+        String selectSQL = "select * from casting_test_table;";
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(insertSQL);
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(selectSQL);
+                Assert.assertTrue(rs.next());
+
+                Assert.assertEquals(testValue, rs.getByte(1));
+                Assert.assertEquals(testValue, rs.getShort(1));
+                Assert.assertEquals(testValue, rs.getInt(1));
+                Assert.assertEquals(testValue, rs.getLong(1));
+            }
+        }
+    }
+
+    @Test
+    public void getSmallIntCastingTest() throws SQLException {
+        byte maxByte = Byte.MAX_VALUE;
+        short maxShort = Short.MAX_VALUE;
+        String createTableSQL = "create or replace table casting_test_table (col1 smallint, col2 smallint);";
+        String insertSQL = String.format("insert into casting_test_table values(%s, %s);", maxByte, maxShort);
+        String selectSQL = "select * from casting_test_table;";
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(insertSQL);
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(selectSQL);
+                Assert.assertTrue(rs.next());
+
+                Assert.assertEquals(maxByte, rs.getByte(1));
+                Assert.assertEquals(maxByte, rs.getShort(1));
+                Assert.assertEquals(maxByte, rs.getInt(1));
+                Assert.assertEquals(maxByte, rs.getLong(1));
+
+                try {
+                    Assert.assertEquals(maxShort, rs.getByte(2));
+                } catch (ArithmeticException e) {
+                    /*NOP*/
+                }
+                Assert.assertEquals(maxShort, rs.getShort(2));
+                Assert.assertEquals(maxShort, rs.getInt(2));
+                Assert.assertEquals(maxShort, rs.getLong(2));
+
+            }
+        }
+    }
+
+    @Test
+    public void getIntCastingTest() throws SQLException {
+        byte maxByte = Byte.MAX_VALUE;
+        int maxInt = Integer.MAX_VALUE;
+        String createTableSQL = "create or replace table casting_test_table (col1 int, col2 int);";
+        String insertSQL = String.format("insert into casting_test_table values(%s, %s);", maxByte, maxInt);
+        String selectSQL = "select * from casting_test_table;";
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(insertSQL);
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(selectSQL);
+                Assert.assertTrue(rs.next());
+
+                Assert.assertEquals(maxByte, rs.getByte(1));
+                Assert.assertEquals(maxByte, rs.getShort(1));
+                Assert.assertEquals(maxByte, rs.getInt(1));
+                Assert.assertEquals(maxByte, rs.getLong(1));
+
+                try {
+                    Assert.assertEquals(maxInt, rs.getByte(2));
+                } catch (ArithmeticException e) {
+                    /*NOP*/
+                }
+                try {
+                    Assert.assertEquals(maxInt, rs.getShort(2));
+                } catch (ArithmeticException e) {
+                    /*NOP*/
+                }
+                Assert.assertEquals(maxInt, rs.getInt(2));
+                Assert.assertEquals(maxInt, rs.getLong(2));
+
+            }
+        }
+    }
+
+    @Test
+    public void getLongCastingTest() throws SQLException {
+        byte maxByte = Byte.MAX_VALUE;
+        long maxLong = Long.MAX_VALUE;
+        String createTableSQL = "create or replace table casting_test_table (col1 bigint, col2 bigint);";
+        String insertSQL = String.format("insert into casting_test_table values(%s, %s);", maxByte, maxLong);
+        String selectSQL = "select * from casting_test_table;";
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(insertSQL);
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(selectSQL);
+                Assert.assertTrue(rs.next());
+
+                Assert.assertEquals(maxByte, rs.getByte(1));
+                Assert.assertEquals(maxByte, rs.getShort(1));
+                Assert.assertEquals(maxByte, rs.getInt(1));
+                Assert.assertEquals(maxByte, rs.getLong(1));
+
+                try {
+                    Assert.assertEquals(maxLong, rs.getByte(2));
+                } catch (ArithmeticException e) {
+                    /*NOP*/
+                }
+                try {
+                    Assert.assertEquals(maxLong, rs.getShort(2));
+                } catch (ArithmeticException e) {
+                    /*NOP*/
+                }
+                try {
+                    Assert.assertEquals(maxLong, rs.getInt(2));
+                } catch (ArithmeticException e) {
+                    /*NOP*/
+                }
+                Assert.assertEquals(maxLong, rs.getLong(2));
+
             }
         }
     }

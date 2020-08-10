@@ -89,9 +89,21 @@ public class FtIntReaderTest {
         }
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void readUByteTest() {
-        checkExceptionMessage(reader::readUbyte, "Ubyte");
+        byte[] expected = new byte[AMOUNT];
+        int value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = TEST_INT + i;
+            buffer.putInt(value);
+            expected[i] = (byte)value;
+        }
+
+        double result;
+        for (int i = 0; i < expected.length; i++) {
+            result = reader.readUbyte(buffer, i);
+            assertEquals(expected[i], result, 0);
+        }
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -109,9 +121,21 @@ public class FtIntReaderTest {
         checkExceptionMessage(reader::readDateTime, "DateTime");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void readShortTest() {
-        checkExceptionMessage(reader::readShort, "Short");
+        short[] expected = new short[AMOUNT];
+        int value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = TEST_INT + i;
+            buffer.putInt(value);
+            expected[i] = (short) value;
+        }
+
+        double result;
+        for (int i = 0; i < expected.length; i++) {
+            result = reader.readShort(buffer, i);
+            assertEquals(expected[i], result, 0);
+        }
     }
 
     private void checkExceptionMessage(BiFunction<ByteBuffer, Integer, Object> function, String valueType) {

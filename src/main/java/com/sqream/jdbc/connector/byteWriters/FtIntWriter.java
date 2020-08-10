@@ -2,6 +2,8 @@ package com.sqream.jdbc.connector.byteWriters;
 
 import java.nio.ByteBuffer;
 
+import static com.sqream.jdbc.utils.Utils.toIntExact;
+
 public class FtIntWriter extends BaseWriter {
 
     @Override
@@ -27,12 +29,5 @@ public class FtIntWriter extends BaseWriter {
     @Override
     String getColumnType() {
         return "ftInt";
-    }
-
-    private int toIntExact(long value) {
-        if ((int)value != value) {
-            throw new ArithmeticException("int overflow");
-        }
-        return (int)value;
     }
 }

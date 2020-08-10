@@ -65,19 +65,55 @@ public class FtLongReaderTest {
         checkExceptionMessage(reader::readFloat, "Float");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void readIntTest() {
-        checkExceptionMessage(reader::readInt, "Integer");
+        int[] expected = new int[AMOUNT];
+        int value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = TEST_INT + i;
+            buffer.putLong(value);
+            expected[i] = (int) value;
+        }
+
+        long result;
+        for (int i = 0; i < expected.length; i++) {
+            result = reader.readLong(buffer, i);
+            assertEquals(expected[i], result);
+        }
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void readShortTest() {
-        checkExceptionMessage(reader::readShort, "Short");
+        short[] expected = new short[AMOUNT];
+        int value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = TEST_INT + i;
+            buffer.putLong(value);
+            expected[i] = (short) value;
+        }
+
+        long result;
+        for (int i = 0; i < expected.length; i++) {
+            result = reader.readLong(buffer, i);
+            assertEquals(expected[i], result);
+        }
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void readUByteTest() {
-        checkExceptionMessage(reader::readUbyte, "Ubyte");
+        byte[] expected = new byte[AMOUNT];
+        int value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = TEST_INT + i;
+            buffer.putLong(value);
+            expected[i] = (byte) value;
+        }
+
+        long result;
+        for (int i = 0; i < expected.length; i++) {
+            result = reader.readLong(buffer, i);
+            assertEquals(expected[i], result);
+        }
     }
 
     @Test(expected = UnsupportedOperationException.class)

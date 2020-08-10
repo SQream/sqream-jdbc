@@ -107,9 +107,21 @@ public class FtShortReaderTest {
         }
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void readUByteTest() {
-        checkExceptionMessage(reader::readUbyte, "Ubyte");
+        byte[] expected = new byte[AMOUNT];
+        short value;
+        for (int i = 0; i < AMOUNT; i++) {
+            value = (short) (TEST_INT + i);
+            buffer.putShort(value);
+            expected[i] = (byte) value;
+        }
+
+        short result;
+        for (int i = 0; i < expected.length; i++) {
+            result = reader.readShort(buffer, i);
+            assertEquals(expected[i], result, 0);
+        }
     }
 
     @Test(expected = UnsupportedOperationException.class)

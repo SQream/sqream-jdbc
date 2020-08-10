@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.sql.*;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.zip.CheckedInputStream;
 
 public class SQResultSetNotSupportedTest {
@@ -96,11 +95,6 @@ public class SQResultSetNotSupportedTest {
     @Test (expected = SQLFeatureNotSupportedException.class)
     public void getBinaryStream2Test() throws SQLException {
         rs.getBinaryStream("");
-    }
-
-    @Test (expected = SQLFeatureNotSupportedException.class)
-    public void getWarningsTest() throws SQLException {
-        rs.getWarnings();
     }
 
     @Test (expected = SQLFeatureNotSupportedException.class)

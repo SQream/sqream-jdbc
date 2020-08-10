@@ -658,8 +658,10 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public SQLWarning getWarnings() throws SQLException {
-		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException("getWarnings in SQResultSet");
+		if (isClosed) {
+			throw new SQLException("Call getWarnings() on closed ResultSet");
+		}
+		return null;
 	}
 
 	@Override

@@ -6,6 +6,8 @@ import java.util.Properties;
 import java.util.logging.*;
 import java.lang.reflect.Field;
 
+import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.enums.SQSQLState;
 import com.sqream.jdbc.logging.LoggingService;
 import com.sqream.jdbc.propsParser.PropsParser;
 import com.sqream.jdbc.utils.Utils;
@@ -77,6 +79,8 @@ public class SQDriver implements java.sql.Driver {
 		LOGGER.log(Level.FINE, Utils.getMemoryInfo());
 		try {
 			return new SQConnection(props);
+		} catch (ConnException e) {
+			throw addSQLState(e);
 		} catch (Exception e) {
 			throw new SQLException(e);
 		}
@@ -142,5 +146,16 @@ public class SQDriver implements java.sql.Driver {
 
 	private boolean validProvider(Properties props) {
 		return props != null && "sqream".equalsIgnoreCase(props.getProperty("provider"));
+	}
+
+	private SQLException addSQLState(ConnException e) {
+		if (e != null && e.getMessage() != null) {
+			if (e.getMessage().contains("Login failure")) {
+				return new SQLException(e.getMessage(), SQSQLState.INVALID_AUTHORIZATION_SPECIFICATION.getState(), e);
+			} else if (e.getMessage().contains("Database") && e.getMessage().contains("does not exist")) {
+				return new SQLException(e.getMessage(), SQSQLState.INVALID_CATALOG_NAME.getState(), e);
+			}
+		}
+		return new SQLException(e);
 	}
 }

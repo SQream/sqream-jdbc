@@ -73,6 +73,8 @@ public interface Connector extends AutoCloseable {
 
     Timestamp getDatetime(String col_name, ZoneId zone) throws ConnException;
 
+    int getTimeout();
+
     boolean setBoolean(int col_num, Boolean value) throws ConnException;
 
     boolean setUbyte(int col_num, Byte value) throws ConnException;
@@ -98,6 +100,8 @@ public interface Connector extends AutoCloseable {
     boolean setDate(int col_num, Date value) throws ConnException;
 
     boolean setDatetime(int col_num, Timestamp value) throws ConnException;
+
+    void setTimeout(int seconds);
 
     int getStatementId();
 

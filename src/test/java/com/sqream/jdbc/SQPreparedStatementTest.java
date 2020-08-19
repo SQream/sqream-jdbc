@@ -1,5 +1,6 @@
 package com.sqream.jdbc;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.*;
@@ -322,6 +323,45 @@ public class SQPreparedStatementTest {
              PreparedStatement pstmt = conn.prepareStatement("Select 1;")) {
 
             assertEquals(FETCH_SIZE, pstmt.getFetchSize());
+        }
+    }
+
+    @Test
+    public void whenQueryTimeoutWasNotSpecifiedThenGetQueryTimeoutReturnZeroTest() throws SQLException {
+        String createTable = "create or replace table test_table (col1 int);";
+        String insert = "insert into test_table values (?);";
+        int unlimited = 0;
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeQuery(createTable);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(insert)) {
+                Assert.assertEquals(unlimited, pstmt.getQueryTimeout());
+            }
+
+        }
+    }
+
+    @Test
+    public void whenQueryTimeoutWasSpecifiedThenGetQueryTimeoutReturnCurrentValueTest() throws SQLException {
+        String createTable = "create or replace table test_table (col1 int);";
+        String insert = "insert into test_table values (?);";
+        int timeout = 10;
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeQuery(createTable);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(insert)) {
+                pstmt.setQueryTimeout(timeout);
+                Assert.assertEquals(timeout, pstmt.getQueryTimeout());
+            }
+
         }
     }
 }

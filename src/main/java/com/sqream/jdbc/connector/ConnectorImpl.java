@@ -12,6 +12,7 @@ import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorageImpl;
 
 import java.sql.SQLException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
 import java.text.MessageFormat;
@@ -79,6 +80,8 @@ public class ConnectorImpl implements Connector {
     private FlushService flushService;
     private FetchService fetchService;
     private ByteBufferPool byteBufferPool;
+
+    private int timeout = 0;
 
     public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl) throws ConnException {
         /* JSON parsing engine setup, initial socket connection */
@@ -180,7 +183,24 @@ public class ConnectorImpl implements Connector {
         /* Retains behavior of original execute()  */
 
         int defaultChunksize = (int) Math.pow(10,6);
-        return execute(statement, defaultChunksize);
+        if (timeout > 0) {
+            return execute(statement, defaultChunksize, timeout);
+        } else {
+            return execute(statement, defaultChunksize);
+        }
+    }
+
+    private int execute(String statement, int chunkSize, int timeout) throws ConnException {
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Future<Integer> future = executor.submit(() -> execute(statement, chunkSize));
+        try {
+            return future.get(timeout, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException e) {
+            throw new ConnException(e);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new ConnTimeoutException(e);
+        }
     }
 
     @Override
@@ -467,6 +487,11 @@ public class ConnectorImpl implements Connector {
         return getDatetime(tableMetadata.getColNumByName(colName), zone);
     }
 
+    @Override
+    public int getTimeout() {
+        return this.timeout;
+    }
+
     // Sets
     // ----
 
@@ -564,6 +589,11 @@ public class ConnectorImpl implements Connector {
     @Override
     public boolean setDatetime(int colNum, Timestamp value) {
         return setDatetime(colNum, value, SYSTEM_TZ); // system_tz, UTC
+    }
+
+    @Override
+    public void setTimeout(int seconds) {
+        this.timeout = seconds;
     }
 
     // Metadata

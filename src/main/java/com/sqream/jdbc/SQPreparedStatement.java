@@ -48,13 +48,13 @@ public class SQPreparedStatement implements PreparedStatement {
     private String db_name;
     private int setCounter = 0;
     private List<Integer> setsPerBatch = new ArrayList<>();
-    private boolean is_closed = true;
+    private boolean isClosed = true;
 
     public SQPreparedStatement(String sql, ConnectionParams connParams) throws ConnException {
 
         LOGGER.log(Level.FINE, MessageFormat.format("Construct SQPreparedStatement for [{0}]", sql));
         db_name = connParams.getDbName();
-        is_closed = false;
+        isClosed = false;
         client = new ConnectorImpl(connParams.getIp(), connParams.getPort(), connParams.getCluster(), connParams.getUseSsl());
         client.connect(connParams.getDbName(), connParams.getUser(), connParams.getPassword(), "sqream");  // default service
         if (connParams.getFetchSize() != null && connParams.getFetchSize() > 0) {
@@ -78,7 +78,7 @@ public class SQPreparedStatement implements PreparedStatement {
         } catch (Exception e) {
             throw new SQLException(e);
         } 
-        is_closed = true;
+        isClosed = true;
     }
 
     @Override
@@ -436,7 +436,10 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public int getQueryTimeout() throws SQLException {
-        return 0;
+        if (this.isClosed) {
+            throw new SQLException("Called getQueryTimeout() on closed statement");
+        }
+        return this.client.getTimeout();
     }
     
     @Override
@@ -461,7 +464,7 @@ public class SQPreparedStatement implements PreparedStatement {
     
     @Override
     public boolean isClosed() throws SQLException {
-    	return is_closed;
+    	return isClosed;
     }
     
     @Override
@@ -505,9 +508,14 @@ public class SQPreparedStatement implements PreparedStatement {
     }
 
     @Override
-    public void setQueryTimeout(int arg0) throws SQLException {
-        if (arg0 !=0)  // 0 means unlimited timeout
-            throw new SQLFeatureNotSupportedException("setQueryTimeout in SQPreparedStatement");
+    public void setQueryTimeout(int seconds) throws SQLException {
+        if (this.isClosed) {
+            throw new SQLException("Called setQueryTimeout() on closed statement");
+        }
+        if (seconds < 0) {
+            throw new SQLException(MessageFormat.format("Query timeout [{0}] must be a value greater than or equals to 0.", seconds));
+        }
+        this.client.setTimeout(seconds);
     }
 
     @Override

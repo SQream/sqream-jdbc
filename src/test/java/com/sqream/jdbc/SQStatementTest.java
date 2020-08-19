@@ -1,7 +1,8 @@
 package com.sqream.jdbc;
 
 import com.sqream.jdbc.connector.ConnectorImpl;
-import com.sqream.jdbc.connector.enums.StatementType;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.*;
@@ -13,6 +14,25 @@ import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.*;
 
 public class SQStatementTest {
+    private static final String testTableForDelay = "delay_test";
+
+    @BeforeClass
+    public static void setUp() throws SQLException {
+        int AMOUNT = 28;
+        String createTable = MessageFormat.format("create or replace table {0} (col1 int);", testTableForDelay);
+        String insertRow = MessageFormat.format("insert into {0} values (1);", testTableForDelay);
+        String multiply = MessageFormat.format("insert into {0} select * from {0};", testTableForDelay);
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.executeUpdate(createTable);
+            stmt.executeUpdate(insertRow);
+            for (int i = 0; i < AMOUNT; i++) {
+                stmt.executeUpdate(multiply);
+            }
+        }
+    }
 
     @Test
     public void setMaxRowsTest() throws SQLException {
@@ -357,6 +377,97 @@ public class SQStatementTest {
              Statement stmt = conn.createStatement()) {
 
             assertEquals(FETCH_SIZE, stmt.getFetchSize());
+        }
+    }
+
+    @Test
+    public void whenQueryTimeoutWasNotSpecifiedThenGetQueryTimeoutReturnZeroTest() throws SQLException {
+        int unlimited = 0;
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            Assert.assertEquals(unlimited, stmt.getQueryTimeout());
+        }
+    }
+
+    @Test
+    public void whenQueryTimeoutWasSpecifiedThenGetQueryTimeoutReturnCurrentValueTest() throws SQLException {
+        int timeout = 10;
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.setQueryTimeout(timeout);
+            Assert.assertEquals(timeout, stmt.getQueryTimeout());
+        }
+    }
+
+    @Test(expected = SQLTimeoutException.class)
+    public void whenExecuteQueryReachTimeoutThrowExceptionTest() throws SQLException {
+        int timeout = 1;
+        String heavyStatement =
+                MessageFormat.format("insert into {0} select * from {0};", testTableForDelay, testTableForDelay);
+
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.setQueryTimeout(timeout);
+                stmt.executeQuery(heavyStatement);
+            } catch (SQLTimeoutException e) {
+                assertTrue(serverQueueEmpty());
+                throw e;
+            }
+        }
+        Assert.fail("Should catch SQLTimeoutException");
+    }
+
+    @Test(expected = SQLTimeoutException.class)
+    public void whenExecuteReachTimeoutThrowExceptionTest() throws SQLException {
+        int timeout = 1;
+        String heavyStatement =
+                MessageFormat.format("insert into {0} select * from {0};", testTableForDelay, testTableForDelay);
+
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.setQueryTimeout(timeout);
+                stmt.execute(heavyStatement);
+            } catch (SQLTimeoutException e) {
+                assertTrue(serverQueueEmpty());
+                throw e;
+            }
+        }
+        Assert.fail("Should catch SQLTimeoutException");
+    }
+
+    @Test(expected = SQLTimeoutException.class)
+    public void whenExecuteUpdateReachTimeoutThrowExceptionTest() throws SQLException {
+        int timeout = 1;
+        String heavyStatement =
+                MessageFormat.format("insert into {0} select * from {0};", testTableForDelay, testTableForDelay);
+
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.setQueryTimeout(timeout);
+                stmt.executeUpdate(heavyStatement);
+            } catch (SQLTimeoutException e) {
+                assertTrue(serverQueueEmpty());
+                throw e;
+            }
+        }
+        Assert.fail("Should catch SQLTimeoutException");
+    }
+
+    public boolean serverQueueEmpty() throws SQLException {
+        String select = "select show_server_status()";
+
+        try(Connection conn = createConnection();
+            Statement stmt = conn.createStatement()) {
+
+            ResultSet rs = stmt.executeQuery(select);
+            return rs.next() && ("select show_server_status()".equals(rs.getString(10)) && !rs.next());
         }
     }
 }

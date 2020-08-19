@@ -93,11 +93,6 @@ public class SQStatementNotSupportedTest {
     }
 
     @Test(expected = SQLFeatureNotSupportedException.class)
-    public void getQueryTimeout() throws SQLException {
-        stmt.getQueryTimeout();
-    }
-
-    @Test(expected = SQLFeatureNotSupportedException.class)
     public void getResultSetConcurrency() throws SQLException {
         stmt.getResultSetConcurrency();
     }

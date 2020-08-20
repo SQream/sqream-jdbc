@@ -98,11 +98,6 @@ public class SQResultSetNotSupportedTest {
     }
 
     @Test (expected = SQLFeatureNotSupportedException.class)
-    public void clearWarningsTest() throws SQLException {
-        rs.clearWarnings();
-    }
-
-    @Test (expected = SQLFeatureNotSupportedException.class)
     public void getCursorNameTest() throws SQLException {
         rs.getCursorName();
     }

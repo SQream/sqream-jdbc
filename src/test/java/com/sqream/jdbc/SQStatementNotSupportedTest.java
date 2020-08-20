@@ -28,11 +28,6 @@ public class SQStatementNotSupportedTest {
     }
 
     @Test(expected = SQLFeatureNotSupportedException.class)
-    public void clearWarnings() throws SQLException {
-        stmt.clearWarnings();
-    }
-
-    @Test(expected = SQLFeatureNotSupportedException.class)
     public void executeUpdate() throws SQLException {
         stmt.executeUpdate(null, 0);
     }

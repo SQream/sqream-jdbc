@@ -269,8 +269,10 @@ public class SQConnection implements Connection {
 
 	@Override
 	public SQLWarning getWarnings() throws SQLException {
-		log("inside getWarnings SQConnection");
-		return null; // Returns: the first SQLWarning object or null if there are none
+		if (isClosed.get()) {
+			throw new SQLException("Call getWarnings() on closed ResultSet");
+		}
+		return null;
 	}
 	@Override
 	public boolean isReadOnly() throws SQLException {

@@ -1594,19 +1594,4 @@ public class JDBC_Positive {
         }
     }
 
-    @Test
-    public void SQLStateTest() {
-	    try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres?user=postgres&password=docker")) {
-
-        } catch (SQLException e) {
-            System.out.println(e.getSQLState());
-        }
-    }
-
-    @Test
-    public void SQLStateSqremTest() throws SQLException {
-	    try (Connection conn = createConnection()) {
-
-        }
-    }
 }

@@ -1,11 +1,12 @@
 package com.sqream.jdbc;
 
+import com.sqream.jdbc.connector.Connector;
+import com.sqream.jdbc.connector.ConnectorFactory;
+import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.Test;
+import org.mockito.Mockito;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Properties;
 
@@ -74,5 +75,21 @@ public class SQConnectionTest {
         } catch (SQLException e) {
             assertEquals(expectedCode, e.getSQLState());
         }
+    }
+
+    @Test
+    public void callGetWarningsOnConnectionTest() throws  SQLException {
+        try (Connection conn = createConnection()) {
+            assertNull(conn.getWarnings());
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void callGetWarningsOnClosedConnectionTest() throws  SQLException {
+        Connector connectorMock = Mockito.mock(ConnectorImpl.class);
+        Mockito.when(connectorMock.isOpen()).thenReturn(false);
+        Connection conn = new SQConnection(connectorMock);
+
+        assertNull(conn.getWarnings());
     }
 }

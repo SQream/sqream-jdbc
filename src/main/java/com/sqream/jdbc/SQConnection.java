@@ -340,7 +340,9 @@ public class SQConnection implements Connection {
 	@Override
 	public void clearWarnings() throws SQLException {
 		log("inside clearWarnings SQConnection");
-//		System.out.println("clearWarnings");
+		if (isClosed.get()) {
+			throw new SQLException("Call clearWarnings() on closed ResultSet");
+		}
 	}
 
 	private void log(String line) {

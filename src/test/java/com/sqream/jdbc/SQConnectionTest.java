@@ -92,4 +92,20 @@ public class SQConnectionTest {
 
         assertNull(conn.getWarnings());
     }
+
+    @Test
+    public void callClearWarningsOnConnectionTest() throws  SQLException {
+        try (Connection conn = createConnection()) {
+            conn.clearWarnings();
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void callClearWarningsOnClosedConnectionTest() throws  SQLException {
+        Connector connectorMock = Mockito.mock(ConnectorImpl.class);
+        Mockito.when(connectorMock.isOpen()).thenReturn(false);
+        Connection conn = new SQConnection(connectorMock);
+
+        conn.clearWarnings();
+    }
 }

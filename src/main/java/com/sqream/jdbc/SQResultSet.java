@@ -666,9 +666,9 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public void clearWarnings() throws SQLException {
-
-		this.baseUsageError(); 
-		throw new SQLFeatureNotSupportedException("clearWarnings in SQResultSet");
+		if (isClosed) {
+			throw new SQLException("Call clearWarnings() on closed ResultSet");
+		}
 	}
 
 	@Override

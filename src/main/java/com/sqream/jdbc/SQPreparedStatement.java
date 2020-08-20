@@ -489,7 +489,9 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public void clearWarnings() throws SQLException {
-
+        if (isClosed) {
+            throw new SQLException("Call clearWarnings() on closed PreparedStatement");
+        }
     }
     
     @Override
@@ -553,7 +555,10 @@ public class SQPreparedStatement implements PreparedStatement {
      
     @Override
     public SQLWarning getWarnings() throws SQLException {
-        throw new SQLFeatureNotSupportedException("getWarnings in SQPreparedStatement");
+        if (isClosed) {
+            throw new SQLException("Call getWarnings() on closed PreparedStatement");
+        }
+        return null;
     }
 
     @Override

@@ -364,4 +364,41 @@ public class SQPreparedStatementTest {
 
         }
     }
+
+    @Test
+    public void callGetWarningsOnPreparedStatementTest() throws  SQLException {
+        try (Connection conn = createConnection();
+             PreparedStatement pstmt = conn.prepareStatement("select 1;")) {
+
+            assertNull(pstmt.getWarnings());
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void callGetWarningsOnClosedPreparedStatementTest() throws  SQLException {
+        try (Connection conn = createConnection();
+             PreparedStatement pstmt = conn.prepareStatement("select 1;")) {
+            pstmt.close();
+            pstmt.getWarnings();
+        }
+    }
+
+    @Test
+    public void callClearWarningsOnPreparedStatementTest() throws  SQLException {
+        try (Connection conn = createConnection();
+             PreparedStatement pstmt = conn.prepareStatement("select 1;")) {
+            pstmt.clearWarnings();
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void callClearWarningsOnClosedPreparedStatementTest() throws  SQLException {
+        try (Connection conn = createConnection();
+             PreparedStatement pstmt = conn.prepareStatement("select 1;")) {
+
+            pstmt.close();
+            pstmt.clearWarnings();
+        }
+    }
+
 }

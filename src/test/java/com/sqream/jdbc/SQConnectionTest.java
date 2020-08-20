@@ -90,7 +90,7 @@ public class SQConnectionTest {
         Mockito.when(connectorMock.isOpen()).thenReturn(false);
         Connection conn = new SQConnection(connectorMock);
 
-        assertNull(conn.getWarnings());
+        conn.getWarnings();
     }
 
     @Test

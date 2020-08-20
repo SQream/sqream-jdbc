@@ -470,4 +470,40 @@ public class SQStatementTest {
             return rs.next() && ("select show_server_status()".equals(rs.getString(10)) && !rs.next());
         }
     }
+
+    @Test
+    public void callGetWarningsOnStatementTest() throws  SQLException {
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            assertNull(stmt.getWarnings());
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void callGetWarningsOnClosedStatementTest() throws  SQLException {
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.close();
+            stmt.getWarnings();
+        }
+    }
+
+    @Test
+    public void callClearWarningsOnStatementTest() throws  SQLException {
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.clearWarnings();
+        }
+    }
+
+    @Test(expected = SQLException.class)
+    public void callClearWarningsOnClosedStatementTest() throws  SQLException {
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.close();
+            stmt.clearWarnings();
+        }
+    }
 }

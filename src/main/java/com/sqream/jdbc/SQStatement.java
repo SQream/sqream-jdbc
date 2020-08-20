@@ -246,6 +246,9 @@ public class SQStatement implements Statement {
 	 */
 	@Override
 	public SQLWarning getWarnings() throws SQLException {
+		if (isClosed) {
+			throw new SQLException("Call getWarnings() on closed Statement");
+		}
 		return null;
 	}
 
@@ -300,7 +303,9 @@ public class SQStatement implements Statement {
 
 	@Override
 	public void clearWarnings() throws SQLException {
-		throw new SQLFeatureNotSupportedException("clearWarnings in SQStatement");
+		if (isClosed) {
+			throw new SQLException("Call clearWarnings() on closed Statement");
+		}
 	}
 
 	@Override

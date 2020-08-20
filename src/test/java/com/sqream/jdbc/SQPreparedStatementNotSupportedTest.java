@@ -43,11 +43,6 @@ public class SQPreparedStatementNotSupportedTest {
     }
 
     @Test(expected = SQLFeatureNotSupportedException.class)
-    public void getWarnings() throws SQLException {
-        pstmt.getWarnings();
-    }
-
-    @Test(expected = SQLFeatureNotSupportedException.class)
     public void setCursorName() throws SQLException {
         pstmt.setCursorName("");
     }
@@ -75,11 +70,6 @@ public class SQPreparedStatementNotSupportedTest {
     @Test(expected = SQLFeatureNotSupportedException.class)
     public void unwrap() throws SQLException {
         pstmt.unwrap(null);
-    }
-
-    @Test(expected = SQLFeatureNotSupportedException.class)
-    public void clearParameters() throws SQLException {
-        pstmt.clearParameters();
     }
 
     @Test(expected = SQLFeatureNotSupportedException.class)

@@ -170,6 +170,9 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		} else {
 			strTypes = "*";
 		}
+		if (catalog == null) {
+			catalog = dbName;
+		}
 		String sql = "select get_tables(" + CheckNull(catalog) + ","
 				+ CheckNull(schemaPattern) + ",'*'," + CheckNull(strTypes)
 				+ ")";

@@ -91,14 +91,14 @@ public class SQDatabaseMetaDataTest {
     }
 
     @Test
-    public void whenCatalogEmptyGetCurrentDatabaseColumnsTest() throws SQLException {
+    public void whenCatalogEmptyGetEmptyResultTest() throws SQLException {
         String CATALOG = "";
         Set<String> columnsByQuery = new HashSet<>();
         Set<String> columnsFromMetadata = new HashSet<>();
 
         try (Connection conn = createConnection()) {
             try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_columns('%s', '*', '*', '*');", DATABASE));
+                ResultSet rs = stmt.executeQuery(String.format("select get_columns('%s', '*', '*', '*');", CATALOG));
                 while (rs.next()) {
                     columnsByQuery.add(rs.getString(3));
                 }
@@ -174,7 +174,7 @@ public class SQDatabaseMetaDataTest {
 
         try (Connection conn = createConnection()) {
             try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", DATABASE));
+                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", CATALOG));
                 while (rs.next()) {
                     tablesByQuery.add(rs.getString(3));
                 }

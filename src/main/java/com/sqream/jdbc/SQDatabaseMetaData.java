@@ -96,7 +96,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-		if (catalog == null || catalog.length() == 0) {
+		if (catalog == null) {
 			catalog = dbName;
 		}
 		String sql = "select get_columns(" + CheckNull(catalog) + "," + CheckNull(schemaPattern) + "," + CheckNull(tableNamePattern) + ",'*')";
@@ -172,7 +172,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		} else {
 			strTypes = "*";
 		}
-		if (catalog == null || catalog.length() == 0) {
+		if (catalog == null) {
 			catalog = dbName;
 		}
 		String sql = "select get_tables(" + CheckNull(catalog) + ","

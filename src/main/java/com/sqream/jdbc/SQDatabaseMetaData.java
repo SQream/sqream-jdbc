@@ -96,7 +96,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-		if (catalog == null) {
+		if (catalog == null || catalog.length() == 0) {
 			catalog = dbName;
 		}
 		String sql = "select get_columns(" + CheckNull(catalog) + "," + CheckNull(schemaPattern) + "," + CheckNull(tableNamePattern) + ",'*')";

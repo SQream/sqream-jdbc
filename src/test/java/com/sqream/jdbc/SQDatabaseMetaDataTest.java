@@ -6,11 +6,7 @@ import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -95,14 +91,14 @@ public class SQDatabaseMetaDataTest {
     }
 
     @Test
-    public void whenCatalogStarGetAllColumnsTest() throws SQLException {
-        String CATALOG = "*";
+    public void whenCatalogEmptyGetCurrentDatabaseColumnsTest() throws SQLException {
+        String CATALOG = "";
         Set<String> columnsByQuery = new HashSet<>();
         Set<String> columnsFromMetadata = new HashSet<>();
 
         try (Connection conn = createConnection()) {
             try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_columns('%s', '*', '*', '*');", CATALOG));
+                ResultSet rs = stmt.executeQuery(String.format("select get_columns('%s', '*', '*', '*');", DATABASE));
                 while (rs.next()) {
                     columnsByQuery.add(rs.getString(3));
                 }
@@ -134,6 +130,31 @@ public class SQDatabaseMetaDataTest {
             }
             DatabaseMetaData metaData = conn.getMetaData();
             ResultSet rs = metaData.getColumns(null, null, null, null);
+            while (rs.next()) {
+                columnsFromMetadata.add(rs.getString(3));
+            }
+        }
+
+        assertEquals(columnsByQuery.size(), columnsFromMetadata.size());
+        for (String tableFromQuery : columnsByQuery) {
+            assertTrue(columnsFromMetadata.contains(tableFromQuery));
+        }
+    }
+
+    @Test
+    public void whenCatalogProvidedGetCurrentDatabaseColumnsTest() throws SQLException {
+        Set<String> columnsByQuery = new HashSet<>();
+        Set<String> columnsFromMetadata = new HashSet<>();
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(String.format("select get_columns('%s', '*', '*', '*');", DATABASE));
+                while (rs.next()) {
+                    columnsByQuery.add(rs.getString(3));
+                }
+            }
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet rs = metaData.getColumns(DATABASE, null, null, null);
             while (rs.next()) {
                 columnsFromMetadata.add(rs.getString(3));
             }

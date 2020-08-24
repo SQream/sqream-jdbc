@@ -41,9 +41,9 @@ import static org.junit.Assert.*;
 public class JDBC_Positive {
 
     private static final Logger log = Logger.getLogger(JDBC_Positive.class.toString());
-    
+
     // Test data
-    Random r = new Random();    
+    Random r = new Random();
     boolean[] test_bools = {true, false};
     byte[] test_ubytes = {15, 0, 127};           // No unsigned byte type in java
     short[] test_shorts = {500, 0, -32768, 32767};
@@ -52,10 +52,10 @@ public class JDBC_Positive {
     float[] test_reals = {r.nextFloat(), 0.0f, };
     double[] test_doubles = {r.nextDouble()};
     String[] test_varchars = {UUID.randomUUID().toString()};
-    //String test_varchar = "koko"; 
+    //String test_varchar = "koko";
     Date[] test_dates = {new Date(315711884629l)};
-    //Timestamp[] test_datetimes = {new Timestamp(999999999999l)};  
-    Timestamp[] test_datetimes = {new Timestamp(315711884629l)};    
+    //Timestamp[] test_datetimes = {new Timestamp(999999999999l)};
+    Timestamp[] test_datetimes = {new Timestamp(315711884629l)};
 
     boolean   res_bool     = true;
     byte      res_ubyte    = 0;
@@ -66,10 +66,10 @@ public class JDBC_Positive {
     double    res_double   = 0.0;
     String    res_varchar  = "";
     String    res_nvarchar = "";
-    //String test_varchar = "koko"; 
+    //String test_varchar = "koko";
     Date      res_date     = date_from_tuple(2012, 9, 13);
     Timestamp res_datetime = datetime_from_tuple(2002, 9, 13, 14, 56, 34, 567);
-    
+
     ///*
     boolean test_bool = false;
     byte test_ubyte = 15;
@@ -79,42 +79,42 @@ public class JDBC_Positive {
     float test_real = r.nextFloat();
     double test_double = r.nextDouble();
     String test_varchar = UUID.randomUUID().toString();
-    //String test_varchar = "koko"; 
+    //String test_varchar = "koko";
     Date test_date = date_from_tuple(2002, 9, 13);
     Timestamp test_datetime = datetime_from_tuple(2002, 9, 13, 14, 56, 34, 567); //*/
-    
+
     // JDBC Data
     static final String url = URL;
-    
+
     Statement stmt = null;
     ResultSet rs = null;
     Connection conn  = null;
     Connection conn2 = null;
     PreparedStatement ps = null;
-    
+
     // For testTables() test
     DatabaseMetaData dbmeta = null;
     ResultSetMetaData rsmeta = null;
     // Load JDBC driver
 
-	
+
 	static void printbuf(ByteBuffer to_print, String description) {
 		log.info(description + " : " + to_print);
 	}
-	
-	
+
+
 	static long time() {
 		return System.currentTimeMillis();
 	}
-	
+
 	static Date date_from_tuple(int year, int month, int day) {
-		
+
 		return Date.valueOf(LocalDate.of(year, month, day));
 	}
-	
-	
+
+
 	static Timestamp datetime_from_tuple(int year, int month, int day, int hour, int minutes, int seconds, int ms) {
-			
+
 		return Timestamp.valueOf(LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(hour, minutes, seconds, ms*(int)Math.pow(10, 6))));
 	}
 
@@ -150,7 +150,7 @@ public class JDBC_Positive {
         }
         assertEquals(times, fetchCounter);
 	}
-	
+
 	@Test
 	public void unusedFetchTest() throws SQLException {
         String sqlCreate = "create or replace table test_fetch (ints int)";
@@ -303,20 +303,20 @@ public class JDBC_Positive {
             }
         }
     }
-    
+
     @Test
     public void not_closing() throws SQLException {
         /*  Check if charitable behavior works - not closing statement before starting the next one   */
-        
+
    	    boolean a_ok = false;
-        
+
         // Create some user defined functions
         conn = DriverManager.getConnection(url,"sqream","sqream");
         String sql = "select 1";
         stmt = conn.createStatement();
         stmt.execute(sql);
         // stmt.close();
-               
+
         sql = "select 2";
         stmt = conn.createStatement();
         rs = stmt.executeQuery(sql);
@@ -327,11 +327,11 @@ public class JDBC_Positive {
         	a_ok = true;
         rs.close();
         stmt.close();
-        
-        
+
+
         assertTrue(a_ok);
     }
-    
+
     @Test
     public void boolAsString() throws SQLException {
         String sqlCreate = "create or replace table bool_string (x bool, y bool)";
@@ -349,7 +349,7 @@ public class JDBC_Positive {
             assertEquals("false", rs.getString(2));
         }
     }
-    
+
     @Test
     public void getUDFTest() throws SQLException {
         String createSql = "CREATE OR REPLACE FUNCTION fud () RETURNS int as $$ return 1 $$ LANGUAGE PYTHON";
@@ -387,27 +387,27 @@ public class JDBC_Positive {
             }
         }
     }
-    
+
     @Test
     public void timeZones() throws SQLException {
         /*  Check isSigned command()   */
         boolean a_ok = false;
-        
+
         // Create table for test
         conn = DriverManager.getConnection(url,"sqream","sqream");
         String sql = "create or replace table test_zones (x date, y datetime)";
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
-        
+
         // Set using calendar
         sql = "insert into test_zones values (?, ?)";
         ps = conn.prepareStatement(sql);
         Date date = Date.valueOf(LocalDate.of(2002, 9, 15));
-        Timestamp datetime = Timestamp.valueOf(LocalDateTime.of(2002, 9, 23, 13, 40, 34)); 
+        Timestamp datetime = Timestamp.valueOf(LocalDateTime.of(2002, 9, 23, 13, 40, 34));
         String zone = "Europe/Oslo"; //"Asia/Yekaterinburg"; //  "Pacific/Fiji";
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(zone)); // +2 in summer, +1 in winter
-        
+
         ps.setDate(1, date, cal);
         ps.setTimestamp(2, datetime, cal);
         ps.addBatch();
@@ -423,7 +423,7 @@ public class JDBC_Positive {
         Timestamp resDateTime = rs.getTimestamp(2);
         rs.close();
         stmt.close();
-        
+
         // Get back with calendar
         sql = "select * from test_zones";
         stmt = conn.createStatement();
@@ -449,19 +449,19 @@ public class JDBC_Positive {
 
         assertTrue(a_ok);
     }
-    
+
     @Test
     public void casted_gets() throws SQLException {
         /*  Check isSigned command()   */
         boolean a_ok = false;
-        
+
         // Create table for test
         conn = DriverManager.getConnection(url,"sqream","sqream");
         String sql = "create or replace table test_casts (x tinyint, y smallint, z real)";
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
-        
+
         // Set using calendar
         byte test_byte = 5;
         short test_short = 55;
@@ -490,7 +490,7 @@ public class JDBC_Positive {
 			log.info ("bad casted getDouble on float column");
         else
         	a_ok = true;
-        
+
         rs.close();
         stmt.close();
 
@@ -931,14 +931,14 @@ public class JDBC_Positive {
             }
         }
     }
-    
+
     public void send_and_retreive_result (PreparedStatement ps, String table_name, String table_type) throws IOException, SQLException {
-        
+
         ps.addBatch();
         ps.executeBatch();
-        
+
         ps.close();
-        
+
         //*
         // Retreive
 //      log.info();(" - Getting " + table_type + " value back for value");
@@ -948,73 +948,73 @@ public class JDBC_Positive {
         while(rs.next())
         {
             if (table_type == "bool") {
-            	if (rs.getBoolean(1) != rs.getBoolean("Xx")) 
+            	if (rs.getBoolean(1) != rs.getBoolean("Xx"))
             		log.info ("Different results on getBoolean on index vs column name");
             	if (!rs.getString("Xx").equals(String.valueOf(rs.getBoolean("Xx"))))
             		log.info ("Different results on stringified getBoolean vs getString");
             	res_bool = rs.getBoolean(1);
             }else if (table_type == "tinyint") {
-            	if (rs.getByte(1) != rs.getByte("Xx")) 
+            	if (rs.getByte(1) != rs.getByte("Xx"))
             		log.info ("Different results on getByte on index vs column name");
-            	if (!rs.getString("Xx").equals(String.valueOf(rs.getByte("Xx")))) 
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getByte("Xx"))))
             		log.info ("Different results on stringified getByte vs getString");
-            	if ((short) rs.getByte(1) != rs.getShort(1)) 
+            	if ((short) rs.getByte(1) != rs.getShort(1))
             		log.info ("Different results on getByte vs getShort");
-            	if ((int) rs.getByte(1) != rs.getInt(1)) 
+            	if ((int) rs.getByte(1) != rs.getInt(1))
             		log.info ("Different results on getByte vs getInt");
-            	if ((long) rs.getByte(1) != rs.getLong(1)) 
+            	if ((long) rs.getByte(1) != rs.getLong(1))
             		log.info ("Different results on getByte vs getLong");
-            	if ((float) rs.getByte(1) != rs.getFloat(1)) 
+            	if ((float) rs.getByte(1) != rs.getFloat(1))
             		log.info ("Different results on getByte vs getFloat");
-            	if ((double) rs.getByte(1) != rs.getDouble(1)) 
+            	if ((double) rs.getByte(1) != rs.getDouble(1))
             		log.info ("Different results on getByte vs getDouble");
                 res_ubyte = rs.getByte(1);
             }else if (table_type == "smallint") {
-            	if (rs.getShort(1) != rs.getShort("Xx")) 
+            	if (rs.getShort(1) != rs.getShort("Xx"))
             		log.info ("Different results on getShort on index vs column name");
-            	if (!rs.getString("Xx").equals(String.valueOf(rs.getShort("Xx")))) 
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getShort("Xx"))))
             		log.info ("Different results on stringified getShort vs getString");
-            	if ((int) rs.getShort(1) != rs.getInt(1)) 
+            	if ((int) rs.getShort(1) != rs.getInt(1))
             		log.info ("Different results on getShort vs getInt");
-            	if ((long) rs.getShort(1) != rs.getLong(1)) 
+            	if ((long) rs.getShort(1) != rs.getLong(1))
             		log.info ("Different results on getShort vs getLong");
-            	if ((float) rs.getShort(1) != rs.getFloat(1)) 
+            	if ((float) rs.getShort(1) != rs.getFloat(1))
             		log.info ("Different results on getShort vs getFloat");
-            	if ((double) rs.getShort(1) != rs.getDouble(1)) 
+            	if ((double) rs.getShort(1) != rs.getDouble(1))
             		log.info ("Different results on getShort vs getDouble");
             	res_short = rs.getShort(1);
             }else if (table_type == "int") {
-            	if (rs.getInt(1) != rs.getInt("Xx")) 
+            	if (rs.getInt(1) != rs.getInt("Xx"))
             		log.info ("Different results on getInt on index vs column name");
-            	if (!rs.getString("Xx").equals(String.valueOf(rs.getInt("Xx")))) 
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getInt("Xx"))))
             		log.info ("Different results on stringified getInt vs getString");
-            	if ((long) rs.getInt(1) != rs.getLong(1)) 
+            	if ((long) rs.getInt(1) != rs.getLong(1))
             		log.info ("Different results on getInt vs getLong");
-            	if ((float) rs.getInt(1) != rs.getFloat(1)) 
+            	if ((float) rs.getInt(1) != rs.getFloat(1))
             		log.info ("Different results on getInt vs getFloat");
-            	if ((double) rs.getInt(1) != rs.getDouble(1)) 
+            	if ((double) rs.getInt(1) != rs.getDouble(1))
             		log.info ("Different results on getInt vs getDouble");
             	res_int = rs.getInt(1);
             }else if (table_type == "bigint") {
-            	if (rs.getLong(1) != rs.getLong("Xx")) 
+            	if (rs.getLong(1) != rs.getLong("Xx"))
             		log.info ("Different results on getLong on index vs column name");
-            	if (!rs.getString("Xx").equals(String.valueOf(rs.getLong("Xx")))) 
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getLong("Xx"))))
             		log.info ("Different results on stringified getLong vs getString");
-            	if ((double) rs.getLong(1) != rs.getDouble(1)) 
+            	if ((double) rs.getLong(1) != rs.getDouble(1))
             		log.info ("Different results on getLong vs getDouble");
             	res_long = rs.getLong(1);
             }else if (table_type == "real") {
-            	if (rs.getFloat(1) != rs.getFloat("Xx")) 
+            	if (rs.getFloat(1) != rs.getFloat("Xx"))
             		log.info ("Different results on getFloat on index vs column name");
-            	if (!rs.getString("Xx").equals(String.valueOf(rs.getFloat("Xx")))) 
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getFloat("Xx"))))
             		log.info ("Different results on stringified getFloat vs getString");
-            	if ((double) rs.getFloat(1) != rs.getDouble(1)) 
+            	if ((double) rs.getFloat(1) != rs.getDouble(1))
             		log.info ("Different results on getFloat vs getDouble");
             	res_real = rs.getFloat(1);
             }else if (table_type == "double") {
             	if (rs.getDouble(1) != rs.getDouble("Xx"))
             		log.info ("Different results on getDouble on index vs column name");
-            	if (!rs.getString("Xx").equals(String.valueOf(rs.getDouble("Xx")))) 
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getDouble("Xx"))))
             		log.info ("Different results on stringified getDouble vs getString");
                 res_double = rs.getDouble(1);
             }else if (table_type == "varchar(100)") {
@@ -1026,51 +1026,26 @@ public class JDBC_Positive {
             		log.info ("Different results on getString on index vs column name");
                 res_nvarchar = rs.getString(1);
             }else if (table_type == "date") {
-            	if (Math.abs(rs.getDate(1).compareTo(rs.getDate("Xx"))) > 1) 
+            	if (Math.abs(rs.getDate(1).compareTo(rs.getDate("Xx"))) > 1)
             		log.info ("Different results on getDate on index vs column name");
-            	if (!rs.getString("Xx").equals(String.valueOf(rs.getDate("Xx")))) 
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getDate("Xx"))))
             		log.info ("Different results on stringified getDate vs getString");
                 res_date = rs.getDate(1);
             }else if (table_type == "datetime") {
-            	if (Math.abs(rs.getTimestamp(1).compareTo(rs.getTimestamp("Xx"))) > 1) 
+            	if (Math.abs(rs.getTimestamp(1).compareTo(rs.getTimestamp("Xx"))) > 1)
             		log.info ("Different results on getTimestamp on index vs column name");
-            	if (!rs.getString("Xx").equals(String.valueOf(rs.getTimestamp("Xx")))) 
+            	if (!rs.getString("Xx").equals(String.valueOf(rs.getTimestamp("Xx"))))
             		log.info ("Different results on stringified getTimestamp vs getString");
-                res_datetime = rs.getTimestamp(1); 
+                res_datetime = rs.getTimestamp(1);
             }
-        }  //*/ 
+        }  //*/
         rs.close();
         stmt.close();
-        
+
         sql = MessageFormat.format("truncate table t_{0}", table_name);
         stmt = conn.createStatement();
         stmt.execute(sql);
         stmt.close();
-    }
-
-    @Test
-    public void get_tables_test() throws SQLException {
-        Set<String> tablesByQuery = new HashSet<>();
-        Set<String> tablesFromMetadata = new HashSet<>();
-
-        try (Connection conn = createConnection()) {
-            try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery("select get_tables('*', '*', '*', '*');");
-                while (rs.next()) {
-                    tablesByQuery.add(rs.getString(3));
-                }
-            }
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet rs = metaData.getTables(null, null, null, null);
-            while (rs.next()) {
-                tablesFromMetadata.add(rs.getString(3));
-            }
-        }
-
-        assertEquals(tablesByQuery.size(), tablesFromMetadata.size());
-        for (String tableFromQuery : tablesByQuery) {
-            assertTrue(tablesFromMetadata.contains(tableFromQuery));
-        }
     }
 
     @Test

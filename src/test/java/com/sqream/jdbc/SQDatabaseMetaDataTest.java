@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -141,6 +142,82 @@ public class SQDatabaseMetaDataTest {
         assertEquals(columnsByQuery.size(), columnsFromMetadata.size());
         for (String tableFromQuery : columnsByQuery) {
             assertTrue(columnsFromMetadata.contains(tableFromQuery));
+        }
+    }
+
+    @Test
+    public void whenCatalogEmptyGetCurrentDatabaseTablesTest() throws SQLException {
+        String CATALOG = "";
+        Set<String> tablesByQuery = new HashSet<>();
+        Set<String> tablesFromMetadata = new HashSet<>();
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", DATABASE));
+                while (rs.next()) {
+                    tablesByQuery.add(rs.getString(3));
+                }
+            }
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet rs = metaData.getTables(CATALOG, null, null, null);
+            while (rs.next()) {
+                tablesFromMetadata.add(rs.getString(3));
+            }
+        }
+
+        assertEquals(tablesByQuery.size(), tablesFromMetadata.size());
+        for (String tableFromQuery : tablesByQuery) {
+            assertTrue(tablesFromMetadata.contains(tableFromQuery));
+        }
+    }
+
+    @Test
+    public void whenCatalogNullGetCurrentDatabaseTablesTest() throws SQLException {
+        Set<String> tablesByQuery = new HashSet<>();
+        Set<String> tablesFromMetadata = new HashSet<>();
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", DATABASE));
+                while (rs.next()) {
+                    tablesByQuery.add(rs.getString(3));
+                }
+            }
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet rs = metaData.getTables(null, null, null, null);
+            while (rs.next()) {
+                tablesFromMetadata.add(rs.getString(3));
+            }
+        }
+
+        assertEquals(tablesByQuery.size(), tablesFromMetadata.size());
+        for (String tableFromQuery : tablesByQuery) {
+            assertTrue(tablesFromMetadata.contains(tableFromQuery));
+        }
+    }
+
+    @Test
+    public void whenCatalogProvidedGetCurrentDatabaseTablesTest() throws SQLException {
+        Set<String> tablesByQuery = new HashSet<>();
+        Set<String> tablesFromMetadata = new HashSet<>();
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", DATABASE));
+                while (rs.next()) {
+                    tablesByQuery.add(rs.getString(3));
+                }
+            }
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet rs = metaData.getTables(DATABASE, null, null, null);
+            while (rs.next()) {
+                tablesFromMetadata.add(rs.getString(3));
+            }
+        }
+
+        assertEquals(tablesByQuery.size(), tablesFromMetadata.size());
+        for (String tableFromQuery : tablesByQuery) {
+            assertTrue(tablesFromMetadata.contains(tableFromQuery));
         }
     }
 }

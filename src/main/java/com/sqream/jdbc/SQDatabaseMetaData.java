@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.sqream.jdbc;
 
@@ -32,7 +32,7 @@ import com.sqream.jdbc.connector.ConnException;
 
 /**
  * @author root
- * 
+ *
  */
 
 public class SQDatabaseMetaData implements DatabaseMetaData {
@@ -45,10 +45,10 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 			e.printStackTrace();
 			throw new SQLException ("Error writing to SQDatabaseMetaData log");
 		}
-		
+
 		return true;
 	}
-	
+
 	private Connector client;
 	private SQConnection conn;
 	private String user;
@@ -60,24 +60,24 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	private int driverMinorVersion = 0;
 	private String driverVersion = "4.2.1";
 	private String dbName;
-	
+
 	static void print(Object printable) {
         System.out.println(printable);
     }
-	
+
 	public SQDatabaseMetaData(Connector client, SQConnection conn, String user_, String catalog) {
 		this.client = client;
 		this.conn =conn;
 		user = user_;
 		dbName = catalog;
 	}
-	
+
 	SQResultSet metadataStatement(String sql) throws ConnException, IOException, SQLException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
-		
+
 		Connector client = new ConnectorImpl(conn.getParams().getIp(), conn.getParams().getPort(), conn.getParams().getCluster(), conn.getParams().getUseSsl());
 		client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(), conn.getParams().getService());
 		client.execute(sql);
-		
+
 		return new SQResultSet(client, dbName);
 	}
 
@@ -91,9 +91,9 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		}
-		
+
 	}
-	
+
 	@Override
 	public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
 
@@ -102,40 +102,40 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		try {
 			return metadataStatement(sql);
 		}
-		
+
 		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		}
 	}
-	
+
 	@Override
 	public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException {
 		ResultSet rs = null;
 		try {
-			rs = metadataStatement("select database_name as PROCEDURE_CAT, null as PROCEDURE_SCHEM, function_name as PROCEDURE_NAME, null as UNUSED, null as UNUSED2, null as UNUSED3, ' ' as REMARKS, 0 as PROCEDURE_TYPE, function_name as SPECIFIC_NAME from sqream_catalog.user_defined_functions");	
+			rs = metadataStatement("select database_name as PROCEDURE_CAT, null as PROCEDURE_SCHEM, function_name as PROCEDURE_NAME, null as UNUSED, null as UNUSED2, null as UNUSED3, ' ' as REMARKS, 0 as PROCEDURE_TYPE, function_name as SPECIFIC_NAME from sqream_catalog.user_defined_functions");
 		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			e.printStackTrace();
 		}
-		
+
 		return rs;
 	}
-	
+
 	@Override
 	public ResultSet getSchemas() throws SQLException {
-		
+
 		try {
 			return metadataStatement("select get_schemas()");
 		}
-		
+
 		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
 			e.printStackTrace();
 			throw new SQLException(e.getMessage());
 		}
 	}
-	
+
 	public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
-		
+
 		String logTypes = "";
 		if (types != null && types.length > 0) {
 			for (String type : types) {
@@ -170,7 +170,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		} else {
 			strTypes = "*";
 		}
-		if (catalog == null) {
+		if (catalog == null || catalog.length() == 0) {
 			catalog = dbName;
 		}
 		String sql = "select get_tables(" + CheckNull(catalog) + ","
@@ -186,34 +186,34 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public String getTimeDateFunctions() throws SQLException {
-		
+
 		return "curdate, curtime, dayname, dayofmonth, dayofweek, dayofyear, hour, minute, month, monthname, now, quarter, timestampadd, timestampdiff, second, week, year";
 	}
-	
+
 	@Override
 	public String getStringFunctions() throws SQLException {
-		// Retrieves a comma-separated list of string functions available with this database. 
+		// Retrieves a comma-separated list of string functions available with this database.
 		// These are the Open Group CLI string function names used in the JDBC function escape clause.
-	
+
 		return "CHAR_LENGTH, CHARINDEX, ||, ISPREFIXOF, LEFT, LEN, LIKE, LOWER, LTRIM, OCTET_LENGTH, PATINDEX, REGEXP_COUNT, REGEXP_INSTR, REGEXP_SUBSTR, REPLACE, REVERSE, RIGHT, RLIKE, RTRIM, SUBSTRING, TRIM, LOWER";
 	}
-	
+
 
 	@Override
 	public String getSystemFunctions() throws SQLException {
 		// Retrieves a comma-separated list of system functions available with this database
 		return "explain, show_connections, show_locks, show_node_info, show_server_status, show_version, stop_statement";
 	}
-	
-	
+
+
 	@Override
 	public String getNumericFunctions() throws SQLException {
 		//Retrieves a comma-separated list of math functions available with this database.
-		
+
 		return "ABS, ACOS, ASIN, ATAN, ATN2, CEILING, CEIL, COS, COT, CRC64, DEGREES, EXP, FLOOR, LOG, LOG10, MOD, %, PI, POWER, RADIANS, ROUND, SIN, SQRT, SQUARE, TAN, TRUNC";
 	}
-	
-	
+
+
 	@Override
 	public ResultSet getTypeInfo() throws SQLException {
 
@@ -232,7 +232,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return rs;
 	}
 
@@ -289,13 +289,13 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		}
 		return rs;
 	}
-	
-	
+
+
 	@Override
 	public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
 		return getSchemas();
 	}
-	
+
 	@Override
 	public ResultSet getClientInfoProperties() throws SQLException {
 		ResultSet rs = null;
@@ -325,7 +325,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public Connection getConnection() {
 		return new SQConnection(client);
 	}
-	
+
 	@Override
 	public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern)
 			throws SQLException {
@@ -370,7 +370,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		}
 		return rs;
 	}
-	
+
 	@Override
 	public ResultSet getCrossReference(String parentCatalog, String parentSchema, String parentTable, String foreignCatalog, String foreignSchema,
 			String foreignTable) throws SQLException {
@@ -382,7 +382,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		}
 		return rs;
 	}
-	
+
 	@Override
 	public ResultSet getExportedKeys(String catalog, String schema, String table) throws SQLException {
 		ResultSet rs = null;
@@ -401,7 +401,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 		return rs;
 	}
-	
+
 	@Override
 	public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
 		// TODO FIX
@@ -411,7 +411,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return rs;
 		// SQResultSet rs = new SQResultSet(CreatePrimaryKeysMetaData());
 		// rs.MetaDataResultSet = true; // The Hack.
@@ -428,10 +428,10 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return rs;
 	}
-	
+
 	@Override
 	public ResultSet getSuperTypes(String catalog, String schemaPattern, String typeNamePattern) throws SQLException {
 		ResultSet rs = null;
@@ -440,10 +440,10 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return rs;
 	}
-	
+
 	@Override
 	public ResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
 		ResultSet rs = null;
@@ -452,13 +452,13 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	
+
 		return rs;
 	}
 
 	@Override
 	public ResultSet getTableTypes() throws SQLException {
-		
+
 		try {
 			return metadataStatement("select get_table_types()");
 		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
@@ -468,14 +468,14 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	// Replace this SQL with a real empty result set !
 	private ResultSet EmptyResultSet() throws SQLException, IOException {
-		
+
 		// Omer, related to BG-769 - boost performance by not using the
 		// statement
 		// and instead returns an empty ResultSet.
 		// return execute("select top 0 * from sqream_catalog.tables");
 		return new SQResultSet(true); // empty
 	}
-	
+
 	@Override
 	public int getDatabaseMajorVersion() throws SQLException {
 		return databaseMajorVersion;
@@ -485,17 +485,17 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public int getDatabaseMinorVersion() throws SQLException {
 		return databaseMinorVersion;
 	}
-	
+
 	@Override
 	public String getCatalogSeparator() throws SQLException {
 		return ".";
 	}
-	
+
 	@Override
 	public String getIdentifierQuoteString() throws SQLException {
 		return "\"";
 	}
-	
+
 	@Override
 	public String getCatalogTerm() throws SQLException {
 		return "database";
@@ -655,7 +655,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public int getResultSetHoldability() throws SQLException {
 		return 0;
 	}
-	
+
 	@Override
 	public String getSQLKeywords() throws SQLException {
 		return "";
@@ -675,14 +675,14 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public String getSearchStringEscape() throws SQLException {
 		return "";
 	}
-	
+
 
 	private String CheckNull(String str) {
 		return str == null ? "'*'" : "'" + str.trim() + "'";
 	}
 
-	
-	
+
+
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		return false;
@@ -722,7 +722,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public boolean doesMaxRowSizeIncludeBlobs() throws SQLException {
 		return false;
 	}
-	
+
 	@Override
 	public boolean insertsAreDetected(int type) throws SQLException {
 		return false;
@@ -785,7 +785,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public boolean ownDeletesAreVisible(int type) throws SQLException {
-		
+
 		return false;
 	}
 
@@ -1183,11 +1183,11 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public boolean generatedKeyAlwaysReturned() throws SQLException {
 		return false;
 	}
-	
-	
+
+
 	// Unsupported
 	// -----------
-	
+
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new SQLFeatureNotSupportedException("unwrap in SQDatabaseMetadata");
@@ -1197,17 +1197,17 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	public ResultSet getPseudoColumns(String arg0, String arg1, String arg2, String arg3) throws SQLException {
 		throw new SQLFeatureNotSupportedException("getPseudoColumns in SQDatabaseMetadata");
 	}
-	
+
 	@Override
 	public String getExtraNameCharacters() throws SQLException {
 		throw new SQLFeatureNotSupportedException("getExtraNameCharacters in SQDatabaseMetadata");
 	}
-	
+
 	@Override
 	public RowIdLifetime getRowIdLifetime() throws SQLException {
 		throw new SQLFeatureNotSupportedException("getRowIdLifetime in SQDatabaseMetadata");
 	}
-	
+
 	@Override
 	public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
 		throw new SQLFeatureNotSupportedException("getSuperTables in SQDatabaseMetadata");

@@ -95,14 +95,14 @@ public class SQDatabaseMetaDataTest {
     }
 
     @Test
-    public void whenCatalogStarGetAllTablesTest() throws SQLException {
-        String CATALOG = "*";
+    public void whenCatalogEmptyGetCurrentDatabaseTablesTest() throws SQLException {
+        String CATALOG = "";
         Set<String> tablesByQuery = new HashSet<>();
         Set<String> tablesFromMetadata = new HashSet<>();
 
         try (Connection conn = createConnection()) {
             try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", CATALOG));
+                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", DATABASE));
                 while (rs.next()) {
                     tablesByQuery.add(rs.getString(3));
                 }
@@ -134,6 +134,31 @@ public class SQDatabaseMetaDataTest {
             }
             DatabaseMetaData metaData = conn.getMetaData();
             ResultSet rs = metaData.getTables(null, null, null, null);
+            while (rs.next()) {
+                tablesFromMetadata.add(rs.getString(3));
+            }
+        }
+
+        assertEquals(tablesByQuery.size(), tablesFromMetadata.size());
+        for (String tableFromQuery : tablesByQuery) {
+            assertTrue(tablesFromMetadata.contains(tableFromQuery));
+        }
+    }
+
+    @Test
+    public void whenCatalogProvidedGetCurrentDatabaseTablesTest() throws SQLException {
+        Set<String> tablesByQuery = new HashSet<>();
+        Set<String> tablesFromMetadata = new HashSet<>();
+
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", DATABASE));
+                while (rs.next()) {
+                    tablesByQuery.add(rs.getString(3));
+                }
+            }
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet rs = metaData.getTables(DATABASE, null, null, null);
             while (rs.next()) {
                 tablesFromMetadata.add(rs.getString(3));
             }

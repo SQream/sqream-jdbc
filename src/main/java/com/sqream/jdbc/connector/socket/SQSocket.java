@@ -29,7 +29,7 @@ public class SQSocket {
     private int port;
     private boolean useSsl;
 
-    private SQSocket(String ip, int port, boolean useSsl) throws ConnException {
+    SQSocket(String ip, int port, boolean useSsl) throws ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Open socket with params: ip=[{0}], port=[{1}], useSsl=[{2}]", ip, port, useSsl));
         this.ip = ip;
@@ -39,6 +39,9 @@ public class SQSocket {
     }
 
     public static SQSocket connect(String ip, int port, boolean useSsl) throws ConnException {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            return new SQLoggableSocket(ip, port, useSsl);
+        }
         return new SQSocket(ip, port, useSsl);
     }
 

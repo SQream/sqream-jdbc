@@ -106,7 +106,7 @@ public class SQStatement implements Statement {
 				throw new SQLException("Statement cancelled by user");
 			}
 
-			resultSet = new SQResultSet(client, dbName);
+			resultSet = SQResultSet.getInstance(client, dbName);
 
 			//TODO: Duplicate logic in SQPreparedStatement
 			return (!"INSERT".equals(client.getQueryType())) && client.getRowLength() > 0;
@@ -141,7 +141,7 @@ public class SQStatement implements Statement {
 				throw new SQLException("Statement cancelled by user");
 			}
 
-			resultSet = new SQResultSet(client, dbName);
+			resultSet = SQResultSet.getInstance(client, dbName);
 			// Related to bug BG-910 - Set as empty since there is no need to
 			// return result
 			if ((!"INSERT".equals(client.getQueryType())) && client.getRowLength() == 0)

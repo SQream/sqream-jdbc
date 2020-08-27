@@ -10,7 +10,7 @@ import java.util.zip.CheckedInputStream;
 
 public class SQResultSetNotSupportedTest {
 
-    private SQResultSet rs = new SQResultSet(null, null);
+    private SQResultSet rs = SQResultSet.getInstance(null, null);
 
     @Test (expected = SQLFeatureNotSupportedException.class)
     public void previousTest() throws SQLException {

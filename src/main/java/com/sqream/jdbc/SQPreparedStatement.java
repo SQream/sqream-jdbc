@@ -64,7 +64,7 @@ public class SQPreparedStatement implements PreparedStatement {
         metaData = new SQResultSetMetaData(client, connParams.getDbName());
     }
 
-    
+
     @Override
     public void close() throws SQLException {
     	LOGGER.log(Level.FINE,"Close prepared statement");
@@ -77,7 +77,7 @@ public class SQPreparedStatement implements PreparedStatement {
         	}
         } catch (Exception e) {
             throw new SQLException(e);
-        } 
+        }
         isClosed = true;
     }
 
@@ -91,7 +91,7 @@ public class SQPreparedStatement implements PreparedStatement {
 
         return res;
     }
-    
+
     @Override
     public ResultSet getResultSet() throws SQLException {
         return SQRS;
@@ -104,7 +104,7 @@ public class SQPreparedStatement implements PreparedStatement {
         try {
             client.next();
             // Remember how many set commands were issued for this row in case it comes handy
-            setsPerBatch.add(setCounter);  
+            setsPerBatch.add(setCounter);
             setCounter = 0;
         } catch (Exception e) {
             throw new SQLException(e);
@@ -115,50 +115,50 @@ public class SQPreparedStatement implements PreparedStatement {
     public boolean execute() {
         LOGGER.log(Level.FINE,"execute");
 
-        SQRS = new SQResultSet(client, db_name);
+        SQRS = SQResultSet.getInstance(client, db_name);
 
         //TODO: Duplicate logic in SQStatement
         return (!"INSERT".equals(client.getQueryType())) && client.getRowLength() > 0;
     }
-    
+
     @Override
     public ResultSet executeQuery() {
         LOGGER.log(Level.FINE,"execute query");
 
-        SQRS = new SQResultSet(client, db_name);
+        SQRS = SQResultSet.getInstance(client, db_name);
         return SQRS;
     }
 
     // set()
     // ----
-    
+
     @Override
     public void setBoolean(int arg0, boolean arg1) throws SQLException {
-        
+
         try {
 			client.setBoolean(arg0, arg1);
 		} catch (Exception e) {
             throw new SQLException(e);
-		} setCounter++;      
+		} setCounter++;
     }
 
     @Override
     public void setByte(int arg0, byte arg1) throws SQLException {
-        
+
     	try {
 			client.setUbyte(arg0, arg1);
 		} catch (Exception e) {
             throw new SQLException(e);
-		} setCounter++; 
+		} setCounter++;
     }
-    
+
     @Override
     public void setShort(int arg0, short arg1) throws SQLException {
 	    try {
 			client.setShort(arg0, arg1);
 		} catch (Exception e) {
             throw new SQLException(e);
-		} setCounter++;    
+		} setCounter++;
     }
 
     @Override
@@ -168,65 +168,65 @@ public class SQPreparedStatement implements PreparedStatement {
 			client.setInt(arg0, arg1);
 		} catch (Exception e) {
             throw new SQLException(e);
-		} setCounter++;    
+		} setCounter++;
     }
 
     @Override
     public void setLong(int arg0, long arg1) throws SQLException {
-        
+
         try {
 			client.setLong(arg0, arg1);
 		} catch (Exception e) {
             throw new SQLException(e);
-		} setCounter++; 
+		} setCounter++;
     }
-    
+
     @Override
     public void setFloat(int arg0, float arg1) throws SQLException {
         try {
 			client.setFloat(arg0, arg1);
 		} catch (Exception e) {
             throw new SQLException(e);
-		} setCounter++;    
+		} setCounter++;
     }
-    
+
     @Override
     public void setDouble(int arg0, double arg1) throws SQLException {
-        
+
          try {
 			client.setDouble(arg0, arg1);
 		} catch (Exception e) {
              throw new SQLException(e);
-		} setCounter++;  
+		} setCounter++;
     }
-    
+
     @Override
     public void setDate(int colNum, Date date) throws SQLException {
         try {
 			client.setDate(colNum, date);
 		} catch (Exception e) {
             throw new SQLException(e.getMessage());
-		} setCounter++; 
+		} setCounter++;
     }
 
     @Override
     public void setDate(int colNum, Date date, Calendar cal) throws SQLException {
-    	
+
     	try {
 			client.setDate(colNum, date, cal.getTimeZone().toZoneId());
 		} catch (Exception e) {
             throw new SQLException(e);
-		} setCounter++; 
+		} setCounter++;
     }
-    
+
     @Override
     public void setTimestamp(int colNum, Timestamp datetime) throws SQLException {
-        
+
     	try {
 			client.setDatetime(colNum, datetime);
 		} catch (Exception e) {
             throw new SQLException(e);
-		} setCounter++; 
+		} setCounter++;
     }
 
     @Override
@@ -238,7 +238,7 @@ public class SQPreparedStatement implements PreparedStatement {
 		}
     	setCounter++;
     }
-    
+
     @Override
     public void setString(int colNum, String value) throws SQLException {
         String type = getMetaData().getColumnTypeName(colNum);
@@ -255,7 +255,7 @@ public class SQPreparedStatement implements PreparedStatement {
         } catch (Exception e) {
             throw new SQLException(e);
         }
-        setCounter++;   
+        setCounter++;
     }
 
     @Override
@@ -264,14 +264,14 @@ public class SQPreparedStatement implements PreparedStatement {
 			client.setNvarchar(arg0, arg1);
 		} catch (Exception e) {
             throw new SQLException(e);
-		} setCounter++; 
+		} setCounter++;
     }
-    
+
     @Override
     public void setNull(int arg0, int arg1) throws SQLException {
-        
+
     	String type = "";
-    	
+
     	try {
     	    type = client.getColType(arg0);
 
@@ -313,10 +313,10 @@ public class SQPreparedStatement implements PreparedStatement {
                     throw new IllegalArgumentException(
                             MessageFormat.format("Unsupported column type [{0}]", type));
             }
-    	    setCounter++;   
+    	    setCounter++;
         } catch (Exception e) {
             throw new SQLException(e);
-		} 
+		}
     }
 
     @Override
@@ -342,28 +342,28 @@ public class SQPreparedStatement implements PreparedStatement {
             setTimestamp(colNum, (Timestamp) value);
         } else if (value instanceof String) {
             setString(colNum, (String) value);
-        } else 
+        } else
             throw new SQLException(MessageFormat.format(
                     "Type [{0}] for setObject not supported", value != null ? value.getClass().getName() : null));
     }
-    
-    
-    
+
+
+
     public ResultSetMetaData getMetaData() throws SQLException {
-        
+
         if (metaData == null)
             throw new SQLException("MetaData is empty");
         return metaData;
     }
 
     // ----------------
-    
+
     @Override
     public void setFetchSize(int rows) throws SQLException {
        if (rows <0)
            throw new SQLException("setFetchSize argument should be nonnegative, got " + rows);
     }
-    
+
     @Override
     public boolean execute(String arg0) throws SQLException {
         throw new SQLException("Method is called on a PreparedStatement");
@@ -383,7 +383,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public boolean execute(String arg0, String[] arg1) throws SQLException {
         throw new SQLException("Method is called on a PreparedStatement");
     }
-    
+
     @Override
     public int executeUpdate(String arg0) throws SQLException {
         throw new SQLException("Method is called on a PreparedStatement");
@@ -403,7 +403,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public int executeUpdate(String arg0, String[] arg1) throws SQLException {
         throw new SQLException("Method is called on a PreparedStatement");
     }
-    
+
     @Override
     public int getFetchDirection() throws SQLException {
         return 0;
@@ -413,7 +413,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public int getFetchSize() throws SQLException {
         return client.getFetchSize();
     }
-    
+
     @Override
     public int getMaxFieldSize() throws SQLException {
         return 0;
@@ -441,7 +441,7 @@ public class SQPreparedStatement implements PreparedStatement {
         }
         return this.client.getTimeout();
     }
-    
+
     @Override
     public int getResultSetConcurrency() throws SQLException {
         return 0;
@@ -461,22 +461,22 @@ public class SQPreparedStatement implements PreparedStatement {
     public int getUpdateCount() throws SQLException {
         return 0;
     }
-    
+
     @Override
     public boolean isClosed() throws SQLException {
     	return isClosed;
     }
-    
+
     @Override
     public boolean isCloseOnCompletion() throws SQLException {
         return false;
     }
-    
+
     @Override
     public boolean isPoolable() throws SQLException {
         return false;
-    }	
-    
+    }
+
     @Override
     public void cancel() throws SQLException {
 
@@ -493,17 +493,17 @@ public class SQPreparedStatement implements PreparedStatement {
             throw new SQLException("Call clearWarnings() on closed PreparedStatement");
         }
     }
-    
+
     @Override
     public void setNull(int arg0, int arg1, String arg2) throws SQLException {
-        
+
     }
-    
+
     @Override
     public boolean isWrapperFor(Class<?> arg0) throws SQLException {
         return false;
     }
-    
+
     @Override
     public ParameterMetaData getParameterMetaData() throws SQLException {
         return new SQParameterMetaData(client);
@@ -533,26 +533,26 @@ public class SQPreparedStatement implements PreparedStatement {
 
     // -----------
 
-    @Override   
+    @Override
     public void addBatch(String arg0) throws SQLException {
         throw new SQLFeatureNotSupportedException("addBatch in SQPreparedStatement");
     }
-    
+
     @Override
     public ResultSet executeQuery(String arg0) throws SQLException {
         throw new SQLFeatureNotSupportedException("executeQuery in SQPreparedStatement");
     }
-    
+
     @Override
     public Connection getConnection() throws SQLException {
         throw new SQLFeatureNotSupportedException("getConnection in SQPreparedStatement");
     }
-    
+
     @Override
     public ResultSet getGeneratedKeys() throws SQLException {
         throw new SQLFeatureNotSupportedException("getGeneratedKeys in SQPreparedStatement");
     }
-     
+
     @Override
     public SQLWarning getWarnings() throws SQLException {
         if (isClosed) {
@@ -590,17 +590,17 @@ public class SQPreparedStatement implements PreparedStatement {
     public <T> T unwrap(Class<T> arg0) throws SQLException {
         throw new SQLFeatureNotSupportedException("unwrap in SQPreparedStatement");
     }
-    
+
     @Override
     public void clearParameters() throws SQLException {
         throw new SQLFeatureNotSupportedException("clearParameters in SQPreparedStatement");
     }
-    
+
     @Override
     public int executeUpdate() throws SQLException {
         throw new SQLFeatureNotSupportedException("executeUpdate in SQPreparedStatement");
     }
-    
+
     @Override
     public void setArray(int arg0, Array arg1) throws SQLException {
         throw new SQLFeatureNotSupportedException("setArray in SQPreparedStatement");
@@ -655,7 +655,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setBlob(int arg0, InputStream arg1, long arg2) throws SQLException {
         throw new SQLFeatureNotSupportedException("setBlob 3 in SQPreparedStatement");
     }
-    
+
     @Override
     public void setBytes(int arg0, byte[] arg1) throws SQLException {
         throw new SQLFeatureNotSupportedException("setBytes in SQPreparedStatement");
@@ -690,7 +690,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setClob(int arg0, Reader arg1, long arg2) throws SQLException {
         throw new SQLFeatureNotSupportedException("setClob 3 in SQPreparedStatement");
     }
-    
+
     @Override
     public void setNCharacterStream(int arg0, Reader arg1) throws SQLException {
         throw new SQLFeatureNotSupportedException("setNCharacterStream in SQPreparedStatement");
@@ -715,7 +715,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setNClob(int arg0, Reader arg1, long arg2) throws SQLException {
         throw new SQLFeatureNotSupportedException("setNClob in SQPreparedStatement");
     }
-    
+
     @Override
     public void setObject(int arg0, Object arg1, int arg2) throws SQLException {
         throw new SQLFeatureNotSupportedException("setObject in SQPreparedStatement");
@@ -740,7 +740,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setSQLXML(int arg0, SQLXML arg1) throws SQLException {
         throw new SQLFeatureNotSupportedException("setSQLXML in SQPreparedStatement");
     }
-    
+
     @Override
     public void setTime(int arg0, Time arg1) throws SQLException {
         throw new SQLFeatureNotSupportedException("setTime in SQPreparedStatement");
@@ -760,7 +760,7 @@ public class SQPreparedStatement implements PreparedStatement {
     public void setUnicodeStream(int arg0, InputStream arg1, int arg2) throws SQLException {
         throw new SQLFeatureNotSupportedException("setUnicodeStream in SQPreparedStatement");
     }
-    
+
     /*
      * public QueryType[] getResType() { return QType; } public void
      * setResType(QueryType[] QType) { this.QType = QType; }
@@ -770,6 +770,6 @@ public class SQPreparedStatement implements PreparedStatement {
         throw new SQLFeatureNotSupportedException("closeOnCompletion in SQPreparedStatement");
     }
 
-    
+
 
 }

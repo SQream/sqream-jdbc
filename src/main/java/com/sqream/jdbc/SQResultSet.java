@@ -23,26 +23,37 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
+import com.sqream.jdbc.logging.LoggerLevel;
 
 class SQResultSet implements ResultSet {
+	private static final Logger LOGGER = Logger.getLogger(SQResultSet.class.getName());
 
 	private Connector client = null;
 	private String dbName;
 	private boolean empty = false;
 	private boolean isNull = true;
 	private boolean isClosed = true;
-	
-	SQResultSet(Connector client, String catalog) {
+
+	protected SQResultSet(Connector client, String catalog) {
 		this.client = client;
 		this.dbName = catalog;
 	    this.isClosed = false;
 	}
 
-	SQResultSet(boolean empty) {
+	protected SQResultSet(boolean empty) {
 		this.empty = empty;
+	}
+
+	static SQResultSet getInstance(Connector client, String catalog) {
+		if (LOGGER.isLoggable(Level.FINE)) {
+			return new SQLoggableResultSet(client, catalog);
+		}
+		return SQResultSet.getInstance(client, catalog);
 	}
 
 	/**
@@ -200,7 +211,7 @@ class SQResultSet implements ResultSet {
 			throw new SQLException(e);
 		}
 	}
-	
+
 	@Override
 	public short getShort(int columnIndex) throws SQLException {
 		try {
@@ -210,8 +221,8 @@ class SQResultSet implements ResultSet {
 			throw new SQLException(e);
 		}
 	}
-	
-	
+
+
 	@Override
 	public int getInt(String columnLabel) throws SQLException {
 		try {
@@ -255,7 +266,7 @@ class SQResultSet implements ResultSet {
 					+ "' not found", e);
 		}
 	}
-	
+
 	@Override
 	public float getFloat(String columnLabel) throws SQLException {
 		try {
@@ -277,14 +288,14 @@ class SQResultSet implements ResultSet {
 			throw new SQLException(e);
 		}
 	}
-	
+
 	@Override
 	public double getDouble(String columnLabel) throws SQLException {
 		try {
 			columnLabel = columnLabel.toLowerCase();
 			Double res = client.getDouble(columnLabel);
 			return (isNull = res == null) ? 0 : res;
-		} 
+		}
 		catch (ConnException e) {
 			throw new SQLException(e);
 		}
@@ -295,12 +306,12 @@ class SQResultSet implements ResultSet {
 		try {
 			Double res = client.getDouble(columnIndex);
 			return (isNull = res == null) ? 0 : res;
-		} 
+		}
 		catch (ConnException e) {
 			throw new SQLException(e);
 		}
 	}
-	
+
 	@Override
 	public Date getDate(int columnIndex) throws SQLException {
 		try {
@@ -333,7 +344,7 @@ class SQResultSet implements ResultSet {
 			throw new SQLException(e);
 		}
 	}
-	
+
 	@Override
 	public Date getDate(String columnLabel, Calendar cal) throws SQLException {
 		try {
@@ -344,7 +355,7 @@ class SQResultSet implements ResultSet {
 			throw new SQLException(MessageFormat.format("columnLabel [{0}] not found", columnLabel.trim()), e);
 		}
 	}
-	
+
 	@Override
 	public Timestamp getTimestamp(String columnLabel) throws SQLException {
 		try {
@@ -369,13 +380,13 @@ class SQResultSet implements ResultSet {
 		}
 		return res;
 	}
-	
+
 	@Override
 	public Timestamp getTimestamp(int columnIndex, Calendar cal) {
 		// Original logic:
 		// Instant instant = utcDateTime.toLocalDateTime().atZone(cal.getTimeZone().toZoneId()).toInstant();
 		// utcDateTime = Timestamp.from(instant);
-		
+
 		Timestamp res = null;
 		try {
 			res = client.getDatetime(columnIndex, cal.getTimeZone().toZoneId());
@@ -384,9 +395,9 @@ class SQResultSet implements ResultSet {
 			e.printStackTrace();
 		}
 		return res;
-        
+
 	}
-	
+
 	@Override
 	public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
 		try {
@@ -399,7 +410,7 @@ class SQResultSet implements ResultSet {
 					+ "' not found");
 		}
 	}
-	
+
 	@Override
 	public String getString(String columnLabel) throws SQLException {
 		String res = null;
@@ -411,7 +422,7 @@ class SQResultSet implements ResultSet {
 		} catch (ConnException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		if (type.equals("ftBlob")) {
 			try {
 				res = client.getNvarchar(columnLabel);
@@ -433,7 +444,7 @@ class SQResultSet implements ResultSet {
 		isNull = res == null;
 		return res;
 	}
-	
+
 	@Override
 	public String getString(int columnIndex) throws SQLException {
 		String res = null;
@@ -444,7 +455,7 @@ class SQResultSet implements ResultSet {
 		} catch (ConnException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		if (type.equals("ftBlob")) {
 			try {
 				res = client.getNvarchar(columnIndex);
@@ -469,57 +480,57 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public Object getObject(String columnLabel) throws SQLException {
-		
+
 		columnLabel = columnLabel.toLowerCase();
 		String type = "";
-		Object res = null; 
-		
+		Object res = null;
+
 		try {
 			type = client.getColType(columnLabel);
 		} catch (ConnException e) {
 			e.printStackTrace();
 		}
-		
-		if (type.equals("ftBool")) 
+
+		if (type.equals("ftBool"))
 			res = getBoolean(columnLabel);
 		else if (type.equals("ftUByte"))
 			res = getByte(columnLabel);
-		else if (type.equals("ftShort")) 
+		else if (type.equals("ftShort"))
 			res = getShort(columnLabel);
-		else if (type.equals("ftInt")) 	
+		else if (type.equals("ftInt"))
 			res = getInt(columnLabel);
-		else if (type.equals("ftLong")) 
+		else if (type.equals("ftLong"))
 			res = getLong(columnLabel);
-		else if (type.equals("ftFloat")) 
+		else if (type.equals("ftFloat"))
 			res = getFloat(columnLabel);
 		else if (type.equals("ftDouble"))
 			res = getDouble(columnLabel);
-		else if (type.equals("ftDate")) 
+		else if (type.equals("ftDate"))
 			res = getDate(columnLabel);
 		else if (type.equals("ftDateTime"))
 			res = getTimestamp(columnLabel);
-		else if (type.equals("ftVarchar")) 
+		else if (type.equals("ftVarchar"))
 			res = getString(columnLabel);
-		else if (type.equals("ftBlob")) 	
+		else if (type.equals("ftBlob"))
 			res = getString(columnLabel);
-		
-		return (isNull) ? null : res;  
+
+		return (isNull) ? null : res;
 
 	}
 
 	@Override
 	public Object getObject(int columnIndex) throws SQLException {
-		
+
 		String type = "";
-		Object res = null; 
-		
+		Object res = null;
+
 		try {
 			type = client.getColType(columnIndex);
 		} catch (ConnException e) {
 			e.printStackTrace();
 		}
-		
-		if (type.equals("ftBool")) 
+
+		if (type.equals("ftBool"))
 			res = getBoolean(columnIndex);
 		else if (type.equals("ftUByte"))
 			// cast to short because UByte (0-255))
@@ -528,21 +539,21 @@ class SQResultSet implements ResultSet {
 			res = getShort(columnIndex);
 		else if (type.equals("ftInt"))
 			res = getInt(columnIndex);
-		else if (type.equals("ftLong")) 
+		else if (type.equals("ftLong"))
 			res = getLong(columnIndex);
-		else if (type.equals("ftFloat")) 
+		else if (type.equals("ftFloat"))
 			res = getFloat(columnIndex);
 		else if (type.equals("ftDouble"))
 			res = getDouble(columnIndex);
-		else if (type.equals("ftDate")) 
+		else if (type.equals("ftDate"))
 			res = getDate(columnIndex);
 		else if (type.equals("ftDateTime"))
 			res = getTimestamp(columnIndex);
-		else if (type.equals("ftVarchar")) 
+		else if (type.equals("ftVarchar"))
 			res = getString(columnIndex);
-		else if (type.equals("ftBlob")) 	
+		else if (type.equals("ftBlob"))
 			res = getString(columnIndex);
-		
+
 		return (isNull) ? null : res;
 	}
 
@@ -568,7 +579,7 @@ class SQResultSet implements ResultSet {
 	public Statement getStatement() throws SQLException {
 		throw new SQLFeatureNotSupportedException("getStatement in SQResultSet");
 	}
-	
+
 	@Override
 	public byte[] getBytes(String columnLabel) throws SQLException {
 		throw new SQLFeatureNotSupportedException("getBytes in SQResultSet");
@@ -578,7 +589,7 @@ class SQResultSet implements ResultSet {
 	public byte[] getBytes(int columnIndex) throws SQLException {
 		throw new SQLFeatureNotSupportedException("getBytes 2 in SQResultSet");
 	}
-	
+
 	@Override
 	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
 		throw new SQLFeatureNotSupportedException("getBigDecimal in SQResultSet");
@@ -861,7 +872,7 @@ class SQResultSet implements ResultSet {
 	public void updateString(int columnIndex, String x) throws SQLException {
 		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException("updateString in SQResultSet");
-	}	
+	}
 
 	@Override
 	public void updateBytes(int columnIndex, byte[] x) throws SQLException {

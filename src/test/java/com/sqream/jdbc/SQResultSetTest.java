@@ -17,7 +17,7 @@ public class SQResultSetTest {
     @Test
     public void callGetWarningsOnResultSetTest() throws  SQLException {
         ConnectorImpl mockConnector = Mockito.mock(ConnectorImpl.class);
-        SQResultSet rs = new SQResultSet(mockConnector, "");
+        SQResultSet rs = SQResultSet.getInstance(mockConnector, "");
 
         SQLWarning warnings = rs.getWarnings();
 
@@ -28,7 +28,7 @@ public class SQResultSetTest {
     public void callGetWarningsOnClosedResultSetTest() throws  SQLException {
         ConnectorImpl mockConnector = Mockito.mock(ConnectorImpl.class);
         Mockito.when(mockConnector.isOpen()).thenReturn(false);
-        SQResultSet rs = new SQResultSet(mockConnector, "");
+        SQResultSet rs = SQResultSet.getInstance(mockConnector, "");
         rs.close();
 
         rs.getWarnings();
@@ -37,7 +37,7 @@ public class SQResultSetTest {
     @Test
     public void callClearWarningsOnResultSetTest() throws  SQLException {
         ConnectorImpl mockConnector = Mockito.mock(ConnectorImpl.class);
-        SQResultSet rs = new SQResultSet(mockConnector, "");
+        SQResultSet rs = SQResultSet.getInstance(mockConnector, "");
 
         rs.clearWarnings();
     }
@@ -46,7 +46,7 @@ public class SQResultSetTest {
     public void callClearWarningsOnClosedResultSetTest() throws  SQLException {
         ConnectorImpl mockConnector = Mockito.mock(ConnectorImpl.class);
         Mockito.when(mockConnector.isOpen()).thenReturn(false);
-        SQResultSet rs = new SQResultSet(mockConnector, "");
+        SQResultSet rs = SQResultSet.getInstance(mockConnector, "");
         rs.close();
 
         rs.clearWarnings();

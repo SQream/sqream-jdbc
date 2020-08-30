@@ -1,6 +1,8 @@
 package com.sqream.jdbc.utils;
 
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Optional;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
@@ -25,8 +27,9 @@ public class LoggerUtil {
                     shortClassName = record.getSourceClassName();
                 }
 
-                return MessageFormat.format("{0}: {1}#{2}: {3}\n",
-                        threadName,  shortClassName, record.getSourceMethodName(), record.getMessage());
+                return MessageFormat.format("{0} {1}: {2}#{3}: {4}\n",
+                        new SimpleDateFormat("HH.mm.ss.ms").format(new Date()), threadName,
+                        shortClassName, record.getSourceMethodName(), record.getMessage());
             }
         };
     }

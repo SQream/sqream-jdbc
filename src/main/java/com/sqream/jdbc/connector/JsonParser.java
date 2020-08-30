@@ -83,6 +83,10 @@ public class JsonParser {
         return new StatementStateDto(listenerId, port, portSsl, reconnect, ip);
     }
 
+    public void checkError(String body) throws ConnException {
+        this.checkError(parseJson(body));
+    }
+
     private JsonValue safeReadValue(JsonObject jsonObj, String key) throws ConnException {
         JsonValue value = jsonObj.get(key);
         if (value == null) {

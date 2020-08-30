@@ -158,7 +158,11 @@ public class MessengerImpl implements Messenger {
 
     private String validateResponse(String response, String expected) throws ConnException {
         if (!response.equals(expected)) {
-            throw new ConnException("Expected message: " + expected + " but got " + response);
+            try {
+                jsonParser.checkError(response);
+            } catch (ParseException e) {
+                throw new ConnException("Expected message: " + expected + " but got " + response);
+            }
         }
         return response;
     }

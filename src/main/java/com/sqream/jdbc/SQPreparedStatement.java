@@ -64,10 +64,16 @@ public class SQPreparedStatement implements PreparedStatement {
         metaData = new SQResultSetMetaData(client, connParams.getDbName());
     }
 
+    static PreparedStatement getInstance(String sql, ConnectionParams connParams) throws ConnException {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            return new SQLoggablePreparedStatement(sql, connParams);
+        }
+        return new SQPreparedStatement(sql, connParams);
+    }
+
 
     @Override
     public void close() throws SQLException {
-    	LOGGER.log(Level.FINE,"Close prepared statement");
         try {
         	if (client != null && client.isOpen()) {
 				if (client.isOpenStatement()) {
@@ -83,8 +89,6 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public int[] executeBatch() throws SQLException {
-        LOGGER.log(Level.FINE,"execute batch");
-
         int[] res = new int[setsPerBatch.size()];
         Arrays.fill(res, 1);
         setsPerBatch.clear();
@@ -99,8 +103,6 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public void addBatch() throws SQLException {
-        LOGGER.log(Level.FINEST, "add batch");
-
         try {
             client.next();
             // Remember how many set commands were issued for this row in case it comes handy
@@ -113,8 +115,6 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public boolean execute() {
-        LOGGER.log(Level.FINE,"execute");
-
         SQRS = SQResultSet.getInstance(client, db_name);
 
         //TODO: Duplicate logic in SQStatement
@@ -123,8 +123,6 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public ResultSet executeQuery() {
-        LOGGER.log(Level.FINE,"execute query");
-
         SQRS = SQResultSet.getInstance(client, db_name);
         return SQRS;
     }
@@ -133,68 +131,63 @@ public class SQPreparedStatement implements PreparedStatement {
     // ----
 
     @Override
-    public void setBoolean(int arg0, boolean arg1) throws SQLException {
-
+    public void setBoolean(int colNum, boolean value) throws SQLException {
         try {
-			client.setBoolean(arg0, arg1);
+			client.setBoolean(colNum, value);
 		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;
     }
 
     @Override
-    public void setByte(int arg0, byte arg1) throws SQLException {
-
+    public void setByte(int colNum, byte value) throws SQLException {
     	try {
-			client.setUbyte(arg0, arg1);
+			client.setUbyte(colNum, value);
 		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;
     }
 
     @Override
-    public void setShort(int arg0, short arg1) throws SQLException {
+    public void setShort(int colNum, short value) throws SQLException {
 	    try {
-			client.setShort(arg0, arg1);
+			client.setShort(colNum, value);
 		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;
     }
 
     @Override
-    public void setInt(int arg0, int arg1) throws SQLException {
-
+    public void setInt(int colNum, int value) throws SQLException {
     	try {
-			client.setInt(arg0, arg1);
+			client.setInt(colNum, value);
 		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;
     }
 
     @Override
-    public void setLong(int arg0, long arg1) throws SQLException {
-
+    public void setLong(int colNum, long value) throws SQLException {
         try {
-			client.setLong(arg0, arg1);
+			client.setLong(colNum, value);
 		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;
     }
 
     @Override
-    public void setFloat(int arg0, float arg1) throws SQLException {
+    public void setFloat(int colNum, float value) throws SQLException {
         try {
-			client.setFloat(arg0, arg1);
+			client.setFloat(colNum, value);
 		} catch (Exception e) {
             throw new SQLException(e);
 		} setCounter++;
     }
 
     @Override
-    public void setDouble(int arg0, double arg1) throws SQLException {
-
+    public void setDouble(int colNum, double value) throws SQLException {
          try {
-			client.setDouble(arg0, arg1);
+			client.setDouble(colNum, value);
 		} catch (Exception e) {
              throw new SQLException(e);
 		} setCounter++;
@@ -211,7 +204,6 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public void setDate(int colNum, Date date, Calendar cal) throws SQLException {
-
     	try {
 			client.setDate(colNum, date, cal.getTimeZone().toZoneId());
 		} catch (Exception e) {
@@ -221,7 +213,6 @@ public class SQPreparedStatement implements PreparedStatement {
 
     @Override
     public void setTimestamp(int colNum, Timestamp datetime) throws SQLException {
-
     	try {
 			client.setDatetime(colNum, datetime);
 		} catch (Exception e) {
@@ -350,7 +341,6 @@ public class SQPreparedStatement implements PreparedStatement {
 
 
     public ResultSetMetaData getMetaData() throws SQLException {
-
         if (metaData == null)
             throw new SQLException("MetaData is empty");
         return metaData;

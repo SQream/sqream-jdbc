@@ -53,7 +53,7 @@ class SQResultSet implements ResultSet {
 		if (LOGGER.isLoggable(Level.FINE)) {
 			return new SQLoggableResultSet(client, catalog);
 		}
-		return SQResultSet.getInstance(client, catalog);
+		return new SQResultSet(client, catalog);
 	}
 
 	/**

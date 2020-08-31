@@ -34,7 +34,7 @@ public class LazyFetchService extends BaseFetchService implements FetchService {
     public void process(int rowAmount) throws ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Process: rowAmount=[{0}], fetchSize=[{1}]", rowAmount, fetchSize));
-        validateRowAmount(rowAmount);
+        validateLimit(rowAmount);
         maxRows = rowAmount;
     }
 

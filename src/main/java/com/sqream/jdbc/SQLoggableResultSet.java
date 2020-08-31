@@ -37,20 +37,20 @@ class SQLoggableResultSet extends SQResultSet implements ResultSet {
 	@Override
 	public int getConcurrency() {
 		int result = super.getConcurrency();
-		LOGGER.log(Level.INFO, String.valueOf(result));
+		LOGGER.log(Level.FINE, String.valueOf(result));
 		return result;
 	}
 
 	@Override
 	public boolean isClosed() {
 		boolean result = super.isClosed();
-		LOGGER.log(Level.INFO, String.valueOf(result));
+		LOGGER.log(Level.FINE, String.valueOf(result));
 		return result;
 	}
 
 	@Override
 	public void close() throws SQLException {
-		LOGGER.log(Level.INFO, "Close ResultSet");
+		LOGGER.log(Level.FINE, "Close ResultSet");
 		super.close();
 	}
 

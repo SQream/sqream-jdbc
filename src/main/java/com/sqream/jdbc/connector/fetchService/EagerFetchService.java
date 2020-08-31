@@ -4,11 +4,7 @@ import com.sqream.jdbc.connector.*;
 import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,12 +20,12 @@ public class EagerFetchService extends BaseFetchService implements FetchService 
     }
 
     @Override
-    public void process(int rowAmount) throws ConnException {
-        LOGGER.log(Level.FINE, MessageFormat.format("Process: rowAmount=[{0}]", rowAmount));
-        validateRowAmount(rowAmount);
+    public void process(int limit) throws ConnException {
+        LOGGER.log(Level.FINE, MessageFormat.format("Process: limit=[{0}]", limit));
+        validateLimit(limit);
 
         int totalFetched = 0;
-        while (rowAmount == 0 || totalFetched < rowAmount) {
+        while (limit == 0 || totalFetched < limit) {
             int newRowsFetched = fetch();
             if (newRowsFetched ==0) {
                 break;

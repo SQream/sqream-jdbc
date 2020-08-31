@@ -73,9 +73,9 @@ public abstract class BaseFetchService implements FetchService{
         return resultBlock;
     }
 
-    protected void validateRowAmount(int rowAmount) throws ConnException {
-        if (rowAmount < 0) {
-            throw new ConnException(MessageFormat.format("Row amount [{0}] should be positive", rowAmount));
+    protected void validateLimit(int limit) throws ConnException {
+        if (limit < 0) {
+            throw new ConnException(MessageFormat.format("Limit [{0}] should be non-negative", limit));
         }
     }
 }

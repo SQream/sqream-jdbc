@@ -108,4 +108,50 @@ public class SQConnectionTest {
 
         conn.clearWarnings();
     }
+
+    @Test
+    public void setGetCatalogTest() throws SQLException {
+        String masterCatalog = "";
+        String testCatalog = "test_database";
+        String createTableSQL = "create or replace table test_catalog_table (col1 int);";
+        String insertTemplate = "insert into test_catalog_table values (%s);";
+
+        try (Connection conn = createConnection()) {
+            masterCatalog = conn.getCatalog();
+            //check that current catalog from connection properties
+            assertEquals(DATABASE, masterCatalog);
+
+            try (Statement stmt = conn.createStatement()) {
+                //prepare data in current catalog
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(String.format(insertTemplate, 1));
+
+                //create test catalog
+                stmt.executeUpdate(String.format("drop database if exists %s;", testCatalog));
+                stmt.executeUpdate(String.format("create database %s;", testCatalog));
+            }
+
+            conn.setCatalog(testCatalog);
+            assertEquals(testCatalog, conn.getCatalog());
+            try (Statement stmt = conn.createStatement()) {
+                //prepare data in test catalog
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(String.format(insertTemplate, 2));
+
+                //check data in test catalog
+                ResultSet rs = stmt.executeQuery("select * from test_catalog_table;");
+                assertTrue(rs.next());
+                assertEquals(2, rs.getInt(1));
+            }
+
+            conn.setCatalog(masterCatalog);
+            assertEquals(masterCatalog, conn.getCatalog());
+            try (Statement stmt = conn.createStatement()) {
+                //check data in current catalog
+                ResultSet rs = stmt.executeQuery("select * from test_catalog_table;");
+                assertTrue(rs.next());
+                assertEquals(1, rs.getInt(1));
+            }
+        }
+    }
 }

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sqream</groupId>
     <artifactId>sqream-jdbc</artifactId>
-    <version>4.2.1</version>
+    <version>4.3.0</version>
     <!-->Don't change version line from no. 6 as used by Jenkins<-->
     <name>SQream JDBC</name>
     <packaging>jar</packaging>

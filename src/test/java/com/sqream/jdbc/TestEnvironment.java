@@ -1,9 +1,13 @@
 package com.sqream.jdbc;
 
+import com.sqream.jdbc.logging.LoggerLevel;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+
+import static com.sqream.jdbc.logging.LoggerLevel.*;
 
 public class TestEnvironment {
 
@@ -15,10 +19,11 @@ public class TestEnvironment {
     public static String USER = "sqream";
     public static String PASS = "sqream";
     public static String SERVICE = "sqream";
+    public static LoggerLevel LOGGER_LEVEL = OFF;
 
     public static final String URL = MessageFormat.format(
-            "jdbc:Sqream://{0}:{1}/{2};user={3};password={4};cluster={5};ssl={6};service={7}",
-            IP, String.valueOf(PORT), DATABASE, USER, PASS, CLUSTER, SSL, SERVICE);
+            "jdbc:Sqream://{0}:{1}/{2};user={3};password={4};cluster={5};ssl={6};service={7};loggerLevel={8}",
+            IP, String.valueOf(PORT), DATABASE, USER, PASS, CLUSTER, SSL, SERVICE, LOGGER_LEVEL);
 
     public static final String SHORT_URL = MessageFormat.format(
             "jdbc:Sqream://{0}:{1}/{2};user={3};password={4}", IP, String.valueOf(PORT), DATABASE, USER, PASS);

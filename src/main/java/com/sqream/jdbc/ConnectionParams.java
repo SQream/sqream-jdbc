@@ -155,6 +155,23 @@ public class ConnectionParams {
             return this;
         }
 
+        public ConnectionParamsBuilder from(ConnectionParams params) throws ConnException {
+            if (params == null) {
+                throw new ConnException("Previous connection params can not be null");
+            }
+            this.cluster = params.cluster;
+            this.ip = params.ip;
+            this.port = params.port;
+            this.dbName = params.dbName;
+            this.service = params.service;
+            this.schema = params.schema;
+            this.user = params.user;
+            this.password = params.password;
+            this.ssl = params.useSsl;
+            this.fetchSize = params.fetchSize;
+            return this;
+        }
+
         public ConnectionParams build() {
             ConnectionParams result = new ConnectionParams();
             result.cluster = this.cluster;

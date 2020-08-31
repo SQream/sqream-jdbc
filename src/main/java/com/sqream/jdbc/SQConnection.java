@@ -189,21 +189,8 @@ public class SQConnection implements Connection {
 	@Override
 	public void close() throws SQLException {
 		LOGGER.log(Level.FINE, "Close SQConnection");
-
-		try {
-			if(Statement_list!=null) {
-				for(SQStatement item : Statement_list) {
-					item.cancel();
-				}
-				Statement_list.clear();
-			}
-			if(globalClient !=null && globalClient.isOpen())
-				globalClient.closeConnection();      // Closing Connector
-			isClosed.set(true);
-
-		} catch (Exception e) {
-			throw new SQLException(e);
-		}
+		closeAllOpenStatements();
+		isClosed.set(true);
 	}
 	
 	@Override
@@ -294,7 +281,19 @@ public class SQConnection implements Connection {
 
 	@Override
 	public void setCatalog(String catalog) throws SQLException {
-		log("inside setCatalog SQConnection");
+		LOGGER.log(Level.FINE, MessageFormat.format("catalog=[{0}]", catalog));
+		closeAllOpenStatements();
+		try {
+			params = ConnectionParams.builder()
+					.from(params)
+					.dbName(catalog)
+					.build();
+			globalClient = ConnectorFactory.initConnector(
+					params.getIp(), params.getPort(), params.getCluster(), params.getUseSsl());
+			globalClient.connect(params.getDbName(), params.getUser(), params.getPassword(), params.getService());
+		} catch (ConnException e) {
+			throw new SQLException(e);
+		}
 	}
 
 	@Override
@@ -503,6 +502,22 @@ public class SQConnection implements Connection {
 			for (String key : props.stringPropertyNames()) {
 				LOGGER.log(Level.FINE, MessageFormat.format("[{0}]=[{1}]", key, props.getProperty(key)));
 			}
+		}
+	}
+
+	private void closeAllOpenStatements() throws SQLException {
+		try {
+			if(Statement_list!=null) {
+				for(SQStatement item : Statement_list) {
+					item.cancel();
+				}
+				Statement_list.clear();
+			}
+			if(globalClient !=null && globalClient.isOpen()) {
+				globalClient.closeConnection();      // Closing Connector
+			}
+		} catch (Exception e) {
+			throw new SQLException(e);
 		}
 	}
 }

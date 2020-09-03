@@ -189,7 +189,19 @@ public class SQConnection implements Connection {
 	@Override
 	public void close() throws SQLException {
 		LOGGER.log(Level.FINE, "Close SQConnection");
-		closeAllOpenStatements();
+		try {
+			if(Statement_list!=null) {
+				for(SQStatement item : Statement_list) {
+					item.cancel();
+				}
+				Statement_list.clear();
+			}
+			if(globalClient !=null && globalClient.isOpen()) {
+				globalClient.closeConnection();      // Closing Connector
+			}
+		} catch (Exception e) {
+			throw new SQLException(e);
+		}
 		isClosed.set(true);
 	}
 	
@@ -501,22 +513,6 @@ public class SQConnection implements Connection {
 			for (String key : props.stringPropertyNames()) {
 				LOGGER.log(Level.FINE, MessageFormat.format("[{0}]=[{1}]", key, props.getProperty(key)));
 			}
-		}
-	}
-
-	private void closeAllOpenStatements() throws SQLException {
-		try {
-			if(Statement_list!=null) {
-				for(SQStatement item : Statement_list) {
-					item.cancel();
-				}
-				Statement_list.clear();
-			}
-			if(globalClient !=null && globalClient.isOpen()) {
-				globalClient.closeConnection();      // Closing Connector
-			}
-		} catch (Exception e) {
-			throw new SQLException(e);
 		}
 	}
 }

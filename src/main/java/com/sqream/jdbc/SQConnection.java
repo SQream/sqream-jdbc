@@ -200,6 +200,7 @@ public class SQConnection implements Connection {
 				globalClient.closeConnection();      // Closing Connector
 			}
 		} catch (Exception e) {
+			isClosed.set(true);
 			throw new SQLException(e);
 		}
 		isClosed.set(true);

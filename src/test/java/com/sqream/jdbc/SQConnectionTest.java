@@ -1,10 +1,16 @@
 package com.sqream.jdbc;
 
+import com.eclipsesource.json.Json;
+import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.sql.*;
 import java.text.MessageFormat;
@@ -12,7 +18,10 @@ import java.util.Properties;
 
 import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ConnectorFactory.class})
 public class SQConnectionTest {
 
     @Test
@@ -157,7 +166,6 @@ public class SQConnectionTest {
 
     @Test
     public void setCatalogDoesNotAffectOpenStatementTest() throws SQLException {
-        String masterCatalog = "";
         String tableName = "test_catalog_table";
         String testCatalog = "test_database";
         String createTableSQL = String.format("create or replace table %s (col1 int);", tableName);
@@ -168,7 +176,6 @@ public class SQConnectionTest {
 
         // Prepare test data: create the same table in two databases and set different values
         try (Connection conn = createConnection()) {
-            masterCatalog = conn.getCatalog();
             try (Statement stmt = conn.createStatement()) {
                 stmt.executeUpdate(createTableSQL);
                 stmt.executeUpdate(String.format(insertTemplate, masterCatalogValue));

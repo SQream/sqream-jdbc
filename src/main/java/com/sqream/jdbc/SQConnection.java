@@ -299,9 +299,6 @@ public class SQConnection implements Connection {
 					.from(params)
 					.dbName(catalog)
 					.build();
-			globalClient = ConnectorFactory.initConnector(
-					params.getIp(), params.getPort(), params.getCluster(), params.getUseSsl());
-			globalClient.connect(params.getDbName(), params.getUser(), params.getPassword(), params.getService());
 		} catch (ConnException e) {
 			throw new SQLException(e);
 		}

@@ -282,7 +282,6 @@ public class SQConnection implements Connection {
 	@Override
 	public void setCatalog(String catalog) throws SQLException {
 		LOGGER.log(Level.FINE, MessageFormat.format("catalog=[{0}]", catalog));
-		closeAllOpenStatements();
 		try {
 			params = ConnectionParams.builder()
 					.from(params)

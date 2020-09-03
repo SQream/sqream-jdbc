@@ -154,4 +154,46 @@ public class SQConnectionTest {
             }
         }
     }
+
+    @Test
+    public void setCatalogDoesNotAffectOpenStatementTest() throws SQLException {
+        String masterCatalog = "";
+        String tableName = "test_catalog_table";
+        String testCatalog = "test_database";
+        String createTableSQL = String.format("create or replace table %s (col1 int);", tableName);
+        String insertTemplate = "insert into test_catalog_table values (%s);";
+        String selectSQL = String.format("select * from %s;", tableName);
+        int masterCatalogValue = 1;
+        int testCatalogValue = 2;
+
+        // Prepare test data: create the same table in two databases and set different values
+        try (Connection conn = createConnection()) {
+            masterCatalog = conn.getCatalog();
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(String.format(insertTemplate, masterCatalogValue));
+            }
+            conn.setCatalog(testCatalog);
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(String.format(insertTemplate, testCatalogValue));
+            }
+        }
+
+        //check that first statement get result from master database even if change catalog
+        try (Connection conn = createConnection()) {
+
+            try (Statement firstStmt = conn.createStatement()) {
+                conn.setCatalog(testCatalog);
+                try (Statement secondStmt = conn.createStatement()) {
+                    ResultSet firstResultSet = firstStmt.executeQuery(selectSQL);
+                    ResultSet secondResultSet = secondStmt.executeQuery(selectSQL);
+                    assertTrue(firstResultSet.next());
+                    assertEquals(masterCatalogValue, firstResultSet.getInt(1));
+                    assertTrue(secondResultSet.next());
+                    assertEquals(testCatalogValue, secondResultSet.getInt(1));
+                }
+            }
+        }
+    }
 }

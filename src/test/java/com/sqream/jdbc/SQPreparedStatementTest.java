@@ -401,4 +401,24 @@ public class SQPreparedStatementTest {
         }
     }
 
+    @Test
+    public void getInstanceTest() throws SQLException {
+        try (Connection conn = createConnection();
+             PreparedStatement pstmt = conn.prepareStatement("select 1;")) {
+
+            assertEquals(SQPreparedStatement.class, pstmt.getClass());
+        }
+
+        try (Connection conn = DriverManager.getConnection(URL + ";loggerLevel=debug");
+             PreparedStatement pstmt = conn.prepareStatement("select 1;")) {
+
+            assertEquals(SQLoggablePreparedStatement.class, pstmt.getClass());
+        }
+
+        try (Connection conn = DriverManager.getConnection(URL + ";loggerLevel=trace");
+             PreparedStatement pstmt = conn.prepareStatement("select 1;")) {
+
+            assertEquals(SQLoggablePreparedStatement.class, pstmt.getClass());
+        }
+    }
 }

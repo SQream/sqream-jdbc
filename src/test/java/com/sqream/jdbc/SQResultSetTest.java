@@ -4,11 +4,9 @@ import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
+import java.sql.*;
 
+import static com.sqream.jdbc.TestEnvironment.URL;
 import static com.sqream.jdbc.TestEnvironment.createConnection;
 import static org.junit.Assert.*;
 
@@ -52,4 +50,48 @@ public class SQResultSetTest {
         rs.clearWarnings();
     }
 
+    @Test
+    public void getInstanceTest() throws SQLException {
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("select 1;")) {
+
+            assertEquals(SQResultSet.class, rs.getClass());
+        }
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            assertTrue(stmt.execute("select 1;"));
+            assertEquals(SQResultSet.class, stmt.getResultSet().getClass());
+        }
+
+        try (Connection conn = DriverManager.getConnection(URL + ";loggerLevel=debug");
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("select 1;")) {
+
+            assertEquals(SQLoggableResultSet.class, rs.getClass());
+        }
+
+        try (Connection conn = DriverManager.getConnection(URL + ";loggerLevel=debug");
+             Statement stmt = conn.createStatement()) {
+
+            assertTrue(stmt.execute("select 1;"));
+            assertEquals(SQLoggableResultSet.class, stmt.getResultSet().getClass());
+        }
+
+        try (Connection conn = DriverManager.getConnection(URL + ";loggerLevel=trace");
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("select 1;")) {
+
+            assertEquals(SQLoggableResultSet.class, rs.getClass());
+        }
+
+        try (Connection conn = DriverManager.getConnection(URL + ";loggerLevel=trace");
+             Statement stmt = conn.createStatement()) {
+
+            assertTrue(stmt.execute("select 1;"));
+            assertEquals(SQLoggableResultSet.class, stmt.getResultSet().getClass());
+        }
+    }
 }

@@ -22,15 +22,8 @@ import java.util.logging.Logger;
 public class SQLoggablePreparedStatement extends SQPreparedStatement implements PreparedStatement {
     private static final Logger LOGGER = Logger.getLogger(SQLoggablePreparedStatement.class.getName());
 
-    public SQLoggablePreparedStatement(String sql, ConnectionParams connParams) throws ConnException {
+    protected SQLoggablePreparedStatement(String sql, ConnectionParams connParams) throws ConnException {
         super(sql, connParams);
-    }
-
-    static PreparedStatement getInstance(String sql, ConnectionParams connParams) throws ConnException {
-        if (LOGGER.isLoggable(Level.FINE)) {
-            return new SQLoggablePreparedStatement(sql, connParams);
-        }
-        return new SQLoggablePreparedStatement(sql, connParams);
     }
 
     @Override

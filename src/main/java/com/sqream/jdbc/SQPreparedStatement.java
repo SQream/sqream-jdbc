@@ -50,7 +50,7 @@ public class SQPreparedStatement implements PreparedStatement {
     private List<Integer> setsPerBatch = new ArrayList<>();
     private boolean isClosed = true;
 
-    public SQPreparedStatement(String sql, ConnectionParams connParams) throws ConnException {
+    protected SQPreparedStatement(String sql, ConnectionParams connParams) throws ConnException {
 
         LOGGER.log(Level.FINE, MessageFormat.format("Construct SQPreparedStatement for [{0}]", sql));
         db_name = connParams.getDbName();
@@ -64,7 +64,7 @@ public class SQPreparedStatement implements PreparedStatement {
         metaData = new SQResultSetMetaData(client, connParams.getDbName());
     }
 
-    static PreparedStatement getInstance(String sql, ConnectionParams connParams) throws ConnException {
+    static SQPreparedStatement getInstance(String sql, ConnectionParams connParams) throws ConnException {
         if (LOGGER.isLoggable(Level.FINE)) {
             return new SQLoggablePreparedStatement(sql, connParams);
         }

@@ -1569,4 +1569,30 @@ public class JDBC_Positive {
         }
     }
 
+    @Test
+    public void whenCloseClosedStatementThenHasNoEffect() {
+	    Connection conn = null;
+	    Statement stmt = null;
+	    try {
+            conn = createConnection();
+            stmt = conn.createStatement();
+            stmt.executeQuery("select rechunk_include_all();");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        } finally {
+	        try {
+                if (stmt != null) {
+                    stmt.close();
+                    stmt.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                    conn.close();
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                fail("Should not throw second exception");
+            }
+        }
+    }
 }

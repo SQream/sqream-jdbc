@@ -308,8 +308,8 @@ public class ConnectorImpl implements Connector {
                     }
     	        }
     	            // Statement is finished so no need to reset row_counter etc
-                messenger.closeStatement();
                 openStatement = false;  // set to true in execute()
+                messenger.closeStatement();
             }
         }
     }

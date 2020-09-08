@@ -141,6 +141,13 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.5</version>
+                <configuration>
+                    <excludes>
+                        <exclude>com/sqream/jdbc/SQLoggablePreparedStatement.class</exclude>
+                        <exclude>com/sqream/jdbc/SQLoggableResultSet.class</exclude>
+                        <exclude>com/sqream/jdbc/connector/socket/SQLoggableSocket.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

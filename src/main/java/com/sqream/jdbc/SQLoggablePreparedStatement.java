@@ -26,6 +26,13 @@ public class SQLoggablePreparedStatement extends SQPreparedStatement implements 
         super(sql, connParams);
     }
 
+    static PreparedStatement getInstance(String sql, ConnectionParams connParams) throws ConnException {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            return new SQLoggablePreparedStatement(sql, connParams);
+        }
+        return new SQLoggablePreparedStatement(sql, connParams);
+    }
+
     @Override
     public void close() throws SQLException {
     	LOGGER.log(Level.FINE,"Close prepared statement");

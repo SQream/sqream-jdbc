@@ -185,7 +185,6 @@ public class SQConnection implements Connection {
 	@Override
 	public void close() throws SQLException {
 		LOGGER.log(Level.FINE, "Close SQConnection");
-
 		try {
 			if(Statement_list!=null) {
 				for(SQStatement item : Statement_list) {
@@ -193,13 +192,15 @@ public class SQConnection implements Connection {
 				}
 				Statement_list.clear();
 			}
-			if(globalClient !=null && globalClient.isOpen())
+			if(globalClient !=null && globalClient.isOpen()) {
 				globalClient.closeConnection();      // Closing Connector
+			}
 			isClosed.set(true);
-
 		} catch (Exception e) {
+			isClosed.set(true);
 			throw new SQLException(e);
 		}
+		isClosed.set(true);
 	}
 
 	@Override
@@ -290,7 +291,15 @@ public class SQConnection implements Connection {
 
 	@Override
 	public void setCatalog(String catalog) throws SQLException {
-		log("inside setCatalog SQConnection");
+		LOGGER.log(Level.FINE, MessageFormat.format("catalog=[{0}]", catalog));
+		try {
+			params = ConnectionParams.builder()
+					.from(params)
+					.dbName(catalog)
+					.build();
+		} catch (ConnException e) {
+			throw new SQLException(e);
+		}
 	}
 
 	@Override

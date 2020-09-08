@@ -1,10 +1,16 @@
 package com.sqream.jdbc;
 
+import com.eclipsesource.json.Json;
+import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.sql.*;
 import java.text.MessageFormat;
@@ -12,7 +18,10 @@ import java.util.Properties;
 
 import static com.sqream.jdbc.TestEnvironment.*;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({ConnectorFactory.class})
 public class SQConnectionTest {
 
     @Test
@@ -107,5 +116,91 @@ public class SQConnectionTest {
         Connection conn = new SQConnection(connectorMock);
 
         conn.clearWarnings();
+    }
+
+    @Test
+    public void setGetCatalogTest() throws SQLException {
+        String masterCatalog = "";
+        String testCatalog = "test_database";
+        String createTableSQL = "create or replace table test_catalog_table (col1 int);";
+        String insertTemplate = "insert into test_catalog_table values (%s);";
+
+        try (Connection conn = createConnection()) {
+            masterCatalog = conn.getCatalog();
+            //check that current catalog from connection properties
+            assertEquals(DATABASE, masterCatalog);
+
+            try (Statement stmt = conn.createStatement()) {
+                //prepare data in current catalog
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(String.format(insertTemplate, 1));
+
+                //create test catalog
+                stmt.executeUpdate(String.format("drop database if exists %s;", testCatalog));
+                stmt.executeUpdate(String.format("create database %s;", testCatalog));
+            }
+
+            conn.setCatalog(testCatalog);
+            assertEquals(testCatalog, conn.getCatalog());
+            try (Statement stmt = conn.createStatement()) {
+                //prepare data in test catalog
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(String.format(insertTemplate, 2));
+
+                //check data in test catalog
+                ResultSet rs = stmt.executeQuery("select * from test_catalog_table;");
+                assertTrue(rs.next());
+                assertEquals(2, rs.getInt(1));
+            }
+
+            conn.setCatalog(masterCatalog);
+            assertEquals(masterCatalog, conn.getCatalog());
+            try (Statement stmt = conn.createStatement()) {
+                //check data in current catalog
+                ResultSet rs = stmt.executeQuery("select * from test_catalog_table;");
+                assertTrue(rs.next());
+                assertEquals(1, rs.getInt(1));
+            }
+        }
+    }
+
+    @Test
+    public void setCatalogDoesNotAffectOpenStatementTest() throws SQLException {
+        String tableName = "test_catalog_table";
+        String testCatalog = "test_database";
+        String createTableSQL = String.format("create or replace table %s (col1 int);", tableName);
+        String insertTemplate = "insert into test_catalog_table values (%s);";
+        String selectSQL = String.format("select * from %s;", tableName);
+        int masterCatalogValue = 1;
+        int testCatalogValue = 2;
+
+        // Prepare test data: create the same table in two databases and set different values
+        try (Connection conn = createConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(String.format(insertTemplate, masterCatalogValue));
+            }
+            conn.setCatalog(testCatalog);
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTableSQL);
+                stmt.executeUpdate(String.format(insertTemplate, testCatalogValue));
+            }
+        }
+
+        //check that first statement get result from master database even if change catalog
+        try (Connection conn = createConnection()) {
+
+            try (Statement firstStmt = conn.createStatement()) {
+                conn.setCatalog(testCatalog);
+                try (Statement secondStmt = conn.createStatement()) {
+                    ResultSet firstResultSet = firstStmt.executeQuery(selectSQL);
+                    ResultSet secondResultSet = secondStmt.executeQuery(selectSQL);
+                    assertTrue(firstResultSet.next());
+                    assertEquals(masterCatalogValue, firstResultSet.getInt(1));
+                    assertTrue(secondResultSet.next());
+                    assertEquals(testCatalogValue, secondResultSet.getInt(1));
+                }
+            }
+        }
     }
 }

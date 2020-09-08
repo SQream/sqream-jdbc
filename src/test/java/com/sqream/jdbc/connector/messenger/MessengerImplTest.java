@@ -110,6 +110,26 @@ public class MessengerImplTest {
         }
     }
 
+    @Test(expected = ConnException.class)
+    public void closeConnectionErrorResponseTest() throws IOException, ConnException {
+        String errorResponse = "{\"error\":\"error response\"}";
+
+        String closeConnectionRequest = "{\"closeConnection\":\"closeConnection\"}";
+        ByteBuffer buffer = socket.generateHeaderedBuffer(closeConnectionRequest.length(), true);
+        buffer.put(closeConnectionRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn(errorResponse);
+
+        try {
+            messenger.closeConnection();
+        } catch (ConnException e) {
+            if (e.getMessage().equals("error response")) {
+                throw e;
+            } else {
+                throw new RuntimeException("Wrong message exception", e);
+            }
+        }
+    }
+
     @Test
     public void closeStatementTest() throws IOException, ConnException {
         String closeStatementRequest = "{\"closeStatement\":\"closeStatement\"}";
@@ -131,6 +151,26 @@ public class MessengerImplTest {
             messenger.closeStatement();
         } catch (ConnException e) {
             if (e.getMessage().contains(EXPECTED_PART_OF_EXCEPTION)) {
+                throw e;
+            } else {
+                throw new RuntimeException("Wrong message exception", e);
+            }
+        }
+    }
+
+    @Test(expected = ConnException.class)
+    public void closeStatementErrorResponseTest() throws IOException, ConnException {
+        String errorResponse = "{\"error\":\"error response\"}";
+
+        String closeStatementRequest = "{\"closeStatement\":\"closeStatement\"}";
+        ByteBuffer buffer = socket.generateHeaderedBuffer(closeStatementRequest.length(), true);
+        buffer.put(closeStatementRequest.getBytes());
+        Mockito.when(socket.sendData(buffer, true)).thenReturn(errorResponse);
+
+        try {
+            messenger.closeStatement();
+        } catch (ConnException e) {
+            if (e.getMessage().equals("error response")) {
                 throw e;
             } else {
                 throw new RuntimeException("Wrong message exception", e);

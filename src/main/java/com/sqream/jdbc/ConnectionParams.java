@@ -14,6 +14,7 @@ public class ConnectionParams {
     private Boolean useSsl;
     private String service;
     private Integer fetchSize;
+    private Integer insertBuffer;
 
     private ConnectionParams() { }
 
@@ -61,6 +62,10 @@ public class ConnectionParams {
         return fetchSize;
     }
 
+    public Integer getInsertBuffer() {
+        return insertBuffer;
+    }
+
     @Override
     public String toString() {
         return "ConnectionParams{" +
@@ -87,6 +92,7 @@ public class ConnectionParams {
         private String password;
         private boolean ssl;
         private Integer fetchSize = null;
+        private Integer insertBuffer = null;
 
         public ConnectionParamsBuilder cluster(String cluster) {
             this.cluster = "true".equalsIgnoreCase(cluster);
@@ -155,6 +161,13 @@ public class ConnectionParams {
             return this;
         }
 
+        public ConnectionParamsBuilder insertBuffer(String insertBuffer) {
+            if (insertBuffer != null) {
+                this.insertBuffer = Integer.parseInt(insertBuffer);
+            }
+            return this;
+        }
+
         public ConnectionParamsBuilder from(ConnectionParams params) throws ConnException {
             if (params == null) {
                 throw new ConnException("Previous connection params can not be null");
@@ -169,6 +182,7 @@ public class ConnectionParams {
             this.password = params.password;
             this.ssl = params.useSsl;
             this.fetchSize = params.fetchSize;
+            this.insertBuffer = params.insertBuffer;
             return this;
         }
 

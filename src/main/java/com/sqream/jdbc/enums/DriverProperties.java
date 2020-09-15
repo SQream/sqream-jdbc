@@ -12,7 +12,8 @@ public enum DriverProperties {
     USER("user"),
     PASSWORD("password"),
     LOGGER_LEVEL("loggerLevel"),
-    LOG_FILE_PATH("logFile");
+    LOG_FILE_PATH("logFile"),
+    INSERT_BUFFER("insertBuffer");
 
 
 

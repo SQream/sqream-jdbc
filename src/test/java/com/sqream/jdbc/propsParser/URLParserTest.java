@@ -114,4 +114,13 @@ public class URLParserTest {
 
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void parseInsertBufferTest() throws SQLException {
+        String expected = "1000";
+
+        String actual = parser.parse(TEST_URL + ";insertBuffer=1000").getProperty(INSERT_BUFFER.getValue());
+
+        assertEquals(expected, actual);
+    }
 }

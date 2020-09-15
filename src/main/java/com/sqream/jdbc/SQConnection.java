@@ -51,10 +51,10 @@ public class SQConnection implements Connection {
 				.password(connectionInfo.getProperty("password"))
 				.useSsl(connectionInfo.getProperty("ssl"))
 				.fetchSize(connectionInfo.getProperty("fetchSize"))
+				.insertBuffer(connectionInfo.getProperty("insertBuffer"))
 				.build();
 
-		globalClient = ConnectorFactory.initConnector(
-				params.getIp(), params.getPort(), params.getCluster(), params.getUseSsl());
+		globalClient = ConnectorFactory.initConnector(params);
 
 		globalClient.connect(params.getDbName(), params.getUser(), params.getPassword(), params.getService());
 

@@ -55,7 +55,7 @@ public class SQPreparedStatement implements PreparedStatement {
         LOGGER.log(Level.FINE, MessageFormat.format("Construct SQPreparedStatement for [{0}]", sql));
         db_name = connParams.getDbName();
         isClosed = false;
-        client = new ConnectorImpl(connParams.getIp(), connParams.getPort(), connParams.getCluster(), connParams.getUseSsl());
+        client = new ConnectorImpl(connParams);
         client.connect(connParams.getDbName(), connParams.getUser(), connParams.getPassword(), "sqream");  // default service
         if (connParams.getFetchSize() != null && connParams.getFetchSize() > 0) {
             client.setFetchSize(connParams.getFetchSize());

@@ -5,8 +5,9 @@ import java.nio.ByteBuffer;
 public class FtBooleanWriter extends BaseWriter {
 
     @Override
-    public void writeBoolean(ByteBuffer buffer, byte value) {
+    public int writeBoolean(ByteBuffer buffer, byte value) {
         buffer.put(value);
+        return Byte.BYTES;
     }
 
     @Override

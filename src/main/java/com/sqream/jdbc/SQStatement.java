@@ -20,8 +20,7 @@ public class SQStatement implements Statement {
 	SQStatement(SQConnection conn, ConnectionParams connParams) throws ConnException {
 		this.connection = conn;
 		this.dbName = connParams.getDbName();
-		this.client = ConnectorFactory.initConnector(conn.getParams().getIp(), conn.getParams().getPort(),
-				conn.getParams().getCluster(), conn.getParams().getUseSsl());
+		this.client = ConnectorFactory.initConnector(conn.getParams());
 		this.client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(),
 				conn.getParams().getService());
         if (connParams.getFetchSize() != null && connParams.getFetchSize() > 0) {
@@ -45,7 +44,7 @@ public class SQStatement implements Statement {
 
 		Connector cancel = null;
 		try {
-			cancel = new ConnectorImpl(connection.getParams().getIp(), connection.getParams().getPort(), connection.getParams().getCluster(), connection.getParams().getUseSsl());
+			cancel = new ConnectorImpl(connection.getParams());
 			cancel.connect(connection.getParams().getDbName(), connection.getParams().getUser(), connection.getParams().getPassword(), connection.getParams().getService());
 			cancel.execute(sql);
 			client.setOpenStatement(false);

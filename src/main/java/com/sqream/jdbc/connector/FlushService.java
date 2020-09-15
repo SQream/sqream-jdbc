@@ -6,6 +6,7 @@ import com.sqream.jdbc.utils.Utils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.text.MessageFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,7 +50,6 @@ public class FlushService {
 
     private void resetBlock(BlockDto block) {
         clearBuffers(block);
-        block.setLimitReached(false);
     }
 
     private void clearBuffers(BlockDto block) {
@@ -70,7 +70,6 @@ public class FlushService {
             }
         }
     }
-
 
     public void close() {
         LOGGER.log(Level.FINE, "Close flush service");

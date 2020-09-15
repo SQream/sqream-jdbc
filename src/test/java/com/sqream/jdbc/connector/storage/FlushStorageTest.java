@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 
+import static com.sqream.jdbc.connector.ConnectorImpl.BYTES_PER_FLUSH_LIMIT;
 import static org.junit.Assert.*;
 
 public class FlushStorageTest {
@@ -77,6 +78,6 @@ public class FlushStorageTest {
     private FlushStorage prepareStorage() {
         TableMetadata metadata = createMetadata();
         BlockDto block = createBlock();
-        return new FlushStorage(metadata, block);
+        return new FlushStorage(metadata, block, BYTES_PER_FLUSH_LIMIT);
     }
 }

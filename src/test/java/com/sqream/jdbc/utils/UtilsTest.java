@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.sqream.jdbc.connector.ConnectorImpl.BYTES_PER_FLUSH_LIMIT;
 import static org.junit.Assert.*;
 
 public class UtilsTest {
@@ -37,7 +38,7 @@ public class UtilsTest {
                 .build();
 
         FlushStorage storage =
-                new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, rowsPerFlush));
+                new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, rowsPerFlush), BYTES_PER_FLUSH_LIMIT);
 
         storage.setInt(0, 42);
         storage.setBoolean(1, true);

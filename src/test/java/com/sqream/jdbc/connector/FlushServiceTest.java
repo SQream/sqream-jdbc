@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.sqream.jdbc.connector.ConnectorImpl.BYTES_PER_FLUSH_LIMIT;
 import static org.junit.Assert.*;
 
 public class FlushServiceTest {
@@ -26,7 +27,7 @@ public class FlushServiceTest {
                 .fromColumnsMetadata(columnMetadataList)
                 .statementType(StatementType.INSERT)
                 .build();
-        FlushStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, rowCounter));
+        FlushStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, rowCounter), BYTES_PER_FLUSH_LIMIT);
         BlockDto block = storage.getBlock();
         SQSocketConnector socketConnector = Mockito.mock(SQSocketConnector.class);
         ByteBufferPool bufferPool = new ByteBufferPool(1, rowCounter, metadata);

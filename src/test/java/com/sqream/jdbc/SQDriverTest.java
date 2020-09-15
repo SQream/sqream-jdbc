@@ -8,12 +8,9 @@ import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnectorImpl;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -46,23 +43,10 @@ public class SQDriverTest {
 
     private static final Properties CORRECT_CONN_PROPERTIES = new Properties();
 
-    private Driver driver = new SQDriver();
-    private Level logLevelBeforeTest;
-
     // init connection properties
     static {
         CORRECT_CONN_PROPERTIES.setProperty("user", "sqream");
         CORRECT_CONN_PROPERTIES.setProperty("password", "password");
-    }
-
-    @Before
-    public void saveCurrentDebugLevel() throws SQLFeatureNotSupportedException {
-        logLevelBeforeTest = driver.getParentLogger().getLevel();
-    }
-
-    @After
-    public void setPreviousDebugLevel() throws SQLFeatureNotSupportedException {
-        driver.getParentLogger().setLevel(logLevelBeforeTest);
     }
 
 	@Test
@@ -76,6 +60,7 @@ public class SQDriverTest {
             assertTrue("Can not create temp folder for logs", mkdir);
         }
 
+        Driver driver = new SQDriver();
         for (int i = 0; i < connAmount; i++) {
             driver.connect(
                     MessageFormat.format("{0};loggerLevel=DEBUG;logFile={1}/test.log", URL, TEMP_DIR),
@@ -99,84 +84,85 @@ public class SQDriverTest {
 
     @Test
     public void whenCorrectUriAcceptsURLReturnTrue() throws SQLException {
-        assertTrue(driver.acceptsURL(CORRECT_URI));
+        assertTrue(new SQDriver().acceptsURL(CORRECT_URI));
     }
 
     @Test(expected = SQLException.class)
     public void whenUriIsNullAcceptsURLThowExceptionTest() throws SQLException {
-        driver.acceptsURL(null);
+        new SQDriver().acceptsURL(null);
     }
 
     @Test(expected = SQLException.class)
     public void whenUriIsEmptyAcceptsURLThowExceptionTest() throws SQLException {
-        driver.acceptsURL("");
+        new SQDriver().acceptsURL("");
     }
 
     @Test
     public void whenAnotherProviderInUriAcceptsURLReturnFalse() throws SQLException {
-        assertFalse(driver.acceptsURL(ANOTHER_PROVIDER_URI));
+        assertFalse(new SQDriver().acceptsURL(ANOTHER_PROVIDER_URI));
     }
 
     public void whenConnectWithAnotherProviderReturnNullTest() throws SQLException {
-        Connection conn = driver.connect(ANOTHER_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
+        Connection conn = new SQDriver().connect(ANOTHER_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
         assertNull(conn);
     }
 
     @Test
     public void getMinorVersionTest() {
-        assertEquals(MINOR_VERSION, driver.getMinorVersion());
+        assertEquals(MINOR_VERSION, new SQDriver().getMinorVersion());
     }
 
     @Test
     public void getMajorVersionTest() {
-        assertEquals(MAJOR_VERSION, driver.getMajorVersion());
+        assertEquals(MAJOR_VERSION, new SQDriver().getMajorVersion());
     }
 
     @Test
     public void jdbcCompliantTest() {
-        assertTrue(driver.jdbcCompliant());
+        assertTrue(new SQDriver().jdbcCompliant());
     }
 
     @Test
     public void getParentLoggerTest() throws SQLFeatureNotSupportedException {
-        assertNotNull(driver.getParentLogger());
+        assertNotNull(new SQDriver().getParentLogger());
     }
 
     @Test
     public void getPropertyInfoTest() throws SQLException {
-        DriverPropertyInfo[] propertyInfo = driver.getPropertyInfo(null, null);
+        DriverPropertyInfo[] propertyInfo = new SQDriver().getPropertyInfo(null, null);
         assertEquals(0, propertyInfo.length);
     }
 
     @Test
     public void whenProviderLowerCaseConnectReturnNullTest() throws SQLException {
-        Connection conn = driver.connect(LOWER_CASE_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
+        Connection conn = new SQDriver().connect(LOWER_CASE_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
         assertNull(conn);
     }
 
     @Test(expected = SQLException.class)
     public void whenPropertiesIsNullConnectThrowExceptionTest() throws SQLException {
-        driver.connect(CORRECT_URI, null);
+        new SQDriver().connect(CORRECT_URI, null);
     }
 
     @Test
     public void whenPropertiesDoNotContainUserOrPasswordConnectReturnConnectionTest() throws SQLException {
         mockConnector();
-        Connection connection = driver.connect(CORRECT_URI, new Properties());
+        Connection connection = new SQDriver().connect(CORRECT_URI, new Properties());
         assertNotNull(connection);
     }
 
     @Test
     public void loggerLevelIsOffTest() throws SQLException {
         mockConnector();
-        driver.connect(CORRECT_URI, new Properties());
-        Level expectedLevel = driver.getParentLogger().getLevel();
+        new SQDriver().connect(CORRECT_URI, new Properties());
+        Level expectedLevel = new SQDriver().getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.OFF);
     }
 
     @Test
     public void loggerLevelDebugTest() throws SQLException {
         mockConnector();
+        Driver driver = new SQDriver();
         driver.connect(CORRECT_URI + ";loggerLevel=DEBUG", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.FINE);
@@ -185,6 +171,7 @@ public class SQDriverTest {
     @Test
     public void loggerLevelTraceTest() throws SQLException, IOException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
         mockConnector();
+        Driver driver = new SQDriver();
         driver.connect(CORRECT_URI + ";loggerLevel=TRACE", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.FINEST);
@@ -193,6 +180,7 @@ public class SQDriverTest {
     @Test
     public void loggerLevelWrongParamKeyIgnoredTest() throws SQLException {
         mockConnector();
+        Driver driver = new SQDriver();
         driver.connect(CORRECT_URI + ";loggerWrongKeyLevel=DEBUG", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.OFF);
@@ -200,15 +188,14 @@ public class SQDriverTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void loggerLevelUnsupportedLevel() throws SQLException {
-        driver.connect(CORRECT_URI + ";loggerLevel=UNSUPPORTED_LEVEL", new Properties());
+        new SQDriver().connect(CORRECT_URI + ";loggerLevel=UNSUPPORTED_LEVEL", new Properties());
     }
 
     private void mockConnector() {
         Connector connectorMock = Mockito.mock(ConnectorImpl.class);
         PowerMockito.mockStatic(ConnectorFactory.class);
         try {
-            when(ConnectorFactory.initConnector(
-                    any(String.class), any(Integer.class), any(Boolean.class), any(Boolean.class)))
+            when(ConnectorFactory.initConnector(any(ConnectionParams.class)))
                     .thenReturn(connectorMock);
         } catch (ConnException e) {
             throw new RuntimeException(e);

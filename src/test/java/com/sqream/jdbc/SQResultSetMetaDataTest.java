@@ -19,7 +19,13 @@ public class SQResultSetMetaDataTest {
     public void isCurrencyTest() throws
             ConnException, NoSuchAlgorithmException, IOException, KeyManagementException, SQLException {
 
-        Connector connector = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
+        Connector connector = new ConnectorImpl(
+                ConnectionParams.builder()
+                        .ipAddress(IP)
+                        .port(String.valueOf(PORT))
+                        .cluster(String.valueOf(CLUSTER))
+                        .useSsl(String.valueOf(SSL))
+                        .build());
 
         SQResultSetMetaData resultSetMetaData = new SQResultSetMetaData(connector, DATABASE);
 

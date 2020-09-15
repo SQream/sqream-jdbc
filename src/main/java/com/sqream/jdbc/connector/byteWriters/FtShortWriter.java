@@ -5,23 +5,27 @@ import java.nio.ByteBuffer;
 public class FtShortWriter extends BaseWriter {
 
     @Override
-    public void writeUbyte(ByteBuffer buffer, Byte value) {
+    public int writeUbyte(ByteBuffer buffer, Byte value) {
         buffer.putShort(value);
+        return Short.BYTES;
     }
 
     @Override
-    public void writeShort(ByteBuffer buffer, Short value) {
+    public int writeShort(ByteBuffer buffer, Short value) {
         buffer.putShort(value);
+        return Short.BYTES;
     }
 
     @Override
-    public void writeInt(ByteBuffer buffer, Integer value) {
+    public int writeInt(ByteBuffer buffer, Integer value) {
         buffer.putShort(toShortExact(value));
+        return Short.BYTES;
     }
 
     @Override
-    public void writeLong(ByteBuffer buffer, Long value) {
+    public int writeLong(ByteBuffer buffer, Long value) {
         buffer.putShort(toShortExact(value));
+        return Short.BYTES;
     }
 
     @Override

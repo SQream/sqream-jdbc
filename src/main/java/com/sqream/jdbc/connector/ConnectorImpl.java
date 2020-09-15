@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector;
 
+import com.sqream.jdbc.ConnectionParams;
 import com.sqream.jdbc.connector.enums.StatementType;
 import com.sqream.jdbc.connector.fetchService.FetchService;
 import com.sqream.jdbc.connector.fetchService.FetchServiceFactory;
@@ -11,7 +12,6 @@ import com.sqream.jdbc.connector.storage.fetchStorage.EmptyFetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorageImpl;
 
-import java.sql.SQLException;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.sqream.jdbc.connector.enums.StatementType.*;
+import static com.sqream.jdbc.utils.Utils.calcRowLimit;
 
 public class ConnectorImpl implements Connector {
     private static final Logger LOGGER = Logger.getLogger(ConnectorImpl.class.getName());
@@ -51,10 +52,11 @@ public class ConnectorImpl implements Connector {
     private String user;
     private String password;
     private String service;
-    private boolean useSsl;
+    private ConnectionParams connParams;
 
     // Binary data related
-    public static final int ROWS_PER_FLUSH = 100_000;
+    public static final int ROWS_PER_FLUSH_LIMIT = 1_000_000;
+    public static final int BYTES_PER_FLUSH_LIMIT = 200 * 1024 * 1024;
 
     // Column metadata
     private StatementType statementType;
@@ -82,12 +84,17 @@ public class ConnectorImpl implements Connector {
     private ByteBufferPool byteBufferPool;
 
     private int timeout = 0;
+    private int insertBufferLimit = BYTES_PER_FLUSH_LIMIT;
 
-    public ConnectorImpl(String ip, int port, boolean cluster, boolean ssl) throws ConnException {
+    public ConnectorImpl(ConnectionParams connParams) throws ConnException {
         /* JSON parsing engine setup, initial socket connection */
-        useSsl = ssl;
-        socket = SQSocketConnector.connect(ip, port, useSsl, cluster);
+        this.connParams = connParams;
+        socket = SQSocketConnector.connect(
+                connParams.getIp(), connParams.getPort(), connParams.getUseSsl(), connParams.getCluster());
         this.messenger = MessengerImpl.getInstance(socket);
+        if (this.connParams.getInsertBuffer() != null && this.connParams.getInsertBuffer() > 0) {
+            this.insertBufferLimit = this.connParams.getInsertBuffer();
+        }
     }
 
     // Internal Mechanism Functions
@@ -128,12 +135,13 @@ public class ConnectorImpl implements Connector {
         // Create Storage for insert / select operations
         if (statementType.equals(INSERT)) {
             // Initiate buffers for each column using the metadata
-            BlockDto block = new MemoryAllocationService().buildBlock(tableMetadata, ROWS_PER_FLUSH);
+            int rowsPerFlush = calcRowLimit(tableMetadata, ROWS_PER_FLUSH_LIMIT, insertBufferLimit);
+            BlockDto block = new MemoryAllocationService().buildBlock(tableMetadata, rowsPerFlush);
             flushService = FlushService.getInstance(socket, messenger);
-            flushStorage = new FlushStorage(tableMetadata, block);
+            flushStorage = new FlushStorage(tableMetadata, block, insertBufferLimit);
 
             try {
-                byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, ROWS_PER_FLUSH, tableMetadata);
+                byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, rowsPerFlush, tableMetadata);
             } catch (OutOfMemoryError error) {
                 try {
                     this.closeConnection();
@@ -221,10 +229,10 @@ public class ConnectorImpl implements Connector {
         StatementStateDto statementState = messenger.prepareStatement(statement, chunkSize);
 
 
-        int port = useSsl ? statementState.getPortSsl() : statementState.getPort();
+        int port = connParams.getUseSsl() ? statementState.getPortSsl() : statementState.getPort();
         // Reconnect and reestablish statement if redirected by load balancer
         if (statementState.isReconnect()) {
-            socket.reconnect(statementState.getIp(), port, useSsl);
+            socket.reconnect(statementState.getIp(), port, connParams.getUseSsl());
 
             // Sending reconnect, reconstruct commands
             messenger.reconnect(database, user, password, service, connectionId, statementState.getListenerId());

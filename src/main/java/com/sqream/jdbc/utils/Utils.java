@@ -10,11 +10,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static tlschannel.util.Util.assertTrue;
 
 public class Utils {
+    private static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
 
     //FIXME: Alex K 29.12.19 Check why ZoneId is not used. Cover with tests or remove if it's not necessary.
     public static int dateToInt(Date d ,ZoneId zone) {
@@ -107,6 +110,28 @@ public class Utils {
             totalAllocated += calculateBuffersSize(arrays[i]);
         }
         return totalAllocated;
+    }
+
+    public static int calcRowLimit(TableMetadata metadata, int rowsLimit, long memoryLimit) {
+        if (metadata == null || rowsLimit < 1 || memoryLimit < 1) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "metadata=[{0}], rowsLimit=[{1}], memoryLimit=[{2}]", metadata, rowsLimit, memoryLimit));
+        }
+
+        int rowSize = 0;
+        for (int idx = 0; idx < metadata.getRowLength(); idx++) {
+            rowSize += metadata.getSize(idx);
+            if (metadata.isNullable(idx)) {
+                rowSize++;
+            }
+            if (metadata.isTruVarchar(idx)) {
+                rowSize++;
+            }
+        }
+        LOGGER.log(Level.FINE, MessageFormat.format("rowSize=[{0}]", rowSize));
+        long result = (long) rowSize * rowsLimit <= memoryLimit ? rowsLimit : memoryLimit / rowSize;
+        LOGGER.log(Level.FINE, MessageFormat.format("Rows limit [{0}]", result));
+        return Math.toIntExact(result);
     }
 
     public static long totalLengthForHeader(TableMetadata metadata, BlockDto block) {

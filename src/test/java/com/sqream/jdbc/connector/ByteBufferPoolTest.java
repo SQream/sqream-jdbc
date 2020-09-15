@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.sqream.jdbc.connector.ConnectorImpl.BYTES_PER_FLUSH_LIMIT;
 import static org.junit.Assert.*;
 
 public class ByteBufferPoolTest {
@@ -20,7 +21,7 @@ public class ByteBufferPoolTest {
 
         TableMetadata metadata = createTableMetadata(rowLength);
 
-        FlushStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize));
+        FlushStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize), BYTES_PER_FLUSH_LIMIT);
 
         BlockDto blockFromStorage = storage.getBlock();
 
@@ -40,7 +41,7 @@ public class ByteBufferPoolTest {
 
         TableMetadata metadata = createTableMetadata(rowLength);
 
-        FlushStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize));
+        FlushStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize), BYTES_PER_FLUSH_LIMIT);
 
         BlockDto blockFromStorage = storage.getBlock();
         int blockFromStorageHashCode = blockFromStorage.hashCode();

@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector;
 
+import com.sqream.jdbc.ConnectionParams;
 import com.sqream.jdbc.connector.socket.SQSocket;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import org.junit.Test;
@@ -20,8 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 
-import static com.sqream.jdbc.TestEnvironment.IP;
-import static com.sqream.jdbc.TestEnvironment.PORT;
+import static com.sqream.jdbc.TestEnvironment.*;
 import static com.sqream.jdbc.connector.socket.SQSocketConnector.SUPPORTED_PROTOCOLS;
 import static junit.framework.TestCase.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,7 +49,13 @@ public class SQSocketConnectorTest {
         PowerMockito.mockStatic(SQSocket.class);
         PowerMockito.when(SQSocket.connect(IP, PORT, USE_SSL)).thenReturn(socketMock);
 
-        new ConnectorImpl(IP, PORT, CLUSTER, USE_SSL);
+        new ConnectorImpl(
+                ConnectionParams.builder()
+                        .ipAddress(IP)
+                        .port(String.valueOf(PORT))
+                        .cluster(String.valueOf(CLUSTER))
+                        .useSsl(String.valueOf(SSL))
+                        .build());
 
         Mockito.verify(socketMock).close();
     }
@@ -68,7 +74,13 @@ public class SQSocketConnectorTest {
             PowerMockito.mockStatic(SQSocket.class);
             PowerMockito.when(SQSocket.connect(IP, PORT, USE_SSL)).thenReturn(socketMock);
 
-            new ConnectorImpl(IP, PORT, CLUSTER, USE_SSL);
+            new ConnectorImpl(
+                    ConnectionParams.builder()
+                            .ipAddress(IP)
+                            .port(String.valueOf(PORT))
+                            .cluster(String.valueOf(CLUSTER))
+                            .useSsl(String.valueOf(SSL))
+                            .build());
         } catch (ConnException e) {
             if (CORRECT_MESSAGE.equals(e.getMessage())) {
                 throw e;

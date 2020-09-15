@@ -5,8 +5,9 @@ import java.nio.ByteBuffer;
 public class FtDateWriter extends BaseWriter {
 
     @Override
-    public void writeDate(ByteBuffer buffer, int value) {
+    public int writeDate(ByteBuffer buffer, int value) {
         buffer.putInt(value);
+        return Integer.BYTES;
     }
 
     @Override

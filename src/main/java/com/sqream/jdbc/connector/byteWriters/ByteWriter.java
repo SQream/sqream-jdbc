@@ -4,25 +4,25 @@ import java.nio.ByteBuffer;
 
 public interface ByteWriter {
 
-    void writeInt(ByteBuffer buffer, Integer value);
+    int writeInt(ByteBuffer buffer, Integer value);
 
-    void writeShort(ByteBuffer buffer, Short value);
+    int writeShort(ByteBuffer buffer, Short value);
 
-    void writeLong(ByteBuffer buffer, Long value);
+    int writeLong(ByteBuffer buffer, Long value);
 
-    void writeFloat(ByteBuffer buffer, Float value);
+    int writeFloat(ByteBuffer buffer, Float value);
 
-    void writeDouble(ByteBuffer buffer, Double value);
+    int writeDouble(ByteBuffer buffer, Double value);
 
-    void writeBoolean(ByteBuffer buffer, byte value);
+    int writeBoolean(ByteBuffer buffer, byte value);
 
-    void writeUbyte(ByteBuffer buffer, Byte value);
+    int writeUbyte(ByteBuffer buffer, Byte value);
 
-    void writeDate(ByteBuffer buffer, int value);
+    int writeDate(ByteBuffer buffer, int value);
 
-    void writeDateTime(ByteBuffer buffer, long value);
+    int writeDateTime(ByteBuffer buffer, long value);
 
-    void writeVarchar(ByteBuffer buffer, byte[] value, int colLength);
+    int writeVarchar(ByteBuffer buffer, byte[] value, int colLength);
 
-    void writeNvarchar(ByteBuffer buffer, byte[] value);
+    int writeNvarchar(ByteBuffer buffer, byte[] value);
 }

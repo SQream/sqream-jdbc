@@ -5,8 +5,9 @@ import java.nio.ByteBuffer;
 public class FtDoubleWriter extends BaseWriter {
 
     @Override
-    public void writeDouble(ByteBuffer buffer, Double value) {
+    public int writeDouble(ByteBuffer buffer, Double value) {
         buffer.putDouble(value);
+        return Double.BYTES;
     }
 
     @Override

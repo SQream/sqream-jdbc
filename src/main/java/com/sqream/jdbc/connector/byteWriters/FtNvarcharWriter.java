@@ -5,8 +5,9 @@ import java.nio.ByteBuffer;
 public class FtNvarcharWriter extends BaseWriter {
 
     @Override
-    public void writeNvarchar(ByteBuffer buffer, byte[] value) {
+    public int writeNvarchar(ByteBuffer buffer, byte[] value) {
         buffer.put(value);
+        return value.length;
     }
 
     @Override

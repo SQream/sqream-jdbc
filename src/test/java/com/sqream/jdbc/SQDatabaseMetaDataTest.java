@@ -19,7 +19,13 @@ public class SQDatabaseMetaDataTest {
     @Before
     public void setUp() throws ConnException {
 
-        Connector connector = new ConnectorImpl(IP, PORT, CLUSTER, SSL);
+        Connector connector = new ConnectorImpl(
+                ConnectionParams.builder()
+                        .ipAddress(IP)
+                        .port(String.valueOf(PORT))
+                        .cluster(String.valueOf(CLUSTER))
+                        .useSsl(String.valueOf(SSL))
+                        .build());
         SQConnection connection = new SQConnection(connector);
         metadata = new SQDatabaseMetaData(connector, connection, USER, DATABASE);
     }

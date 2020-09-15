@@ -74,7 +74,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 
 	SQResultSet metadataStatement(String sql) throws ConnException, IOException, SQLException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
 
-		Connector client = new ConnectorImpl(conn.getParams().getIp(), conn.getParams().getPort(), conn.getParams().getCluster(), conn.getParams().getUseSsl());
+		Connector client = new ConnectorImpl(conn.getParams());
 		client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(), conn.getParams().getService());
 		client.execute(sql);
 

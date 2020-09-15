@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.sqream.jdbc.connector.ConnectorImpl.BYTES_PER_FLUSH_LIMIT;
 import static com.sqream.jdbc.connector.JsonParser.TEXT_ITEM_SIZE;
 import static org.junit.Assert.*;
 
@@ -26,7 +27,7 @@ public class ColumnStorageTest {
                 .build();
 
         FlushStorage storage =
-                new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize));
+                new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, blockSize), BYTES_PER_FLUSH_LIMIT);
 
         String sampleText = "1";
         String testString = String.join("", Collections.nCopies(TEXT_ITEM_SIZE * 3, sampleText));

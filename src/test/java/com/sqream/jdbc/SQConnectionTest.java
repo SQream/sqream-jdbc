@@ -72,7 +72,7 @@ public class SQConnectionTest {
     }
 
     @Test
-    public void whenPassedWrongDatabaseThenReturnCorrectStateTest() {
+    public void whenPassedWrongDatabaseThenReturnCorrectStateTest() throws ClassNotFoundException {
         String WRONG_DB_NAME = "wrong_password";
         String URL_WITH_WRONG_DB = MessageFormat.format(
                 "jdbc:Sqream://{0}:{1}/{2};user={3};password={4};cluster={5};ssl={6};service={7}",
@@ -80,6 +80,7 @@ public class SQConnectionTest {
 
         String expectedCode = "3D000";
 
+        Class.forName("com.sqream.jdbc.SQDriver");
         try (Connection conn = DriverManager.getConnection(URL_WITH_WRONG_DB, new Properties())) {
         } catch (SQLException e) {
             assertEquals(expectedCode, e.getSQLState());

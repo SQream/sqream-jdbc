@@ -18,7 +18,7 @@ public class SQStatementTest {
 
     @BeforeClass
     public static void setUp() throws SQLException {
-        int AMOUNT = 28;
+        int AMOUNT = 30;
         String createTable = MessageFormat.format("create or replace table {0} (col1 int);", testTableForDelay);
         String insertRow = MessageFormat.format("insert into {0} values (1);", testTableForDelay);
         String multiply = MessageFormat.format("insert into {0} select * from {0};", testTableForDelay);
@@ -270,7 +270,7 @@ public class SQStatementTest {
     @Test
     public void whenFetchSizeLessThanFetchedBlockProcessingOneByOneTest() throws SQLException {
         int FETCH_SIZE = 1;
-        int AMOUNT_OF_ROWS = ConnectorImpl.ROWS_PER_FLUSH * 3;
+        int AMOUNT_OF_ROWS = ConnectorImpl.ROWS_PER_FLUSH_LIMIT * 3;
         String CREATE_TABLE_SQL = "create or replace table fetch_size_test(col1 int);";
         String INSERT_SQL = "insert into fetch_size_test values (?);";
         String SELECT_SQL = "select * from fetch_size_test;";
@@ -303,8 +303,8 @@ public class SQStatementTest {
 
     @Test
     public void whenFetchSizeMoreThanFetchedBlockProcessingFewBlocksAtOneFetchTest() throws SQLException {
-        int FETCH_SIZE = ConnectorImpl.ROWS_PER_FLUSH * 3 + 1;
-        int AMOUNT_OF_ROWS = ConnectorImpl.ROWS_PER_FLUSH * 10;
+        int FETCH_SIZE = ConnectorImpl.ROWS_PER_FLUSH_LIMIT * 3 + 1;
+        int AMOUNT_OF_ROWS = ConnectorImpl.ROWS_PER_FLUSH_LIMIT * 10;
         String CREATE_TABLE_SQL = "create or replace table fetch_size_test(col1 int);";
         String INSERT_SQL = "insert into fetch_size_test values (?);";
         String SELECT_SQL = "select * from fetch_size_test;";

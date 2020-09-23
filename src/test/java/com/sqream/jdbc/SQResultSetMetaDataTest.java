@@ -65,4 +65,34 @@ public class SQResultSetMetaDataTest {
         assertEquals(10, rsmeta.getColumnDisplaySize(13));
         assertEquals(23, rsmeta.getColumnDisplaySize(14));
     }
+
+    @Test
+    public void getColumnTypeTest() throws SQLException {
+        String createTable = "create or replace table col_types_test" +
+                "(col1 bool, col2 tinyint, col3 smallint, col4 int, col5 bigint, col6 real, col7 double, " +
+                "col8 varchar(10), col9 nvarchar(10), col10 text(10), col11 date, col12 datetime)";
+        String select = "select * from col_types_test";
+
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement()) {
+
+            stmt.executeUpdate(createTable);
+            ResultSet rs = stmt.executeQuery(select);
+            ResultSetMetaData metaData = rs.getMetaData();
+
+            assertEquals(Types.BOOLEAN, metaData.getColumnType(1));
+            assertEquals(Types.TINYINT, metaData.getColumnType(2));
+            assertEquals(Types.SMALLINT, metaData.getColumnType(3));
+            assertEquals(Types.INTEGER, metaData.getColumnType(4));
+            assertEquals(Types.BIGINT, metaData.getColumnType(5));
+            assertEquals(Types.REAL, metaData.getColumnType(6));
+            assertEquals(Types.DOUBLE, metaData.getColumnType(7));
+            assertEquals(Types.VARCHAR, metaData.getColumnType(8));
+            assertEquals(Types.NVARCHAR, metaData.getColumnType(9));
+            assertEquals(Types.NVARCHAR, metaData.getColumnType(10));
+            assertEquals(Types.DATE, metaData.getColumnType(11));
+            assertEquals(Types.TIMESTAMP, metaData.getColumnType(12));
+
+        }
+    }
 }

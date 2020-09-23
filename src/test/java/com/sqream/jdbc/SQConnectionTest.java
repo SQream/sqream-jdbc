@@ -49,7 +49,7 @@ public class SQConnectionTest {
     }
 
     @Test
-    public void whenPassedWrongAuthThenReturnCorrectStateTest() {
+    public void whenPassedWrongAuthThenReturnCorrectStateTest() throws ClassNotFoundException {
         String WRONG_USER = "wrong_user";
         String WRONG_PASS = "wrong_password";
         String URL_WITH_WRONG_USER = MessageFormat.format(
@@ -60,11 +60,13 @@ public class SQConnectionTest {
                 IP, String.valueOf(PORT), DATABASE, USER, WRONG_PASS, CLUSTER, SSL, SERVICE);
         String expectedCode = "28000";
 
+        Class.forName("com.sqream.jdbc.SQDriver");
         try (Connection conn = DriverManager.getConnection(URL_WITH_WRONG_USER, new Properties())) {
         } catch (SQLException e) {
             assertEquals(expectedCode, e.getSQLState());
         }
 
+        Class.forName("com.sqream.jdbc.SQDriver");
         try (Connection conn = DriverManager.getConnection(URL_WITH_WRONG_PASS, new Properties())) {
         } catch (SQLException e) {
             assertEquals(expectedCode, e.getSQLState());

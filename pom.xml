@@ -7,16 +7,34 @@
     <!-->Don't change version line from no. 6 as used by Jenkins<-->
     <name>SQream JDBC</name>
     <packaging>jar</packaging>
-    <url>http://maven.apache.org</url>
-    
+    <description>JDBC driver for SQream DB</description>
+    <url>https://sqream.com/product/client-drivers/</url>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jvm.options>-Dfile.encoding="UTF-8"</jvm.options>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/SQream/sqream-jdbc</url>
+    </scm>
+    <developers>
+        <developer>
+            <name>Alex Karpov</name>
+            <email>alexk@sqreamtech.com</email>
+            <organization>SQream</organization>
+            <organizationUrl>https://sqream.com/</organizationUrl>
+        </developer>
+    </developers>
 
     <dependencies>
-        
+
         <!-- https://mvnrepository.com/artifact/com.github.marianobarrios/tls-channel -->
         <dependency>
             <groupId>com.github.marianobarrios</groupId>
@@ -84,6 +102,30 @@
                 </manifest>
               </archive>
             </configuration>
+              <executions>
+                  <execution>
+                      <id>empty-javadoc-jar</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>jar</goal>
+                      </goals>
+                      <configuration>
+                          <classifier>javadoc</classifier>
+                          <classesDirectory>${basedir}/javadoc</classesDirectory>
+                      </configuration>
+                  </execution>
+                  <execution>
+                      <id>empty-sources-jar</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>jar</goal>
+                      </goals>
+                      <configuration>
+                          <classifier>sources</classifier>
+                          <classesDirectory>${basedir}/sources</classesDirectory>
+                      </configuration>
+                  </execution>
+              </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -9,7 +9,6 @@ import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +27,7 @@ import javax.script.ScriptException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorImpl;
 import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.utils.SQLEscapeUtils;
 
 
 /**
@@ -99,7 +99,10 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		if (catalog == null) {
 			catalog = dbName;
 		}
-		String sql = "select get_columns(" + CheckNull(catalog) + "," + CheckNull(schemaPattern) + "," + CheckNull(tableNamePattern) + ",'*')";
+
+		String tableName = SQLEscapeUtils.escape(checkNull(tableNamePattern)).trim();
+
+		String sql = "select get_columns(" + checkNull(catalog) + "," + checkNull(schemaPattern) + "," + tableName + ",'*')";
 		sql = sql.toLowerCase();
 		try {
 			return metadataStatement(sql);
@@ -175,8 +178,8 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		if (catalog == null) {
 			catalog = dbName;
 		}
-		String sql = "select get_tables(" + CheckNull(catalog) + ","
-				+ CheckNull(schemaPattern) + ",'*'," + CheckNull(strTypes)
+		String sql = "select get_tables(" + checkNull(catalog) + ","
+				+ checkNull(schemaPattern) + ",'*'," + checkNull(strTypes)
 				+ ")";
 		try {
 			return metadataStatement(sql);
@@ -679,7 +682,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	}
 
 
-	private String CheckNull(String str) {
+	private String checkNull(String str) {
 		return str == null ? "'*'" : "'" + str.trim() + "'";
 	}
 

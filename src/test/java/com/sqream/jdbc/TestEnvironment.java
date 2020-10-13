@@ -7,7 +7,7 @@ import java.text.MessageFormat;
 
 public class TestEnvironment {
 
-    public static final String IP = "127.0.0.1";
+    public static final String IP = "192.168.0.158";
     public static final int PORT = 5000;
     public static final String DATABASE = "master";
     public static boolean CLUSTER = false;

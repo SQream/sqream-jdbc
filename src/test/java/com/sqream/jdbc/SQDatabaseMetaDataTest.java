@@ -3,10 +3,12 @@ package com.sqream.jdbc;
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorImpl;
+import com.sun.javafx.binding.StringFormatter;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -163,6 +165,31 @@ public class SQDatabaseMetaDataTest {
         assertEquals(columnsByQuery.size(), columnsFromMetadata.size());
         for (String tableFromQuery : columnsByQuery) {
             assertTrue(columnsFromMetadata.contains(tableFromQuery));
+        }
+    }
+
+    @Test
+    public void escapeSqlSpecialCharacters() throws SQLException {
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("create or replace table test_table (col1 int);");
+            }
+
+            try (ResultSet rs = conn.getMetaData().getColumns(DATABASE, "public", "test_table", null)) {
+                assertTrue(rs.next());
+                assertEquals(rs.getString(4), "col1");
+            }
+
+            try (ResultSet rs = conn.getMetaData().getColumns(DATABASE, "public", "test\\_table", null)) {
+                assertTrue(rs.next());
+                assertEquals(rs.getString(4), "col1");
+            }
+
+            try (ResultSet rs = conn.getMetaData().getColumns(DATABASE, "public", "\ntest_table", null)) {
+                assertTrue(rs.next());
+                assertEquals(rs.getString(4), "col1");
+            }
         }
     }
 

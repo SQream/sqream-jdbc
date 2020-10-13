@@ -20,7 +20,7 @@ public class SQLEscapeUtils {
     /**
      * Escapes special SQL characters
      */
-    public static String escape(String str) {
+    public static String unescape(String str) {
         for (Map.Entry<String,String> entry : map.entrySet()) {
             str = str.replaceAll(String.format("\\%s",entry.getKey()), entry.getValue());
         }

@@ -100,7 +100,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 			catalog = dbName;
 		}
 
-		String tableName = SQLEscapeUtils.escape(checkNull(tableNamePattern)).trim();
+		String tableName = SQLEscapeUtils.unescape(checkNull(tableNamePattern)).trim();
 
 		String sql = "select get_columns(" + checkNull(catalog) + "," + checkNull(schemaPattern) + "," + tableName + ",'*')";
 		sql = sql.toLowerCase();

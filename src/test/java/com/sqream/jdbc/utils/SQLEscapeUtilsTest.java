@@ -26,6 +26,6 @@ public class SQLEscapeUtilsTest {
         Assert.assertEquals(
                 MessageFormat.format("Failed to replace [{0}] with [{1}]", toEscape, escaped),
                 expected,
-                SQLEscapeUtils.escape(origin));
+                SQLEscapeUtils.unescape(origin));
     }
 }

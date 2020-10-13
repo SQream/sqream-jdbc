@@ -3,12 +3,10 @@ package com.sqream.jdbc;
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorImpl;
-import com.sun.javafx.binding.StringFormatter;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.*;
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 

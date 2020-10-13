@@ -4,27 +4,38 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SQLEscapeUtils {
-    private static final Map<String, String> map = new HashMap<>();
+    private static final Map<Character, Character> special = new HashMap<>();
 
     static {
-        map.put("\\n", "\n");
-        map.put("\\b", "\b");
-        map.put("\\r", "\r");
-        map.put("\\%", "%");
-        map.put("\\_", "_");
-        map.put("\\t", "\t");
-        map.put("\\\"", "\"");
-        map.put("\\'", "'");
+        special.put('n', '\n');
+        special.put('b', '\b');
+        special.put('r', '\r');
+        special.put('%', '%');
+        special.put('_', '_');
+        special.put('t', '\t');
+        special.put('"', '"');
+        special.put('\'', '\'');
     }
 
     /**
-     * Escapes special SQL characters
+     * Unescapes special SQL characters
      */
     public static String unescape(String str) {
-        for (Map.Entry<String,String> entry : map.entrySet()) {
-            str = str.replaceAll(String.format("\\%s",entry.getKey()), entry.getValue());
+        StringBuilder newStr = new StringBuilder();
+
+        boolean escape = false;
+        for (int i = 0; i < str.length(); i++) {
+            Character ch = str.charAt(i);
+            if (escape) {
+                newStr.append(special.getOrDefault(ch, ch));
+                escape = false;
+            } else if (ch.equals('\\')) {
+                escape = true;
+            } else {
+                newStr.append(ch);
+            }
         }
-        return str;
+        return newStr.toString();
     }
 
 }

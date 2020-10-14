@@ -10,7 +10,6 @@ public class SQLEscapeUtilsTest {
     @Test
     public void escapeTest() {
         testEscape("\\n", "\n");
-        testEscape("\\b", "\b");
         testEscape("\\r", "\r");
         testEscape("\\%", "%");
         testEscape("\\_", "_");

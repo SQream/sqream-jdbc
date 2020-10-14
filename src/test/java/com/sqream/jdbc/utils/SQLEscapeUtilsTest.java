@@ -28,4 +28,14 @@ public class SQLEscapeUtilsTest {
                 expected,
                 SQLEscapeUtils.unescape(origin));
     }
+
+    @Test
+    public void specialCasesTest() {
+        Assert.assertEquals("\n", SQLEscapeUtils.unescape("\\n"));
+        Assert.assertEquals("\\n", SQLEscapeUtils.unescape("\\\\n"));
+        Assert.assertEquals("\\\n", SQLEscapeUtils.unescape("\\\\\\n"));
+        Assert.assertEquals("\\n\\", SQLEscapeUtils.unescape("\\\\n\\\\"));
+        Assert.assertEquals("ab", SQLEscapeUtils.unescape("\\a\\b"));
+        Assert.assertEquals("aaa", SQLEscapeUtils.unescape("aaa\\"));
+    }
 }

@@ -8,13 +8,8 @@ public class SQLEscapeUtils {
 
     static {
         special.put('n', '\n');
-        special.put('b', '\b');
         special.put('r', '\r');
-        special.put('%', '%');
-        special.put('_', '_');
         special.put('t', '\t');
-        special.put('"', '"');
-        special.put('\'', '\'');
     }
 
     /**

@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sqream</groupId>
     <artifactId>sqream-jdbc</artifactId>
-    <version>4.3.0</version>
+    <version>4.3.0_skt</version>
     <!-->Don't change version line from no. 6 as used by Jenkins<-->
     <name>SQream JDBC</name>
     <packaging>jar</packaging>
     <url>http://maven.apache.org</url>
-    
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jvm.options>-Dfile.encoding="UTF-8"</jvm.options>
@@ -16,7 +16,7 @@
     </properties>
 
     <dependencies>
-        
+
         <!-- https://mvnrepository.com/artifact/com.github.marianobarrios/tls-channel -->
         <dependency>
             <groupId>com.github.marianobarrios</groupId>

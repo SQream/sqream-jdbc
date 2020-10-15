@@ -101,8 +101,9 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		}
 
 		String tableName = SQLEscapeUtils.unescape(checkNull(tableNamePattern)).trim();
+		String schemaName = SQLEscapeUtils.unescape(checkNull(schemaPattern));
 
-		String sql = "select get_columns(" + checkNull(catalog) + "," + checkNull(schemaPattern) + "," + tableName + ",'*')";
+		String sql = "select get_columns(" + checkNull(catalog) + "," + schemaName + "," + tableName + ",'*')";
 		sql = sql.toLowerCase();
 		try {
 			return metadataStatement(sql);
@@ -178,8 +179,11 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		if (catalog == null) {
 			catalog = dbName;
 		}
+
+		String schemaName = SQLEscapeUtils.unescape(checkNull(schemaPattern)).trim();
+
 		String sql = "select get_tables(" + checkNull(catalog) + ","
-				+ checkNull(schemaPattern) + ",'*'," + checkNull(strTypes)
+				+ schemaName + ",'*'," + checkNull(strTypes)
 				+ ")";
 		try {
 			return metadataStatement(sql);

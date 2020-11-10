@@ -15,8 +15,8 @@ public class URLParser {
     private static final String WRONG_FORMAT_EXCEPTION_TEMPLATE = "Connect string general error : [{0}]" +
                     "\nnew format Example: 'jdbc:Sqream://<host>:<port>/<dbname>;user=sa;password=testPassword'";
 
-    Properties parse(String url) throws SQLException {
-        Properties result = new Properties();
+    public CaselessProperties parse(String url) throws SQLException {
+        CaselessProperties result = new CaselessProperties();
 
         URI uri = parseURI(url);
         result.put("provider", uri.getScheme());

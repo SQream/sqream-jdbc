@@ -4,6 +4,7 @@ import com.sqream.jdbc.enums.DriverProperties;
 import org.junit.Test;
 
 import java.sql.SQLException;
+import java.util.Properties;
 
 import static com.sqream.jdbc.enums.DriverProperties.*;
 import static org.junit.Assert.*;
@@ -122,5 +123,23 @@ public class URLParserTest {
         String actual = parser.parse(TEST_URL + ";insertBuffer=1000").getProperty(INSERT_BUFFER.getValue());
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void paramsCaseInsensitiveTest() throws SQLException {
+        String TEST_URL = "jdbc:Sqream://127.0.0.1:1234/testDataBaseName;" +
+                        "UsEr=testUserName;PassWord=testPassword;CluSter=true;sSl=true;SerVice=testService;" +
+                        "LogGerLeVel=testLoggerLevel;LoGFilE=testLogFilePath;InseRtBufFer=123";
+
+        Properties props = parser.parse(TEST_URL);
+
+        assertEquals("testUserName", props.getProperty("user"));
+        assertEquals("testPassword", props.getProperty("password"));
+        assertEquals("true", props.getProperty("cluster"));
+        assertEquals("true", props.getProperty("ssl"));
+        assertEquals("testService", props.getProperty("service"));
+        assertEquals("testLoggerLevel", props.getProperty("loggerLevel"));
+        assertEquals("testLogFilePath", props.getProperty("logFile"));
+        assertEquals("123", props.getProperty("insertBuffer"));
     }
 }

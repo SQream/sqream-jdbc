@@ -34,25 +34,13 @@ public class SQConnection implements Connection {
 		globalClient = client;
 	}
 
-	SQConnection(Properties connectionInfo) throws ConnException {
+	SQConnection(ConnectionParams connParams) throws ConnException {
 		if (Level.FINE == LOGGER.getParent().getLevel()) {
-			LOGGER.log(Level.FINE,"Construct SQConnection with properties");
-			logProperties(connectionInfo);
+			LOGGER.log(Level.FINE, MessageFormat.format(
+					"Construct SQConnection with properties [{0}]", connParams));
 		}
 
-		this.params = ConnectionParams.builder()
-				.cluster(connectionInfo.getProperty("cluster"))
-				.ipAddress(connectionInfo.getProperty("host"))
-				.port(connectionInfo.getProperty("port"))
-				.dbName(connectionInfo.getProperty("dbName"))
-				.service(connectionInfo.getProperty("service"))
-				.schema(connectionInfo.getProperty("schema"))
-				.user(connectionInfo.getProperty("user"))
-				.password(connectionInfo.getProperty("password"))
-				.useSsl(connectionInfo.getProperty("ssl"))
-				.fetchSize(connectionInfo.getProperty("fetchSize"))
-				.insertBuffer(connectionInfo.getProperty("insertBuffer"))
-				.build();
+		this.params = connParams;
 
 		globalClient = ConnectorFactory.initConnector(params);
 
@@ -499,15 +487,5 @@ public class SQConnection implements Connection {
 	@Override
 	public SQLXML createSQLXML() throws SQLException {
 		throw new SQLFeatureNotSupportedException("createSQLXML in SQConnection");
-	}
-
-	private void logProperties(Properties props) {
-		if (props == null) {
-			LOGGER.log(Level.FINE, "Properties is null");
-		} else {
-			for (String key : props.stringPropertyNames()) {
-				LOGGER.log(Level.FINE, MessageFormat.format("[{0}]=[{1}]", key, props.getProperty(key)));
-			}
-		}
 	}
 }

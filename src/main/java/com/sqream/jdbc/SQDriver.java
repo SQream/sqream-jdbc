@@ -9,7 +9,9 @@ import java.lang.reflect.Field;
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.enums.SQSQLState;
 import com.sqream.jdbc.logging.LoggingService;
+import com.sqream.jdbc.propsParser.CaselessProperties;
 import com.sqream.jdbc.propsParser.PropsParser;
+import com.sqream.jdbc.propsParser.URLParser;
 import com.sqream.jdbc.utils.Utils;
 
 import java.nio.charset.Charset;
@@ -42,7 +44,7 @@ public class SQDriver implements java.sql.Driver {
 
 		log("inside acceptsURL in SQDriver");
 
-		Properties props = PropsParser.parse(url);
+		Properties props = new URLParser().parse(url);
 		return "sqream".equalsIgnoreCase(props.getProperty("provider"));
 	}
 
@@ -64,7 +66,7 @@ public class SQDriver implements java.sql.Driver {
 			throw new SQLException("Properties info is null");
 		}
 
-		Properties props = PropsParser.parse(url, driverProps, createDefaultProps());
+		CaselessProperties props = PropsParser.parse(url, driverProps, createDefaultProps());
 
 		if (!validProvider(props)) {
 			LOGGER.log(Level.FINE, "Bad provider in connection string. Should be sqream but got: [{0}]",
@@ -78,7 +80,21 @@ public class SQDriver implements java.sql.Driver {
 
 		LOGGER.log(Level.FINE, Utils.getMemoryInfo());
 		try {
-			return new SQConnection(props);
+			ConnectionParams connParams = ConnectionParams.builder()
+					.cluster(props.getProperty("cluster"))
+					.ipAddress(props.getProperty("host"))
+					.port(props.getProperty("port"))
+					.dbName(props.getProperty("dbName"))
+					.service(props.getProperty("service"))
+					.schema(props.getProperty("schema"))
+					.user(props.getProperty("user"))
+					.password(props.getProperty("password"))
+					.useSsl(props.getProperty("ssl"))
+					.fetchSize(props.getProperty("fetchSize"))
+					.insertBuffer(props.getProperty("insertBuffer"))
+					.build();
+
+			return new SQConnection(connParams);
 		} catch (ConnException e) {
 			throw addSQLState(e);
 		} catch (Exception e) {

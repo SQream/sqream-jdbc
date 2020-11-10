@@ -53,8 +53,6 @@ public class SQDriver implements java.sql.Driver {
 		LOGGER.log(Level.FINE, MessageFormat.format(
 				"Connect with params: url=[{0}], info=[{1}]", url, driverProps));
 
-		setSystemProperties();
-
 		String urlPrefix = url.trim().substring(0, PREFIX.length());
 		if (!urlPrefix.equals(PREFIX)) {
 			LOGGER.log(Level.FINE,
@@ -138,17 +136,6 @@ public class SQDriver implements java.sql.Driver {
 
 	private void log(String line) {
 		LOGGER.log(Level.FINE, line);
-	}
-
-	private void setSystemProperties() throws SQLException {
-		try {
-			System.setProperty("file.encoding","UTF-8");
-			Field charset = Charset.class.getDeclaredField("defaultCharset");
-			charset.setAccessible(true);
-			charset.set(null,null);
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			throw new SQLException(e);
-		}
 	}
 
 	private Properties createDefaultProps() {

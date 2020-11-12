@@ -1,11 +1,14 @@
 tests_and_benchmark:
+  tags:
+    - connectors
   only:
     refs:
       - merge_requests
+      - develop
       - master
       - web
   script:
-    - "cd /home/gitlab-runner/sqream-with-submodules/jdbc-driver/"
+    - "cd /home/sqream/sqream-with-submodules/jdbc-driver/"
     - "git fetch"
     - "git checkout $CI_COMMIT_REF_NAME"
     - "git pull"

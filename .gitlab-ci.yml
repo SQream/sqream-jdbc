@@ -8,11 +8,6 @@ tests_and_benchmark:
       - master
       - web
   script:
-    - "cd /home/sqream/sqream-with-submodules/jdbc-driver/"
-    - "git fetch"
-    - "git checkout $CI_COMMIT_REF_NAME"
-    - "git pull"
-    - "git status"
     - "mvn clean package"
     - "cat target/site/jacoco/index.html"
     - "curCoverage=$(cat target/site/jacoco/index.html | grep -o '<tfoot>.*</tfoot>' | grep -o -P 'Total.*?([0-9]{1,3})%' | grep -o -P '([0-9]{1,3})%' | grep -o -P '([0-9]{1,3})')"

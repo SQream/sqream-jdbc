@@ -19,7 +19,7 @@ public class ColumnStorageTest {
         int rowLength = 1;
         int blockSize = 1;
         List<ColumnMetadataDto> columnMetadataDtos =  Collections.singletonList(
-                new ColumnMetadataDto(true, "testName", false, "ftBlob", 0));
+                new ColumnMetadataDto(true, "testName", false, "ftBlob", 0, 0));
         TableMetadata metadata = TableMetadata.builder()
                 .rowLength(rowLength)
                 .fromColumnsMetadata(columnMetadataDtos)

@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector.byteReaders;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -68,6 +69,12 @@ public abstract class BaseReader implements ByteReader {
     public String readNvarchar(ByteBuffer buffer, int nvarcLen, Charset nvarcharEncoding) {
         throw new UnsupportedOperationException(
                 String.format("Trying to get a value of type [Nvarchar] from column type [%s]", getColumnType()));
+    }
+
+    @Override
+    public BigDecimal readBigDecimal(ByteBuffer buffer, int rowIndex, int scale) {
+        throw new UnsupportedOperationException(
+                String.format("Trying to get a value of type [Numeric] from column type [%s]", getColumnType()));
     }
 
     abstract String getColumnType();

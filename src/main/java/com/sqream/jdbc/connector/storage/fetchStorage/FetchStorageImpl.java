@@ -5,6 +5,7 @@ import com.sqream.jdbc.connector.TableMetadata;
 import com.sqream.jdbc.connector.byteReaders.ByteReaderFactory;
 import com.sqream.jdbc.connector.storage.RowIterator;
 
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -86,6 +87,13 @@ public class FetchStorageImpl implements FetchStorage {
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))
                         .readDouble(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex()) : null;
+    }
+
+    public BigDecimal getBigDecimal(int colIndex) {
+        return isNotNull(colIndex, rowIterator.getRowIndex()) ?
+                ByteReaderFactory
+                        .getReader(metadata.getType(colIndex))
+                        .readBigDecimal(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex(), metadata.getScale(colIndex)) : null;
     }
 
     public Date getDate(int colIndex, ZoneId zoneId) {

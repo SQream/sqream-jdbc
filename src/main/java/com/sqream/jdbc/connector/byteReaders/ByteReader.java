@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector.byteReaders;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.sql.Date;
@@ -15,6 +16,8 @@ public interface ByteReader {
     Float readFloat(ByteBuffer buffer, int rowIndex);
 
     Double readDouble(ByteBuffer buffer, int rowIndex);
+
+    BigDecimal readBigDecimal(ByteBuffer buffer, int rowIndex, int scale);
 
     Boolean readBoolean(ByteBuffer buffer, int rowIndex);
 

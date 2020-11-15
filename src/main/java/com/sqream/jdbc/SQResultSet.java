@@ -313,6 +313,28 @@ class SQResultSet implements ResultSet {
 	}
 
 	@Override
+	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
+		try {
+			BigDecimal res = client.getBigDecimal(columnIndex);
+			return (isNull = res == null) ? BigDecimal.valueOf(0) : res;
+		}
+		catch (ConnException e) {
+			throw new SQLException(e);
+		}
+	}
+
+	@Override
+	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
+		try {
+			BigDecimal res = client.getBigDecimal(columnIndex);
+			return (isNull = res == null) ? BigDecimal.valueOf(0) : res;
+		}
+		catch (ConnException e) {
+			throw new SQLException(e);
+		}
+	}
+
+	@Override
 	public Date getDate(int columnIndex) throws SQLException {
 		try {
 			Date res = client.getDate(columnIndex);
@@ -513,6 +535,11 @@ class SQResultSet implements ResultSet {
 			res = getString(columnLabel);
 		else if (type.equals("ftBlob"))
 			res = getString(columnLabel);
+		else if (type.equals("ftNumeric"))
+			res = getBigDecimal(columnLabel);
+		else
+			throw new SQLException(MessageFormat.format(
+					"Type [{0}] for getObject by column label is not supported", type));
 
 		return (isNull) ? null : res;
 
@@ -553,6 +580,11 @@ class SQResultSet implements ResultSet {
 			res = getString(columnIndex);
 		else if (type.equals("ftBlob"))
 			res = getString(columnIndex);
+		else if (type.equals("ftNumeric"))
+			res = getBigDecimal(columnIndex);
+		else
+			throw new SQLException(MessageFormat.format(
+					"Type [{0}] for getObject by column index is not supported", type));
 
 		return (isNull) ? null : res;
 	}
@@ -591,11 +623,6 @@ class SQResultSet implements ResultSet {
 	}
 
 	@Override
-	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-		throw new SQLFeatureNotSupportedException("getBigDecimal in SQResultSet");
-	}
-
-	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException("unwrap in SQResultSet");
@@ -605,13 +632,6 @@ class SQResultSet implements ResultSet {
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException("isWrapperFor in SQResultSet");
-	}
-
-	@Override
-	public BigDecimal getBigDecimal(int columnIndex, int scale)
-			throws SQLException {
-		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException("getBigDecimal in SQResultSet");
 	}
 
 	@Override

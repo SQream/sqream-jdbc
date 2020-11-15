@@ -2,6 +2,7 @@ package com.sqream.jdbc.connector.storage.fetchStorage;
 
 import com.sqream.jdbc.connector.BlockDto;
 
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -26,6 +27,8 @@ public interface FetchStorage {
     Float getFloat(int colIndex);
 
     Double getDouble(int colIndex);
+
+    BigDecimal getBigDecimal(int colIndex);
 
     Date getDate(int colIndex, ZoneId zoneId);
 

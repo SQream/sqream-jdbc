@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector.byteWriters;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 
 public interface ByteWriter {
@@ -13,6 +14,8 @@ public interface ByteWriter {
     int writeFloat(ByteBuffer buffer, Float value);
 
     int writeDouble(ByteBuffer buffer, Double value);
+
+    int writeNumeric(ByteBuffer buffer, BigDecimal value, int scale);
 
     int writeBoolean(ByteBuffer buffer, byte value);
 

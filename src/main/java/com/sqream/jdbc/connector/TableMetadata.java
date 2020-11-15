@@ -15,6 +15,7 @@ public class TableMetadata {
     private String[] colNames;
     private String[] colTypes;
     private int[] colSizes;
+    private int[] colScales;
     private BitSet colNullable;
     private BitSet colTvc;
     private HashMap<String, Integer> colNamesMap;
@@ -25,6 +26,7 @@ public class TableMetadata {
         colNames = new String[rowLength];
         colTypes = new String[rowLength];
         colSizes = new int[rowLength];
+        colScales = new int[rowLength];
         colNullable = new BitSet(rowLength);
         colTvc = new BitSet(rowLength);
         colNamesMap = new HashMap<>();
@@ -40,6 +42,7 @@ public class TableMetadata {
         colNames[index] = colMetadata.getName();
         colTypes[index] = colMetadata.getValueType();
         colSizes[index] = colMetadata.getValueSize();
+        colScales[index] = colMetadata.getScale();
         colNamesMap.put(colNames[index].toLowerCase(), index + 1);
     }
 
@@ -73,6 +76,10 @@ public class TableMetadata {
 
     public int getSize(int index) {
         return colSizes[index];
+    }
+
+    public int getScale(int index) {
+        return colScales[index];
     }
 
     public boolean isNullable(int index) {

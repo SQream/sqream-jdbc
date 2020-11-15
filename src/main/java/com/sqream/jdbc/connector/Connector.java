@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.ZoneId;
@@ -33,6 +34,8 @@ public interface Connector extends AutoCloseable {
     Float getFloat(int col_num) throws ConnException;
 
     Double getDouble(int col_num) throws ConnException;
+
+    BigDecimal getBigDecimal(int colNum) throws ConnException;
 
     String getVarchar(int col_num) throws ConnException;
 
@@ -88,6 +91,8 @@ public interface Connector extends AutoCloseable {
     boolean setFloat(int col_num, Float value) throws ConnException;
 
     boolean setDouble(int col_num, Double value) throws ConnException;
+
+    boolean setBigDecimal(int col_num, BigDecimal value) throws ConnException;
 
     boolean setVarchar(int col_num, String value) throws ConnException;
 

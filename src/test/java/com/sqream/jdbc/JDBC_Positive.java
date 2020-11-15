@@ -1,5 +1,6 @@
 package com.sqream.jdbc;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
@@ -1593,6 +1594,67 @@ public class JDBC_Positive {
                 System.out.println(e.getMessage());
                 fail("Should not throw second exception");
             }
+        }
+    }
+
+    @Test
+    public void numericTypeSupportTest() throws SQLException {
+        String createTable = "create or replace table numeric_test(\n" +
+                "col1 numeric(2, 0),\n" +
+                "col2 numeric(2, 2),\n" +
+                "col3 numeric(4, 2),\n" +
+                "col4 numeric(30, 0),\n" +
+                "col5 numeric(30, 10),\n" +
+                "col6 numeric(30, 30)\n" +
+                ");";
+        String insert = "insert into table numeric_test values(?, ?, ?, ?, ?, ?);";
+
+        String[][] values = {
+                {"1", "0.1", "1", "1", "1", "0.1"},
+                {"-1", "-0.1", "-1", "-1", "-1", "-0.1"},
+                {"1", "0.11", "1.1", "1", "1.1", "0.11"},
+                {"-1", "-0.11",  "-1.1",  "-1",  "-1.1", "-0.11"},
+                {"1", "0.01", "10.10", "1000000", "100000000000000000000.000001", "0.000000000000000000000000000001"},
+                {"9", "0.09", "90.90", "12346789", "123456789000000000000.000001", "0.123456789000000000000123456789"}
+        };
+
+        String[][] expected = {
+                {"1", "0.10", "1.00", "1", "1.0000000000", "0.100000000000000000000000000000"},
+                {"-1", "-0.10", "-1.00", "-1", "-1.0000000000", "-0.100000000000000000000000000000"},
+                {"1", "0.11", "1.10", "1", "1.1000000000", "0.110000000000000000000000000000"},
+                {"-1", "-0.11",  "-1.10",  "-1",  "-1.1000000000", "-0.110000000000000000000000000000"},
+                {"1", "0.01", "10.10", "1000000", "100000000000000000000.0000010000", "0.000000000000000000000000000001"},
+                {"9", "0.09", "90.90", "12346789", "123456789000000000000.0000010000", "0.123456789000000000000123456789"}
+        };
+
+        try (Connection conn = createConnection()) {
+
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(createTable);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement("insert into numeric_test values(?, ?, ?, ?, ?, ?);")) {
+                for (int i = 0; i < values.length; i++) {
+                    for (int j = 0; j < values[i].length; j++) {
+                        pstmt.setBigDecimal(j + 1, new BigDecimal(values[i][j]));
+                    }
+                    pstmt.addBatch();
+                }
+                pstmt.executeBatch();
+            }
+
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery("select * from numeric_test;");
+                for (int i = 0; i < values.length; i++) {
+                    assertTrue(rs.next());
+                    for (int j = 0; j < values[i].length; j++) {
+                        assertEquals(MessageFormat.format("Wrong result for row [{0}] column [{1}]",
+                                i + 1, j + 1), new BigDecimal(expected[i][j]), rs.getBigDecimal(j + 1));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -20,6 +20,7 @@ public class ByteWriterFactory {
         writerMap.put("ftDateTime", new FtDateTimeWriter());
         writerMap.put("ftVarchar", new FtVarcharWriter());
         writerMap.put("ftBlob", new FtNvarcharWriter());
+        writerMap.put("ftNumeric", new FtNumericWriter());
     }
 
     public static ByteWriter getWriter(String columnType) {

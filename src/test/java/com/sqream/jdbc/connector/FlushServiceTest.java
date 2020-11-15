@@ -53,7 +53,7 @@ public class FlushServiceTest {
             int curSize = 10 + i;
             boolean isNullable = i % 2 == 0;
             boolean isTruVarchar = i % 2 == 0;
-            columnMetadataList.add(new ColumnMetadataDto(isTruVarchar, testName, isNullable, testType, curSize));
+            columnMetadataList.add(new ColumnMetadataDto(isTruVarchar, testName, isNullable, testType, curSize, 0));
         }
         return columnMetadataList;
     }

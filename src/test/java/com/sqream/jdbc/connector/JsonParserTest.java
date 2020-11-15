@@ -100,10 +100,10 @@ public class JsonParserTest {
                 "  ]" +
                 "}";
         List<ColumnMetadataDto> expectedList = new LinkedList<>();
-        expectedList.add(new ColumnMetadataDto(false, "someName", true, "ftBool", 1));
+        expectedList.add(new ColumnMetadataDto(false, "someName", true, "ftBool", 1, 0));
         // name = "" by default
         // if itemSize == 0 then set as TEXT_ITEM_SIZE
-        expectedList.add(new ColumnMetadataDto(true, "", false, "ftBlob", TEXT_ITEM_SIZE));
+        expectedList.add(new ColumnMetadataDto(true, "", false, "ftBlob", TEXT_ITEM_SIZE, 0));
 
         List<ColumnMetadataDto> resultList = parser.toQueryTypeInput(JSON);
 

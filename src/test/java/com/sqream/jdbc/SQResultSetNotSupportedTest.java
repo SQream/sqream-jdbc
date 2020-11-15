@@ -33,11 +33,6 @@ public class SQResultSetNotSupportedTest {
     }
 
     @Test (expected = SQLFeatureNotSupportedException.class)
-    public void getBigDecimalTest() throws SQLException {
-        rs.getBigDecimal(0);
-    }
-
-    @Test (expected = SQLFeatureNotSupportedException.class)
     public void unwrapTest() throws SQLException {
         rs.unwrap(null);
     }
@@ -45,11 +40,6 @@ public class SQResultSetNotSupportedTest {
     @Test (expected = SQLFeatureNotSupportedException.class)
     public void isWrapperForTest() throws SQLException {
         rs.isWrapperFor(null);
-    }
-
-    @Test (expected = SQLFeatureNotSupportedException.class)
-    public void getBigDecimal2Test() throws SQLException {
-        rs.getBigDecimal(0, 0);
     }
 
     @Test (expected = SQLFeatureNotSupportedException.class)

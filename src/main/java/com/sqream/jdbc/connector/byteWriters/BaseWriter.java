@@ -1,5 +1,6 @@
 package com.sqream.jdbc.connector.byteWriters;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 
 public abstract class BaseWriter implements ByteWriter {
@@ -32,6 +33,12 @@ public abstract class BaseWriter implements ByteWriter {
     public int writeDouble(ByteBuffer buffer, Double value) {
         throw new UnsupportedOperationException(
                 String.format("Trying to set a value of type [Double] to column type [%s]", getColumnType()));
+    }
+
+    @Override
+    public int writeNumeric(ByteBuffer buffer, BigDecimal value, int scale) {
+        throw new UnsupportedOperationException(
+                String.format("Trying to set a value of type [Numeric] to column type [%s]", getColumnType()));
     }
 
     @Override

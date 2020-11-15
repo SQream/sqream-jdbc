@@ -7,13 +7,15 @@ public class ColumnMetadataDto {
     private boolean nullable;
     private String valueType;
     private int valueSize;
+    private int scale;
 
-    public ColumnMetadataDto(boolean truVarchar, String name, boolean nullable, String valueType, int valueSize) {
+    public ColumnMetadataDto(boolean truVarchar, String name, boolean nullable, String valueType, int valueSize, int scale) {
         this.truVarchar = truVarchar;
         this.name = name;
         this.nullable = nullable;
         this.valueType = valueType;
         this.valueSize = valueSize;
+        this.scale = scale;
     }
 
     public boolean isTruVarchar() {
@@ -38,5 +40,9 @@ public class ColumnMetadataDto {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getScale() {
+        return scale;
     }
 }

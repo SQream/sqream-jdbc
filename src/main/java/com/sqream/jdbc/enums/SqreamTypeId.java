@@ -10,6 +10,7 @@ public enum SqreamTypeId {
     Bigint(Types.BIGINT),
     Real(Types.REAL),
     Float(Types.DOUBLE),
+    Numeric(Types.NUMERIC),
 
     Date(Types.DATE),
     DateTime(Types.TIMESTAMP),

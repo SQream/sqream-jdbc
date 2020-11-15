@@ -113,11 +113,6 @@ public class SQPreparedStatementNotSupportedTest {
     }
 
     @Test(expected = SQLFeatureNotSupportedException.class)
-    public void setBigDecimal() throws SQLException {
-        pstmt.setBigDecimal(0, null);
-    }
-
-    @Test(expected = SQLFeatureNotSupportedException.class)
     public void setBinaryStream() throws SQLException {
         pstmt.setBinaryStream(0, new InputStream() {
             @Override

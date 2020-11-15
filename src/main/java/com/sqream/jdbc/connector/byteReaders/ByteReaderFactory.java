@@ -15,6 +15,7 @@ public class ByteReaderFactory {
         readerMap.put("ftLong", new FtLongReader());
         readerMap.put("ftFloat", new FtFloatReader());
         readerMap.put("ftDouble", new FtDoubleReader());
+        readerMap.put("ftNumeric", new FtNumericReader());
         readerMap.put("ftBool", new FtBooleanReader());
         readerMap.put("ftDate", new FtDateReader());
         readerMap.put("ftDateTime", new FtDateTimeReader());

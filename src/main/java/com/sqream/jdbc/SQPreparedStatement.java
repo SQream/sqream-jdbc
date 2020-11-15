@@ -194,6 +194,15 @@ public class SQPreparedStatement implements PreparedStatement {
     }
 
     @Override
+    public void setBigDecimal(int colNum, BigDecimal value) throws SQLException {
+        try {
+            client.setBigDecimal(colNum, value);
+        } catch (Exception e) {
+            throw new SQLException(e);
+        } setCounter++;
+    }
+
+    @Override
     public void setDate(int colNum, Date date) throws SQLException {
         try {
 			client.setDate(colNum, date);
@@ -333,6 +342,8 @@ public class SQPreparedStatement implements PreparedStatement {
             setTimestamp(colNum, (Timestamp) value);
         } else if (value instanceof String) {
             setString(colNum, (String) value);
+        } else if (value instanceof BigDecimal) {
+            setBigDecimal(colNum, (BigDecimal) value);
         } else
             throw new SQLException(MessageFormat.format(
                     "Type [{0}] for setObject not supported", value != null ? value.getClass().getName() : null));
@@ -609,11 +620,6 @@ public class SQPreparedStatement implements PreparedStatement {
     @Override
     public void setAsciiStream(int arg0, InputStream arg1, long arg2) throws SQLException {
         throw new SQLFeatureNotSupportedException("setAsciiStream 3 in SQPreparedStatement");
-    }
-
-    @Override
-    public void setBigDecimal(int arg0, BigDecimal arg1) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setBigDecimal in SQPreparedStatement");
     }
 
     @Override

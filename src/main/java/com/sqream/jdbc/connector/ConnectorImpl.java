@@ -12,6 +12,7 @@ import com.sqream.jdbc.connector.storage.fetchStorage.EmptyFetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorageImpl;
 
+import java.math.BigDecimal;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
@@ -381,6 +382,12 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
+    public BigDecimal getBigDecimal(int colNum) {
+        validator.validateColumnIndex(colNum - 1);
+        return fetchStorage.getBigDecimal(colNum - 1);
+    }
+
+    @Override
     public String getVarchar(int colNum) {
         int colIndex = colNum - 1;
         validator.validateColumnIndex(colIndex);
@@ -549,6 +556,13 @@ public class ConnectorImpl implements Connector {
     public boolean setDouble(int colNum, Double value) {
         validator.validateSet(colNum - 1, value);
         flushStorage.setDouble(colNum - 1, value);
+        return true;
+    }
+
+    @Override
+    public boolean setBigDecimal(int colNum, BigDecimal value) {
+        validator.validateSet(colNum - 1, value);
+        flushStorage.setBigDecimal(colNum - 1, value);
         return true;
     }
 

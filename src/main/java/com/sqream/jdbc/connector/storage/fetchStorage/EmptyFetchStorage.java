@@ -2,6 +2,7 @@ package com.sqream.jdbc.connector.storage.fetchStorage;
 
 import com.sqream.jdbc.connector.BlockDto;
 
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -51,6 +52,11 @@ public class EmptyFetchStorage implements FetchStorage {
 
     @Override
     public Double getDouble(int colIndex) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getBigDecimal(int colIndex) {
         return null;
     }
 

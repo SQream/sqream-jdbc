@@ -5,6 +5,7 @@ import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.TableMetadata;
 import com.sqream.jdbc.connector.byteWriters.ByteWriterFactory;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Date;
@@ -128,6 +129,16 @@ public class FlushStorage {
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
                 .writeDouble(curBlock.getDataBuffers()[colIndex], value);
+        columnsSet.set(colIndex);
+    }
+
+    public void setBigDecimal(int colIndex, BigDecimal value) {
+        if (value == null) {
+            markAsNull(colIndex);
+        }
+        blockFullness += ByteWriterFactory
+                .getWriter(metadata.getType(colIndex))
+                .writeNumeric(curBlock.getDataBuffers()[colIndex], value, metadata.getScale(colIndex));
         columnsSet.set(colIndex);
     }
 

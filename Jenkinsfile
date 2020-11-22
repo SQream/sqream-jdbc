@@ -44,7 +44,6 @@ pipeline {
                 rm jdbc-driver/target/sqream-jdbc-$version_num.jar
                 rm jdbc-driver/target/original-sqream-jdbc-$version_num.jar
                 mv jdbc-driver/target/sqream-jdbc-$version_num-jar-with-dependencies.jar jdbc-driver/target/sqream-jdbc-$version_num.jar
-        //        file_to_upload=$(ls -al jdbc-driver/target | grep -v dependencies | grep -i jar | awk '{ print $9 }')
                 file_to_upload=jdbc-driver/target/sqream-jdbc-$version_num.jar
                 echo $file_to_upload
                 cd jdbc-driver/target/

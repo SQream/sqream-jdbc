@@ -13,14 +13,14 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 import static com.sqream.jdbc.Perf.ColType.*;
-import static com.sqream.jdbc.TestEnvironment.createConnection;
+import static com.sqream.jdbc.TestEnvironment.createMockConnection;
 
 public class Perf {
-    private static final int[] columnCounts = new int[]{1, 10, 100};
-    private static final int[] varcharSizes = new int[]{10, 100, 400};
-    private static final int[] rowCounts = new int[]{1, 1000, 10000, 100000, 1000000};
+    private static final int[] columnCounts = new int[]{10};
+    private static final int[] varcharSizes = new int[]{400};
+    private static final int[] rowCounts = new int[]{1000000};
     private static final int selectAllColAmount = 200;
-    private static final int varcharSizeForSelectAll = 10;
+    private static final int varcharSizeForSelectAll = 30;
     private static final int limitForSelectAll = 100000;
     private static final Map<ColType, BiConsumer<ResultSet, Integer>> gettersMap = new HashMap<>();
     private static final Map<ColType, BiConsumer<PreparedStatement, Integer>> settersMap = new HashMap<>();
@@ -106,13 +106,14 @@ public class Perf {
         resultTable.addRow("index", "field", "row length", "columns", "rows", "total ms", "per 1Mb");
         resultTable.addRule();
         Arrays.stream(values()).forEach(this::insert);
+        insertAll();
         resultTable.addRule();
         System.out.println(resultTable.render());
     }
 
     private void select(ColType type) {
         BiConsumer<ResultSet, Integer> getter = gettersMap.get(type);
-        try (Connection conn = createConnection(); Statement stmt = conn.createStatement()) {
+        try (Connection conn = createMockConnection(); Statement stmt = conn.createStatement()) {
             for (int colAmount : columnCounts) {
                 for (int rowAmount : rowCounts) {
                     for (int textLength : varcharSizes) {
@@ -143,7 +144,7 @@ public class Perf {
 
     private void selectAll() {
         int colAmountPerType = selectAllColAmount / ColType.values().length;
-        try (Connection conn = createConnection();
+        try (Connection conn = createMockConnection();
              Statement stmt = conn.createStatement()) {
 
             long startTime = System.currentTimeMillis();
@@ -173,15 +174,15 @@ public class Perf {
 
     private void insert(ColType type) {
         BiConsumer<PreparedStatement, Integer> setter = settersMap.get(type);
-        try (Connection conn = createConnection()) {
+        try (Connection conn = createMockConnection()) {
             for (int colAmount : columnCounts) {
                 for (int rowAmount : rowCounts) {
-//                    for (int textLength : varcharSizes) {
+                   for (int textLength : varcharSizes) {
                         if (!isTextType(type) || colAmount <= 10) {
-                            testText = String.join("", Collections.nCopies(varcharSizes[0], "a"));
+                            testText = String.join("", Collections.nCopies(textLength, "a"));
                             int rowCounter = 0;
                             long startTime = System.currentTimeMillis();
-                            try (PreparedStatement pstmt = conn.prepareStatement(generateInsertQuery(type, colAmount, varcharSizes[0]))) {
+                            try (PreparedStatement pstmt = conn.prepareStatement(generateInsertQuery(type, colAmount, textLength))) {
                                 for (int rowIndex = 0; rowIndex < rowAmount; rowIndex++) {
                                     for (int colIndex = 0; colIndex < colAmount; colIndex++) {
                                         setter.accept(pstmt, colIndex);
@@ -194,14 +195,46 @@ public class Perf {
                                 }
                             }
                             long totalTime = System.currentTimeMillis() - startTime;
-                            long rowLength = rowLength(type, colAmount, varcharSizes[0]);
+                            long rowLength = rowLength(type, colAmount, textLength);
                             resultTable.addRow(index, type, rowLength, colAmount, rowAmount, totalTime, (1024 * 1024 * totalTime) / (rowLength * rowAmount));
                             Assert.assertEquals(rowAmount, rowCounter);
                             index++;
-//                        }
+                       }
                     }
                 }
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void insertAll() {
+        int colAmountPerType = selectAllColAmount / ColType.values().length;
+        try (Connection conn = createMockConnection();
+             Statement stmt = conn.createStatement()) {
+
+            PreparedStatement pstmt = conn.prepareStatement(generateInsertAllQuery(colAmountPerType));
+            BiConsumer<ResultSet, Integer> getter;
+            int rowCounter = 0;
+            int rowAmount = limitForSelectAll;
+            long startTime = System.currentTimeMillis();
+            testText = String.join("", Collections.nCopies(varcharSizeForSelectAll, "a"));
+            for (int rowIndex = 0; rowIndex < rowAmount; rowIndex++) {
+                int columnIndex = 0;
+                for (ColType type : ColType.values()) {
+                    int start = columnIndex;
+                    for (; columnIndex < start + colAmountPerType; columnIndex++) {
+                        settersMap.get(type).accept(pstmt, columnIndex);
+                    }
+                }
+                pstmt.addBatch();
+                rowCounter++;
+            }
+            pstmt.executeBatch();
+            Assert.assertEquals(limitForSelectAll, rowCounter);
+            long totalTime = System.currentTimeMillis() - startTime;
+            long rowLength = rowLengthAll(colAmountPerType);
+            resultTable.addRow(index, "ALL", rowLength, ColType.values().length * colAmountPerType, limitForSelectAll, totalTime, (1024 * 1024 * totalTime) / (rowLength * limitForSelectAll));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -262,6 +295,23 @@ public class Perf {
         sb.append(" from random limit ");
         sb.append(limitForSelectAll);
         sb.append(";");
+        return sb.toString();
+    }
+
+
+    private String generateInsertAllQuery(int colAmountPerType) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("insert into random values(");
+        int totalColumns = colAmountPerType * ColType.values().length;
+        for (ColType type : ColType.values()) {
+            for (int i = 0; i < colAmountPerType; i++) {
+                sb.append(generateColDefinition(type, varcharSizeForSelectAll, i));
+                if (i < totalColumns - 1) {
+                    sb.append(", ");
+                }
+            }
+        }
+        sb.append(");");
         return sb.toString();
     }
 

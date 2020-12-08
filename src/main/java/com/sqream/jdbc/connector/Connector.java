@@ -130,8 +130,6 @@ public interface Connector extends AutoCloseable {
 
     AtomicBoolean checkCancelStatement();
 
-    void setOpenStatement(boolean openStatement);
-
     boolean setFetchLimit(int _fetch_limit) throws ConnException;
 
     int getFetchLimit();

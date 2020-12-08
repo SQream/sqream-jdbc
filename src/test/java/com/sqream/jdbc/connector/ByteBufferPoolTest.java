@@ -71,7 +71,7 @@ public class ByteBufferPoolTest {
         return TableMetadata.builder()
                 .rowLength(rowLength)
                 .fromColumnsMetadata(columnMetadataList)
-                .statementType(StatementType.INSERT)
+                .statementType(StatementType.NETWORK_INSERT)
                 .build();
     }
 

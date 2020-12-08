@@ -6,7 +6,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static com.sqream.jdbc.connector.enums.StatementType.SELECT;
+import static com.sqream.jdbc.connector.enums.StatementType.QUERY;
 
 public class TableMetadata {
 
@@ -55,7 +55,7 @@ public class TableMetadata {
 
         for(int i=0; i < metadataDtos.size(); i++) {
             ColumnMetadataDto colMetaDataDto = metadataDtos.get(i);
-            if (!statementType.equals(SELECT)) {
+            if (!statementType.equals(QUERY)) {
                 colMetaDataDto.setName(DENIED);
             }
             setByIndex(i, colMetaDataDto);

@@ -193,12 +193,12 @@ public class JDBC_Positive {
     @Test
     public void parameter_metadata() throws SQLException {
         /*  Check if charitable behavior works - not closing statement before starting the next one   */
-        int COLUMN_AMOUNT = 12;
+        int COLUMN_AMOUNT = 13;
 
         try (Connection conn = createConnection()) {
 
             // Count test - DML
-            String sql = "create or replace table test_parameter(bools bool not null, tinies tinyint, smalls smallint, ints int, bigs bigint, floats real, doubles double, dates date, dts datetime, varcs varchar (10), nvarcs nvarchar (10), tests text)";
+            String sql = "create or replace table test_parameter(bools bool not null, tinies tinyint, smalls smallint, ints int, bigs bigint, floats real, doubles double, dates date, dts datetime, varcs varchar (10), nvarcs nvarchar (10), tests text, numerics numeric(10,5))";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ParameterMetaData params = ps.getParameterMetaData();
                 int count = params.getParameterCount();
@@ -209,7 +209,7 @@ public class JDBC_Positive {
 
             // Count test - regular insert
             sql = "insert into test_parameter values " +
-                    "(true, 1, 11, 111, 1111, 1.1, 1.11, '2016-11-03', '2016-11-03 16:56:45.000', 'bla', 'nbla', 'textTestValue')";
+                    "(true, 1, 11, 111, 1111, 1.1, 1.11, '2016-11-03', '2016-11-03 16:56:45.000', 'bla', 'nbla', 'textTestValue', 12345.54321)";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ParameterMetaData params = ps.getParameterMetaData();
                 int count = params.getParameterCount() ;
@@ -220,7 +220,7 @@ public class JDBC_Positive {
             }
 
             // Network insert - an actual paramtered query
-            sql = "insert into test_parameter values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            sql = "insert into test_parameter values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ParameterMetaData params = ps.getParameterMetaData();
                 int count = params.getParameterCount() ;
@@ -267,7 +267,8 @@ public class JDBC_Positive {
                         params.getParameterType(5) != Types.BIGINT || params.getParameterType(6) != Types.REAL ||
                         params.getParameterType(7) != Types.DOUBLE || params.getParameterType(8) != Types.DATE ||
                         params.getParameterType(9) != Types.TIMESTAMP || params.getParameterType(10) != Types.VARCHAR ||
-                        params.getParameterType(11) != Types.NVARCHAR || params.getParameterType(12) != NVARCHAR)
+                        params.getParameterType(11) != Types.NVARCHAR || params.getParameterType(12) != NVARCHAR ||
+                        params.getParameterType(13) != Types.NUMERIC)
                 {
                     fail("Bad parameter type returned: " + params.isNullable(1));
                 }
@@ -276,7 +277,8 @@ public class JDBC_Positive {
                 if (params.getPrecision(1) != 1 || params.getPrecision(2) != 1 || params.getPrecision(3) != 2 ||
                         params.getPrecision(4) != 4 || params.getPrecision(5) != 8 || params.getPrecision(6) != 4 ||
                         params.getPrecision(7) != 8 || params.getPrecision(8) != 4 || params.getPrecision(9) != 8 ||
-                        params.getPrecision(10) != 10 || params.getPrecision(11) == 0 || params.getPrecision(12) == 0)
+                        params.getPrecision(10) != 10 || params.getPrecision(11) == 0 || params.getPrecision(12) == 0 ||
+                        params.getPrecision(13) != 16)
                 {
                     StringBuilder sb = new StringBuilder();
                     for (int j = 1; j <= COLUMN_AMOUNT; j++) {
@@ -291,7 +293,7 @@ public class JDBC_Positive {
                         !params.getParameterTypeName(5).equals("ftLong") || !params.getParameterTypeName(6).equals("ftFloat") ||
                         !params.getParameterTypeName(7).equals("ftDouble") || !params.getParameterTypeName(8).equals("ftDate") ||
                         !params.getParameterTypeName(9).equals("ftDateTime") || !params.getParameterTypeName(10).equals("ftVarchar") ||
-                        !params.getParameterTypeName(11).equals("ftBlob"))
+                        !params.getParameterTypeName(11).equals("ftBlob") || !params.getParameterTypeName(13).equals("ftNumeric"))
                 {
                     fail("Bad taypenames returned:\n" + params.getParameterTypeName(1) + '\n' + params.getParameterTypeName(2) + '\n' + params.getParameterTypeName(3) + '\n' + params.getParameterTypeName(4) + '\n' + params.getParameterTypeName(5) + '\n' + params.getParameterTypeName(6) + '\n' + params.getParameterTypeName(7) + '\n' + params.getParameterTypeName(8) + '\n' + params.getParameterTypeName(9) + '\n' + params.getParameterTypeName(10) + '\n' + params.getParameterTypeName(11)  );
                 }

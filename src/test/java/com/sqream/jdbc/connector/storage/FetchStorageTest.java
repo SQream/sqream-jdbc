@@ -38,7 +38,7 @@ public class FetchStorageTest {
         return TableMetadata.builder()
                 .rowLength(ROW_LENGTH)
                 .fromColumnsMetadata(Collections.singletonList(columnMetadata))
-                .statementType(StatementType.SELECT)
+                .statementType(StatementType.QUERY)
                 .build();
     }
 

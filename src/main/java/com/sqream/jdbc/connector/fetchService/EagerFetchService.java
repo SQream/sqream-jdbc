@@ -1,8 +1,7 @@
 package com.sqream.jdbc.connector.fetchService;
 
 import com.sqream.jdbc.connector.*;
-import com.sqream.jdbc.connector.messenger.Messenger;
-import com.sqream.jdbc.connector.socket.SQSocketConnector;
+import com.sqream.jdbc.connector.serverAPI.Statement.SqreamExecutedStatement;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -11,12 +10,12 @@ import java.util.logging.Logger;
 public class EagerFetchService extends BaseFetchService implements FetchService {
     private static final Logger LOGGER = Logger.getLogger(EagerFetchService.class.getName());
 
-    private EagerFetchService(SQSocketConnector socket, Messenger messenger, TableMetadata metadata) {
-        super(socket, messenger, metadata);
+    private EagerFetchService(SqreamExecutedStatement sqreamExecutedStatement) {
+        super(sqreamExecutedStatement);
     }
 
-    public static EagerFetchService getInstance(SQSocketConnector socket, Messenger messenger, TableMetadata metadata) {
-        return new EagerFetchService(socket, messenger, metadata);
+    public static EagerFetchService getInstance(SqreamExecutedStatement sqreamExecutedStatement) {
+        return new EagerFetchService(sqreamExecutedStatement);
     }
 
     @Override

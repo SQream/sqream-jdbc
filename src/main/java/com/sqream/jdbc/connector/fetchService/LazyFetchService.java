@@ -2,9 +2,7 @@ package com.sqream.jdbc.connector.fetchService;
 
 import com.sqream.jdbc.connector.BlockDto;
 import com.sqream.jdbc.connector.ConnException;
-import com.sqream.jdbc.connector.TableMetadata;
-import com.sqream.jdbc.connector.messenger.Messenger;
-import com.sqream.jdbc.connector.socket.SQSocketConnector;
+import com.sqream.jdbc.connector.serverAPI.Statement.SqreamExecutedStatement;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -18,16 +16,14 @@ public class LazyFetchService extends BaseFetchService implements FetchService {
     private int totalFetched = 0;
     private boolean closed = false;
 
-    private LazyFetchService(SQSocketConnector socket, Messenger messenger, TableMetadata metadata, int fetchSize) {
-        super(socket, messenger, metadata);
+    private LazyFetchService(SqreamExecutedStatement sqreamExecutedStatement, int fetchSize) {
+        super(sqreamExecutedStatement);
         this.fetchSize = fetchSize;
     }
 
-    public static LazyFetchService getInstance(SQSocketConnector socket,
-                                               Messenger messenger,
-                                               TableMetadata metadata,
+    public static LazyFetchService getInstance(SqreamExecutedStatement sqreamExecutedStatement,
                                                int fetchSize) {
-        return new LazyFetchService(socket, messenger, metadata, fetchSize);
+        return new LazyFetchService(sqreamExecutedStatement, fetchSize);
     }
 
     @Override

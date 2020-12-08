@@ -66,7 +66,7 @@ public class FlushStorageTest {
         return TableMetadata.builder()
                 .rowLength(ROW_LENGTH)
                 .fromColumnsMetadata(Collections.singletonList(columnMetadata))
-                .statementType(StatementType.INSERT)
+                .statementType(StatementType.NETWORK_INSERT)
                 .build();
     }
 

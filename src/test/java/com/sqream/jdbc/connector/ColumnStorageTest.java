@@ -23,7 +23,7 @@ public class ColumnStorageTest {
         TableMetadata metadata = TableMetadata.builder()
                 .rowLength(rowLength)
                 .fromColumnsMetadata(columnMetadataDtos)
-                .statementType(StatementType.INSERT)
+                .statementType(StatementType.NETWORK_INSERT)
                 .build();
 
         FlushStorage storage =

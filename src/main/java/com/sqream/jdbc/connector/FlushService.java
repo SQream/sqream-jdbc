@@ -1,12 +1,9 @@
 package com.sqream.jdbc.connector;
 
-import com.sqream.jdbc.connector.messenger.Messenger;
-import com.sqream.jdbc.connector.socket.SQSocketConnector;
-import com.sqream.jdbc.utils.Utils;
+import com.sqream.jdbc.connector.serverAPI.Statement.SqreamExecutedStatement;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.text.MessageFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,26 +14,24 @@ import java.util.logging.Logger;
 public class FlushService {
     private static final Logger LOGGER = Logger.getLogger(FlushService.class.getName());
 
-    private SQSocketConnector socket;
-    private Messenger messenger;
+    private SqreamExecutedStatement sqreamExecutedStatement;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    private FlushService(SQSocketConnector socket, Messenger messenger) {
-        this.socket = socket;
-        this.messenger = messenger;
+    private FlushService(SqreamExecutedStatement sqreamExecutedStatement) {
+        this.sqreamExecutedStatement = sqreamExecutedStatement;
     }
 
-    public static FlushService getInstance(SQSocketConnector socket, Messenger messenger) {
-        return new FlushService(socket, messenger);
+    public static FlushService getInstance(SqreamExecutedStatement sqreamExecutedStatement) {
+        return new FlushService(sqreamExecutedStatement);
     }
 
-    public void process(TableMetadata metadata, BlockDto block, ByteBufferPool byteBufferPool) {
+    public void process(BlockDto block, ByteBufferPool byteBufferPool) {
         LOGGER.log(Level.FINE, MessageFormat.format("Process block: block=[{0}]", block));
 
         executorService.submit(() -> {
             try {
                 Thread.currentThread().setName("flush-service");
-                flush(metadata, block);
+                flush(sqreamExecutedStatement, block);
 
                 resetBlock(block);
 
@@ -88,36 +83,11 @@ public class FlushService {
         }
     }
 
-    private void flush(TableMetadata metadata, BlockDto block) throws IOException, ConnException {
+    private void flush(SqreamExecutedStatement sqreamExecutedStatement, BlockDto block) throws IOException, ConnException {
 
         LOGGER.log(Level.FINE, MessageFormat.format(
-                "Flush data: rowLength=[{0}], metadata=[{2}], block=[{3}]",
-                metadata.getRowLength(), metadata, block));
+                "Flush data: block=[{0}]", block));
 
-        // Send header with total binary insert
-        ByteBuffer header_buffer = socket.generateHeader(Utils.totalLengthForHeader(metadata, block), false);
-
-        // Send put message
-        messenger.put(block.getFillSize());
-
-        socket.sendData(header_buffer, false);
-
-        // Send available columns
-        sendDataToSocket(metadata, block);
-        messenger.isPutted();
-    }
-
-    private void sendDataToSocket(TableMetadata tableMetadata, BlockDto block)
-            throws IOException, ConnException {
-
-        for(int idx=0; idx < tableMetadata.getRowLength(); idx++) {
-            if(tableMetadata.isNullable(idx)) {
-                socket.sendData((ByteBuffer) block.getNullBuffers()[idx].position(block.getFillSize()), false);
-            }
-            if(tableMetadata.isTruVarchar(idx)) {
-                socket.sendData(block.getNvarcLenBuffers()[idx], false);
-            }
-            socket.sendData(block.getDataBuffers()[idx], false);
-        }
+        sqreamExecutedStatement.put(block);
     }
 }

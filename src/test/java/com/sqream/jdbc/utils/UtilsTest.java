@@ -34,7 +34,7 @@ public class UtilsTest {
         TableMetadata metadata = TableMetadata.builder()
                 .rowLength(rowLength)
                 .fromColumnsMetadata(columnMetadataList)
-                .statementType(StatementType.INSERT)
+                .statementType(StatementType.NETWORK_INSERT)
                 .build();
 
         FlushStorage storage =

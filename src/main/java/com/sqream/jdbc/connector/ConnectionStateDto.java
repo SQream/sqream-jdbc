@@ -2,16 +2,16 @@ package com.sqream.jdbc.connector;
 
 public class ConnectionStateDto {
 
-    private int connection_id;
+    private int connectionId;
     private String varcharEncoding;
 
-    public ConnectionStateDto(int connection_id, String varcharEncoding) {
-        this.connection_id = connection_id;
+    public ConnectionStateDto(int connectionId, String varcharEncoding) {
+        this.connectionId = connectionId;
         this.varcharEncoding = varcharEncoding;
     }
 
     public int getConnectionId() {
-        return connection_id;
+        return connectionId;
     }
 
     public String getVarcharEncoding() {

@@ -24,7 +24,7 @@ public class TableMetadataTest {
 
     @Before
     public void setUp() {
-        setupTestEnv(StatementType.SELECT);
+        setupTestEnv(StatementType.QUERY);
     }
 
     private void setupTestEnv (StatementType statementType) {
@@ -123,7 +123,7 @@ public class TableMetadataTest {
 
     @Test
     public void getNameInsertStatementTest() {
-        setupTestEnv(StatementType.INSERT);
+        setupTestEnv(StatementType.NETWORK_INSERT);
         String expectedDefaultName = "denied";
 
         assertTrue(EXPECTED_ALL_NAMES.size() > 0);
@@ -135,7 +135,7 @@ public class TableMetadataTest {
 
     @Test
     public void getNameDMLStatementTest() {
-        setupTestEnv(StatementType.DML);
+        setupTestEnv(StatementType.NON_QUERY);
         String expectedDefaultName = "denied";
 
         assertTrue(EXPECTED_ALL_NAMES.size() > 0);
@@ -155,7 +155,7 @@ public class TableMetadataTest {
         TableMetadata.builder()
                 .rowLength(ROW_LENGTH)
                 .fromColumnsMetadata(null)
-                .statementType(StatementType.INSERT)
+                .statementType(StatementType.NETWORK_INSERT)
                 .build();
     }
 

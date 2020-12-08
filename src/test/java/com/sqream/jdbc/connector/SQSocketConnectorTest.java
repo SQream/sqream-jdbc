@@ -1,6 +1,8 @@
 package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.ConnectionParams;
+import com.sqream.jdbc.connector.messenger.Messenger;
+import com.sqream.jdbc.connector.messenger.MessengerImpl;
 import com.sqream.jdbc.connector.socket.SQSocket;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import org.junit.Test;
@@ -27,13 +29,15 @@ import static junit.framework.TestCase.*;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SQSocketConnector.class, SQSocket.class, SSLContext.class})
+@PrepareForTest({SQSocketConnector.class, SQSocket.class, SSLContext.class, MessengerImpl.class})
 public class SQSocketConnectorTest {
 
     @Test
     public void reconnectToNodeTest() throws ConnException {
         boolean USE_SSL = false;
         boolean CLUSTER = true;
+        MessengerImpl messengerMock = Mockito.mock(MessengerImpl.class);
+        Mockito.when(messengerMock.connect(any(), any(), any(), any())).thenReturn(new ConnectionStateDto(1, "123"));
         SQSocket socketMock = Mockito.mock(SQSocket.class);
         Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Void>() {
             @Override
@@ -48,14 +52,17 @@ public class SQSocketConnectorTest {
         });
         PowerMockito.mockStatic(SQSocket.class);
         PowerMockito.when(SQSocket.connect(IP, PORT, USE_SSL)).thenReturn(socketMock);
+        PowerMockito.mockStatic(MessengerImpl.class);
+        PowerMockito.when(MessengerImpl.getInstance(any())).thenReturn(messengerMock);
 
-        new ConnectorImpl(
+        Connector connector = new ConnectorImpl(
                 ConnectionParams.builder()
                         .ipAddress(IP)
                         .port(String.valueOf(PORT))
                         .cluster(String.valueOf(CLUSTER))
                         .useSsl(String.valueOf(SSL))
                         .build());
+        connector.connect(IP, USER, PASS, SERVICE);
 
         Mockito.verify(socketMock).close();
     }
@@ -74,13 +81,15 @@ public class SQSocketConnectorTest {
             PowerMockito.mockStatic(SQSocket.class);
             PowerMockito.when(SQSocket.connect(IP, PORT, USE_SSL)).thenReturn(socketMock);
 
-            new ConnectorImpl(
+            Connector connector = new ConnectorImpl(
                     ConnectionParams.builder()
                             .ipAddress(IP)
                             .port(String.valueOf(PORT))
                             .cluster(String.valueOf(CLUSTER))
                             .useSsl(String.valueOf(SSL))
                             .build());
+            connector.connect(DATABASE, USER, PASS, SERVICE);
+
         } catch (ConnException e) {
             if (CORRECT_MESSAGE.equals(e.getMessage())) {
                 throw e;

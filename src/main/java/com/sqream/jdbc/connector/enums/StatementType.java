@@ -1,9 +1,9 @@
 package com.sqream.jdbc.connector.enums;
 
 public enum StatementType {
-    DML("DML"),
-    INSERT("INSERT"),
-    SELECT("SELECT");
+    NON_QUERY("NON_QUERY"),
+    NETWORK_INSERT("NETWORK_INSERT"),
+    QUERY("QUERY");
 
     private String value;
 

@@ -6,6 +6,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.sqream.jdbc.connector.*;
 
+import static com.sqream.jdbc.connector.enums.StatementType.NETWORK_INSERT;
+
 
 public class SQStatement implements Statement {
 
@@ -47,9 +49,10 @@ public class SQStatement implements Statement {
 			cancel = new ConnectorImpl(connection.getParams());
 			cancel.connect(connection.getParams().getDbName(), connection.getParams().getUser(), connection.getParams().getPassword(), connection.getParams().getService());
 			cancel.execute(sql);
-			client.setOpenStatement(false);
+			client.close();
 		} catch (Exception e) {
-			throw new SQLException(e);
+			/*NOP*/
+			// We do not care if cancel fails, and we do not want it to hide the original exception that caused cancel
 		}
 		finally  {
 			if(cancel !=null && cancel.isOpen())
@@ -143,7 +146,7 @@ public class SQStatement implements Statement {
 			resultSet = SQResultSet.getInstance(client, dbName);
 			// Related to bug BG-910 - Set as empty since there is no need to
 			// return result
-			if ((!"INSERT".equals(client.getQueryType())) && client.getRowLength() == 0)
+			if ((!NETWORK_INSERT.getValue().equals(client.getQueryType())) && client.getRowLength() == 0)
 				resultSet.setEmpty(true);
 
 			return resultSet;

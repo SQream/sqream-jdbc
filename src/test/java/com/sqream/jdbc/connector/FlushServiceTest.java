@@ -1,9 +1,9 @@
 package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.connector.enums.StatementType;
-import com.sqream.jdbc.connector.messenger.MessengerImpl;
-import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import com.sqream.jdbc.connector.storage.FlushStorage;
+import com.sqream.jdbc.connector.serverAPI.Statement.SqreamExecutedStatement;
+import com.sqream.jdbc.connector.serverAPI.Statement.SqreamExecutedStatementImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -13,6 +13,7 @@ import java.util.List;
 
 import static com.sqream.jdbc.connector.ConnectorImpl.BYTES_PER_FLUSH_LIMIT;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 
 public class FlushServiceTest {
 
@@ -25,14 +26,15 @@ public class FlushServiceTest {
         TableMetadata metadata = TableMetadata.builder()
                 .rowLength(rowLength)
                 .fromColumnsMetadata(columnMetadataList)
-                .statementType(StatementType.INSERT)
+                .statementType(StatementType.NETWORK_INSERT)
                 .build();
         FlushStorage storage = new FlushStorage(metadata, new MemoryAllocationService().buildBlock(metadata, rowCounter), BYTES_PER_FLUSH_LIMIT);
         BlockDto block = storage.getBlock();
-        SQSocketConnector socketConnector = Mockito.mock(SQSocketConnector.class);
+        SqreamExecutedStatement sqreamStatementMock = Mockito.mock(SqreamExecutedStatementImpl.class);
+        Mockito.doNothing().when(sqreamStatementMock).put(any());
         ByteBufferPool bufferPool = new ByteBufferPool(1, rowCounter, metadata);
-        FlushService flushService = FlushService.getInstance(socketConnector, MessengerImpl.getInstance(socketConnector));
-        flushService.process(metadata, block, bufferPool);
+        FlushService flushService = FlushService.getInstance(sqreamStatementMock);
+        flushService.process(block, bufferPool);
 
         ByteBufferPool pool = new ByteBufferPool(2, rowCounter, metadata);
         BlockDto blockFromPool = pool.getBlock();

@@ -1,21 +1,19 @@
 package com.sqream.jdbc.connector;
 
 import com.sqream.jdbc.ConnectionParams;
-import com.sqream.jdbc.connector.enums.StatementType;
 import com.sqream.jdbc.connector.fetchService.FetchService;
 import com.sqream.jdbc.connector.fetchService.FetchServiceFactory;
-import com.sqream.jdbc.connector.messenger.Messenger;
-import com.sqream.jdbc.connector.messenger.MessengerImpl;
-import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import com.sqream.jdbc.connector.storage.*;
 import com.sqream.jdbc.connector.storage.fetchStorage.EmptyFetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorage;
 import com.sqream.jdbc.connector.storage.fetchStorage.FetchStorageImpl;
+import com.sqream.jdbc.connector.serverAPI.SqreamConnection;
+import com.sqream.jdbc.connector.serverAPI.SqreamConnectionFactory;
+import com.sqream.jdbc.connector.serverAPI.Statement.SqreamExecutedStatement;
 
 import java.math.BigDecimal;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.List;
 import java.text.MessageFormat;
 
 import java.nio.charset.Charset;
@@ -42,11 +40,6 @@ public class ConnectorImpl implements Connector {
 
     private static final int BYTE_BUFFER_POOL_SIZE = 3;
 
-    private SQSocketConnector socket;
-    private Messenger messenger;
-
-    private int connectionId = -1;
-    private int statementId = -1;
     private String varcharEncoding = DEFAULT_CHARACTER_CODES;  // default encoding/decoding for varchar columns
 
     private String database;
@@ -59,15 +52,8 @@ public class ConnectorImpl implements Connector {
     public static final int ROWS_PER_FLUSH_LIMIT = 1_000_000;
     public static final int BYTES_PER_FLUSH_LIMIT = 200 * 1024 * 1024;
 
-    // Column metadata
-    private StatementType statementType;
-    private int rowLength;
-
-    private TableMetadata tableMetadata;
     private FetchStorage fetchStorage;
     private FlushStorage flushStorage;
-
-    private boolean openStatement = false;
 
     // Column Storage
     private int fetchLimit = 0;
@@ -84,75 +70,17 @@ public class ConnectorImpl implements Connector {
     private FetchService fetchService;
     private ByteBufferPool byteBufferPool;
 
+    private SqreamConnection sqreamConnection;
+    private SqreamExecutedStatement sqreamExecutedStatement;
+
     private int timeout = 0;
     private int insertBufferLimit = BYTES_PER_FLUSH_LIMIT;
 
     public ConnectorImpl(ConnectionParams connParams) throws ConnException {
         /* JSON parsing engine setup, initial socket connection */
         this.connParams = connParams;
-        socket = SQSocketConnector.connect(
-                connParams.getIp(), connParams.getPort(), connParams.getUseSsl(), connParams.getCluster());
-        this.messenger = MessengerImpl.getInstance(socket);
         if (this.connParams.getInsertBuffer() != null && this.connParams.getInsertBuffer() > 0) {
             this.insertBufferLimit = this.connParams.getInsertBuffer();
-        }
-    }
-
-    // Internal Mechanism Functions
-    // ----------------------------
-    /*
-     * (1) _parse_sqream_json -        Return Map from a JSON string
-     * (2) _generate_headered_buffer - Create ByteBuffer for message and fill the header
-     * (3)  _parse_response_header -   Extract header info from received ByteBuffer
-     * (4)  _send_data -
-     * (5) _send_message -
-     */
-
-
-    // Internal API Functions
-    // ----------------------------
-    /*
-     * (1) _parse_query_type() -
-     * (2) _flush()
-     */
-
-    // ()  /* Unpack the json of column data arriving via queryType/(named). Called by prepare()  */
-    //@SuppressWarnings("rawtypes") // "Map is a raw type" @ col_data = (Map)query_type.get(idx);
-    private void parseQueryType(List<ColumnMetadataDto> columnsMetadata) throws ConnException {
-
-        rowLength = columnsMetadata.size();
-        if(rowLength ==0) {
-            return;
-        }
-
-        tableMetadata = TableMetadata.builder()
-                .rowLength(rowLength)
-                .fromColumnsMetadata(columnsMetadata)
-                .statementType(statementType)
-                .build();
-
-        validator = new InsertValidator(tableMetadata);
-
-        // Create Storage for insert / select operations
-        if (statementType.equals(INSERT)) {
-            // Initiate buffers for each column using the metadata
-            int rowsPerFlush = calcRowLimit(tableMetadata, ROWS_PER_FLUSH_LIMIT, insertBufferLimit);
-            BlockDto block = new MemoryAllocationService().buildBlock(tableMetadata, rowsPerFlush);
-            flushService = FlushService.getInstance(socket, messenger);
-            flushStorage = new FlushStorage(tableMetadata, block, insertBufferLimit);
-
-            try {
-                byteBufferPool = new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, rowsPerFlush, tableMetadata);
-            } catch (OutOfMemoryError error) {
-                try {
-                    this.closeConnection();
-                    long maxMemory = Runtime.getRuntime().maxMemory() / (1024 * 1024);
-                    LOGGER.log(Level.FINE, MessageFormat.format("Not enough heap memory [{0} Mb] to process", maxMemory));
-                    throw new OutOfMemoryError(MessageFormat.format("Not enough heap memory [{0} Mb] to process", maxMemory));
-                } catch (ConnException e) {
-                    throw new ConnException(e);
-                }
-            }
         }
     }
 
@@ -160,7 +88,7 @@ public class ConnectorImpl implements Connector {
         BlockDto blockForFlush = flushStorage.getBlock();
         int rowsFlush = blockForFlush.getFillSize();
         if (rowsFlush > 0) {
-            flushService.process(tableMetadata, blockForFlush, byteBufferPool);
+            flushService.process(blockForFlush, byteBufferPool);
             flushStorage.setBlock(byteBufferPool.getBlock());
         }
         return rowsFlush;
@@ -173,18 +101,19 @@ public class ConnectorImpl implements Connector {
      */
     @Override
     public int connect(String database, String user, String password, String service) throws ConnException {
-        //"'{'\"username\":\"{0}\", \"password\":\"{1}\", \"connectDatabase\":\"{2}\", \"service\":\"{3}\"'}'";
-
         this.database = database;
         this.user = user;
         this.password = password;
         this.service = service;
-
-        ConnectionStateDto connState = messenger.connect(this.database, this.user, this.password, this.service);
-        connectionId = connState.getConnectionId();
-        varcharEncoding = connState.getVarcharEncoding();
-
-        return connectionId;
+        this.connParams = ConnectionParams.builder()
+                .from(connParams)
+                .dbName(database)
+                .user(user)
+                .password(password)
+                .service(service)
+                .build();
+        this.sqreamConnection = SqreamConnectionFactory.openConnection(this.connParams);
+        return sqreamConnection.getId();
     }
 
     @Override
@@ -219,75 +148,60 @@ public class ConnectorImpl implements Connector {
         if (chunkSize < 0) {
             throw new ConnException("chunk size should be positive, got " + chunkSize);
         }
-        if (openStatement) {
-            // Automatically close previous unclosed statement
-            close();
-        }
-        openStatement = true;
-        // Get statement ID, send prepareStatement and get response parameters
-        statementId = messenger.openStatement();
-
-        StatementStateDto statementState = messenger.prepareStatement(statement, chunkSize);
-
-
-        int port = connParams.getUseSsl() ? statementState.getPortSsl() : statementState.getPort();
-        // Reconnect and reestablish statement if redirected by load balancer
-        if (statementState.isReconnect()) {
-            socket.reconnect(statementState.getIp(), port, connParams.getUseSsl());
-
-            // Sending reconnect, reconstruct commands
-            messenger.reconnect(database, user, password, service, connectionId, statementState.getListenerId());
-            messenger.isStatementReconstructed(statementId);
+        if (sqreamExecutedStatement != null && sqreamExecutedStatement.isOpen()) {
+            try {
+                sqreamExecutedStatement.close();
+            } catch (Exception e) {
+                throw new ConnException(e);
+            }
         }
 
-        // Getting query type manouver and setting the type of query
-        messenger.execute();
-        List<ColumnMetadataDto> queryType = messenger.queryTypeInput();
+        this.sqreamExecutedStatement = this.sqreamConnection
+                .createStatement()
+                .prepare(statement)
+                .execute();
 
-        if (queryType.isEmpty()) {
-            queryType = messenger.queryTypeOut();
-            statementType = queryType.isEmpty() ? DML : SELECT;
-        }
-        else {
-            statementType = INSERT;
-        }
+        this.validator = new InsertValidator(sqreamExecutedStatement.getMeta());
 
-        // Select or Insert statement - parse queryType response for metadata
-        if (!statementType.equals(DML)) {
-            parseQueryType(queryType);
-        }
         // First fetch on the house, auto close statement if no data returned
-        if (statementType.equals(SELECT)) {
-            fetchService = FetchServiceFactory.getService(socket, messenger, tableMetadata, fetchSize);
+        if (sqreamExecutedStatement.getType().equals(QUERY)) {
+            fetchService = FetchServiceFactory.getService(sqreamExecutedStatement, fetchSize);
             totalRowCounter = 0;
             fetchService.process(fetchLimit);
             BlockDto fetchedBlock = fetchService.getBlock();
             if (fetchedBlock != null) {
-                fetchStorage = new FetchStorageImpl(tableMetadata, fetchedBlock);
+                fetchStorage = new FetchStorageImpl(sqreamExecutedStatement.getMeta(), fetchedBlock);
             } else {
                 fetchStorage = new EmptyFetchStorage();
             }
             if (fetchService.isClosed()) {
                 close();
             }
+        } else if (sqreamExecutedStatement.getType().equals(NETWORK_INSERT)) {
+            int rowsPerFlush = calcRowLimit(sqreamExecutedStatement.getMeta(), ROWS_PER_FLUSH_LIMIT, insertBufferLimit);
+            BlockDto block = new MemoryAllocationService().buildBlock(sqreamExecutedStatement.getMeta(), rowsPerFlush);
+            this.flushService = FlushService.getInstance(sqreamExecutedStatement);
+            flushStorage = new FlushStorage(sqreamExecutedStatement.getMeta(), block, insertBufferLimit);
+
+            byteBufferPool = createByteBufferPool(rowsPerFlush);
         }
-        return statementId;
+        return sqreamExecutedStatement.getId();
     }
 
     @Override
     public boolean next() throws ConnException {
-        if (statementType.equals(INSERT)) {
+        if (sqreamExecutedStatement.getType().equals(NETWORK_INSERT)) {
             // Flush and clean if needed
             if (!flushStorage.next()) {
                 flush();
             }
-        } else if (statementType.equals(SELECT)) {
+        } else if (sqreamExecutedStatement.getType().equals(QUERY)) {
         	if (fetchLimit !=0 && totalRowCounter == fetchLimit) {
                 return false;  // MaxRow limit reached, stop even if more data was fetched
             }
         	if (!fetchStorage.next()) {
         	    BlockDto fetchedBlock = fetchService.getBlock();
-        		if (fetchedBlock == null) {
+        		if (fetchedBlock == null || fetchedBlock.getFillSize() == 0) {
         		    close();
                     return false; // No more data and we've read all we have
                 }
@@ -295,42 +209,48 @@ public class ConnectorImpl implements Connector {
                 fetchStorage.setBlock(fetchedBlock);
             }
             totalRowCounter++;
-        } else if (statementType.equals(DML)) {
+        } else if (sqreamExecutedStatement.getType().equals(NON_QUERY)) {
             throw new ConnException("Calling next() on a non insert / select query");
         } else {
-            throw new ConnException("Calling next() on a statement type different than INSERT / SELECT / DML: " + statementType.getValue());
+            throw new ConnException("Calling next() on a statement type different than INSERT / SELECT / DML: " + sqreamExecutedStatement.getType().getValue());
         }
         return true;
     }
 
     @Override
     public void close() throws ConnException {
-        LOGGER.log(Level.FINE, MessageFormat.format("Close statement: openStatement=[{0}], statementType=[{1}]]", openStatement, statementType));
+        LOGGER.log(Level.FINE, MessageFormat.format("Close statement: openStatement=[{0}], statementType=[{1}]]",
+                isOpenStatement(), sqreamExecutedStatement != null ? sqreamExecutedStatement.getType() : null));
 
     	if (isOpen()) {
-    		if (openStatement) {
-    			if (statementType != null && statementType.equals(INSERT)) {
+    		if (sqreamExecutedStatement != null && sqreamExecutedStatement.isOpen()) {
+    			if (NETWORK_INSERT.equals(sqreamExecutedStatement.getType())) {
     	            flush();
     	            flushService.close();
     	            if (byteBufferPool != null) {
                         byteBufferPool.close();
                     }
     	        }
-    	            // Statement is finished so no need to reset row_counter etc
-                openStatement = false;  // set to true in execute()
-                messenger.closeStatement();
+                try {
+                    this.sqreamExecutedStatement.close();
+                } catch (Exception e) {
+                    throw new ConnException(e);
+                }
             }
         }
     }
 
     @Override
     public boolean closeConnection() throws ConnException {
-        if (isOpen()) {
-            if (openStatement) { // Close open statement if exists
+        if (sqreamConnection != null && sqreamConnection.isOpen()) {
+            if (sqreamExecutedStatement != null && sqreamExecutedStatement.isOpen()) { // Close open statement if exists
                 close();
             }
-            messenger.closeConnection();
-            socket.close();
+            try {
+                sqreamConnection.close();
+            } catch (Exception e) {
+                throw new ConnException(e);
+            }
         }
         return true;
     }
@@ -427,79 +347,79 @@ public class ConnectorImpl implements Connector {
     @Override
     public Boolean getBoolean(String colName) {
 
-        return getBoolean(tableMetadata.getColNumByName(colName));
+        return getBoolean(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public Byte getUbyte(String colName) {
 
-        return getUbyte(tableMetadata.getColNumByName(colName));
+        return getUbyte(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public Short getShort(String colName) {
 
-        return getShort(tableMetadata.getColNumByName(colName));
+        return getShort(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public Integer getInt(String colName) {
 
-        return getInt(tableMetadata.getColNumByName(colName));
+        return getInt(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public Long getLong(String colName) {
 
-        return getLong(tableMetadata.getColNumByName(colName));
+        return getLong(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public Float getFloat(String colName) {
 
-        return getFloat(tableMetadata.getColNumByName(colName));
+        return getFloat(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public Double getDouble(String colName) {
 
-        return getDouble(tableMetadata.getColNumByName(colName));
+        return getDouble(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public String getVarchar(String colName) {
 
-        return getVarchar(tableMetadata.getColNumByName(colName));
+        return getVarchar(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public String getNvarchar(String colName) {
 
-        return getNvarchar(tableMetadata.getColNumByName(colName));
+        return getNvarchar(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public Date getDate(String colName) {
 
-        return getDate(tableMetadata.getColNumByName(colName));
+        return getDate(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public Date getDate(String colName, ZoneId zone) {
 
-        return getDate(tableMetadata.getColNumByName(colName), zone);
+        return getDate(sqreamExecutedStatement.getMeta().getColNumByName(colName), zone);
     }
 
     @Override
     public Timestamp getDatetime(String colName) {
 
-        return getDatetime(tableMetadata.getColNumByName(colName));
+        return getDatetime(sqreamExecutedStatement.getMeta().getColNumByName(colName));
     }
 
     @Override
     public Timestamp getDatetime(String colName, ZoneId zone) {
 
-        return getDatetime(tableMetadata.getColNumByName(colName), zone);
+        return getDatetime(sqreamExecutedStatement.getMeta().getColNumByName(colName), zone);
     }
 
     @Override
@@ -631,69 +551,64 @@ public class ConnectorImpl implements Connector {
 
     @Override
     public int getStatementId() {
-        return statementId;
+        return sqreamExecutedStatement.getId();
     }
 
     @Override
     public String getQueryType() {
-        return statementType.getValue();
+        return sqreamExecutedStatement.getType().getValue();
     }
 
     @Override
     public int getRowLength() {  // number of columns for this query
 
-        return rowLength;
+        return sqreamExecutedStatement.getMeta().getRowLength();
     }
 
     @Override
     public String getColName(int colNum) throws ConnException {
 
-        return tableMetadata.getName(validateColNum(colNum));
+        return sqreamExecutedStatement.getMeta().getName(validateColNum(colNum));
     }
 
     @Override
     public String getColType(int colNum) throws ConnException {
-        return tableMetadata.getType(validateColNum(colNum));
+        return sqreamExecutedStatement.getMeta().getType(validateColNum(colNum));
     }
 
     @Override
     public String getColType(String colName) throws ConnException {
-        Integer colNum = tableMetadata.getColNumByName(colName);
+        Integer colNum = sqreamExecutedStatement.getMeta().getColNumByName(colName);
         if (colNum == null)
-            throw new ConnException("\nno column found for name: " + colName + "\nExisting columns: \n" + tableMetadata.getAllNames());
+            throw new ConnException("\nno column found for name: " + colName + "\nExisting columns: \n" + sqreamExecutedStatement.getMeta().getAllNames());
         return getColType(colNum);
     }
 
     @Override
     public int getColSize(int colNum) throws ConnException {
 
-        return tableMetadata.getSize(validateColNum(colNum));
+        return sqreamExecutedStatement.getMeta().getSize(validateColNum(colNum));
     }
 
     @Override
     public boolean isColNullable(int colNum) throws ConnException {
 
-        return tableMetadata.isNullable(validateColNum(colNum));
+        return sqreamExecutedStatement.getMeta().isNullable(validateColNum(colNum));
     }
 
     @Override
     public boolean isOpenStatement() {
-        return openStatement;
+        return this.sqreamExecutedStatement != null && this.sqreamExecutedStatement.isOpen();
     }
 
     @Override
     public boolean isOpen() {
-        return socket.isOpen();
+        return this.sqreamConnection != null && this.sqreamConnection.isOpen();
     }
 
     @Override
     public AtomicBoolean checkCancelStatement() {
         return this.IsCancelStatement;
-    }
-
-    @Override
-    public void setOpenStatement(boolean openStatement) {
-        this.openStatement = openStatement;
     }
 
     @Override
@@ -719,5 +634,20 @@ public class ConnectorImpl implements Connector {
     @Override
     public int getFetchSize() {
         return fetchSize;
+    }
+
+    private ByteBufferPool createByteBufferPool(int blockSize) throws ConnException {
+        try {
+            return new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, blockSize, sqreamExecutedStatement.getMeta());
+        } catch (OutOfMemoryError error) {
+            try {
+                this.closeConnection();
+                long maxMemory = Runtime.getRuntime().maxMemory() / (1024 * 1024);
+                LOGGER.log(Level.FINE, MessageFormat.format("Not enough heap memory [{0} Mb] to process", maxMemory));
+                throw new OutOfMemoryError(MessageFormat.format("Not enough heap memory [{0} Mb] to process", maxMemory));
+            } catch (ConnException e) {
+                throw new ConnException(e);
+            }
+        }
     }
 }

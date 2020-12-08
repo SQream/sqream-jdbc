@@ -1,21 +1,17 @@
 package com.sqream.jdbc.connector.fetchService;
 
-import com.sqream.jdbc.connector.TableMetadata;
-import com.sqream.jdbc.connector.messenger.Messenger;
-import com.sqream.jdbc.connector.socket.SQSocketConnector;
+import com.sqream.jdbc.connector.serverAPI.Statement.SqreamExecutedStatement;
 
 public class FetchServiceFactory {
     private static final int UNLIMITED_FETCH = 0;
 
-    public static FetchService getService(SQSocketConnector socket,
-                                          Messenger messenger,
-                                          TableMetadata metadata,
+    public static FetchService getService(SqreamExecutedStatement sqreamExecutedStatement,
                                           int fetchSize) {
 
         if (fetchSize == UNLIMITED_FETCH) {
-            return EagerFetchService.getInstance(socket, messenger, metadata);
+            return EagerFetchService.getInstance(sqreamExecutedStatement);
         } else {
-            return LazyFetchService.getInstance(socket, messenger, metadata, fetchSize);
+            return LazyFetchService.getInstance(sqreamExecutedStatement, fetchSize);
         }
     }
 }

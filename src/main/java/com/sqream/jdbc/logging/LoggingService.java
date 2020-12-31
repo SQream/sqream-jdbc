@@ -15,12 +15,16 @@ public class LoggingService {
     }
 
     public void set(String level, String filePath) {
+        removeExistingHandlers();
+        if (filePath != null && filePath.length() > 0) {
+            setFileHandler(filePath);
+        } else {
+            setConsoleHandler();
+        }
         setLevel(level);
-        setFilePath(filePath);
     }
 
     private void setLevel(String level) {
-        setDefaultConsoleHandler();
         if (level == null || level.length() == 0) {
             return;
         }
@@ -42,10 +46,15 @@ public class LoggingService {
         }
     }
 
-    private void setFilePath(String filePath) {
-        if (filePath == null || filePath.length() == 0) {
-            return;
-        }
+    private void setConsoleHandler() {
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
+        consoleHandler.setFormatter(LoggerUtil.getCustomFormatter());
+        PARENT_LOGGER.addHandler(consoleHandler);
+        PARENT_LOGGER.setLevel(Level.OFF);
+    }
+
+    private void setFileHandler(String filePath) {
         try {
             Handler handler = new FileHandler(filePath, true);
             handler.setLevel(Level.ALL);
@@ -56,15 +65,10 @@ public class LoggingService {
         }
     }
 
-    private void setDefaultConsoleHandler() {
+    private void removeExistingHandlers() {
         for (Handler handler : PARENT_LOGGER.getHandlers()) {
             handler.close();
             PARENT_LOGGER.removeHandler(handler);
         }
-        ConsoleHandler consoleHandler = new ConsoleHandler();
-        consoleHandler.setLevel(Level.ALL);
-        consoleHandler.setFormatter(LoggerUtil.getCustomFormatter());
-        PARENT_LOGGER.addHandler(consoleHandler);
-        PARENT_LOGGER.setLevel(Level.OFF);
     }
 }

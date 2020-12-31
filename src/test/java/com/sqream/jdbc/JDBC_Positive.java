@@ -355,20 +355,28 @@ public class JDBC_Positive {
 
     @Test
     public void getUDFTest() throws SQLException {
-        String createSql = "CREATE OR REPLACE FUNCTION fud () RETURNS int as $$ return 1 $$ LANGUAGE PYTHON";
+        String funName = "fud";
+        String dropUdf = MessageFormat.format("drop function if exists {0}();", funName);
+        String createUdf = MessageFormat.format(
+                "CREATE OR REPLACE FUNCTION {0} () RETURNS int as $$ return 1 $$ LANGUAGE PYTHON", funName);
+        boolean definedFunExists = false;
 
         try (Connection conn = createConnection();
              Statement stmt = conn.createStatement()) {
 
-            stmt.execute(createSql);
+            stmt.execute(dropUdf);
+            stmt.execute(createUdf);
         }
 
         try (Connection conn = createConnection()) {
             DatabaseMetaData metaData = conn.getMetaData();
             ResultSet rs = metaData.getProcedures(null, null, null);
             while (rs.next()) {
-                assertEquals("fud", rs.getString("procedure_name"));
+                if (funName.equals(rs.getString("procedure_name"))) {
+                    definedFunExists = true;
+                }
             }
+            assertTrue("User defined function does not exist", definedFunExists);
         }
     }
 
@@ -506,7 +514,7 @@ public class JDBC_Positive {
         ZoneId before_jdbc = ZoneId.systemDefault();
         Class.forName("com.sqream.jdbc.SQDriver");
         ZoneId after_jdbc = ZoneId.systemDefault();
-        log.info ("Changing timezone test: " + ((after_jdbc.equals(before_jdbc)) ? "OK" : "Fail"));
+        assertEquals(before_jdbc, after_jdbc);
     }
 
     @Test

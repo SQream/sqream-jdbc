@@ -45,10 +45,9 @@ public class Negative {
 	Date test_date = new Date(99999999l), res_date = new Date(0l);
 	Timestamp test_datetime = new Timestamp(9l), res_datetime = new Timestamp(0l);
 
-    private boolean wrong_type_set(String table_type) throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException{
+    private void wrong_type_set(String table_type) throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException{
     	/* Set a column value using the wrong set command. See if error message is correct */
 
-    	boolean a_ok = false;
     	String table_name = table_type.contains("varchar(100)") ?  table_type.substring(0,7) : table_type;
     	ConnectorImpl conn = new ConnectorImpl(
     			ConnectionParams.builder()
@@ -60,117 +59,80 @@ public class Negative {
 		conn.connect(DATABASE, USER, PASS, SERVICE);
 
     	// Prepare Table
-//    	log.info(" - Create Table t_" + table_type);
     	String sql = MessageFormat.format("create or replace table t_{0} (x {1})", table_name, table_type);
 		conn.execute(sql);
 		conn.close();
 
 		// Insert using wrong statement
-//		log.info(" - Insert test value " + table_type);
 		sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 		conn.execute(sql);
-		if (table_type == "bool")
+		if ("bool".equals(table_type))
 			try {
 				conn.setUbyte(1, test_ubyte);
 			} catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "tinyint")
+		else if ("tinyint".equals(table_type))
 			try {
 				conn.setDouble(1, test_double);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "smallint")
+		else if ("smallint".equals(table_type))
 			try {
 				conn.setDate(1, test_date);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "int")
+		else if ("int".equals(table_type))
 			try {
 				conn.setDate(1, test_date);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "bigint")
+		else if ("bigint".equals(table_type))
 			try {
 				conn.setDate(1, test_date);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "real")
+		else if ("real".equals(table_type))
 			try {
 				conn.setDate(1, test_date);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "double")
+		else if ("double".equals(table_type))
 			try {
 			 	conn.setFloat(1, test_real);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "varchar(100)")
+		else if ("varchar(100)".equals(table_type))
 			try {
 				conn.setNvarchar(1, test_nvarchar);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "nvarchar(100)")
+		else if ("nvarchar(100)".equals(table_type))
 			try {
 				conn.setVarchar(1, test_varchar);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "date")
+		else if ("date".equals(table_type))
 			try {
 				conn.setDatetime(1, test_datetime);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
-		else if (table_type == "datetime")
+		else if ("datetime".equals(table_type))
 			try {
 				conn.setDate(1, test_date);
 			}catch (UnsupportedOperationException e) {
-				if (e.getMessage().contains("Trying to set")) {
-					log.info("Correct error message on wrong set function");
-					a_ok = true;
-				}
+				assertTrue(e.getMessage().contains("Trying to set"));
 			}
 		conn.close();
-		// Check for appropriate wrong set error
-		return a_ok;
     }
 
 
@@ -287,10 +249,9 @@ public class Negative {
 	Timestamp[] badDatetimes = {new Timestamp(-300l), new Timestamp(-9999999999999999l)};
 
 
-    private boolean bad_value_set(String table_type) throws IOException, KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
+    private void bad_value_set(String table_type) throws IOException, KeyManagementException, NoSuchAlgorithmException, ScriptException, ConnException {
     	/* Try to set a varchar/nvarchar of the wrong size. See if error message is correct */
 
-    	boolean a_ok = false;
     	String tableName = table_type.contains("varchar(10)") ?  table_type.substring(0,7) : table_type;
 
 		ConnectorImpl conn = new ConnectorImpl(
@@ -303,98 +264,62 @@ public class Negative {
 		conn.connect(DATABASE, USER, PASS, SERVICE);
 
     	// Prepare Table
-    	//log.info(" - Create Table t_" + table_type);
     	String sql = MessageFormat.format("create or replace table t_{0} (x {1})", tableName, table_type);
 		conn.execute(sql);
 		conn.close();
 
 		// Insert a String that is too long - attempts kept for future reference
-		//char repeated_char = 'j';
-		//String tooLong = String.valueOf(new char[varcharLen+1]).replace('\0', repeated_char );
-		//char [] rep = new char[len+1];
-		//Arrays.fill(rep, repeated_char);  // String.valueOf(rep)
-		// String repeated_pattern = "j";
-		//String tooLong = new String(rep).replace("\0", repeated_pattern);
-
-		//if (varchar_orNvarchar.equals("varchar"))
-		if (table_type == "tinyint")
+		if ("tinyint".equals(table_type))
 			for (byte bad: bad_ubytes) {
-				log.info(" - Insert negative tinyint");
 				sql = MessageFormat.format("insert into t_{0} values (?)", tableName);
 				conn.execute(sql);
 
 				try {
-					log.info("Attempted bad insert value: " + bad);
 					conn.setUbyte(1, bad);
 				}catch (IllegalArgumentException e) {
-					if (e.getMessage().contains("Trying to set")) {
-						log.info("Correct error message on setting bad value");
-						a_ok = true;
-
-					}
+					assertTrue(e.getMessage().contains("Trying to set"));
 				}
-				//conn.next();
-				// conn.executeBatch();
 				conn.close();
 			}
 
-		else if (table_type == varchar_type)
+		else if (varchar_type.equals(table_type))
 			for (String bad: badVarchars) {
-				log.info(" - Insert oversized test value of type " + tableName + " of size " + varcharLen);
 				sql = MessageFormat.format("insert into t_{0} values (?)", tableName);
 				conn.execute(sql);
 
 				try {
-					log.info("Attempted bad insert value: " + bad);
 					conn.setVarchar(1, bad);}
 				catch (IllegalArgumentException e) {
-					if (e.getMessage().contains("Trying to set string of size")) {
-						log.info("Correct error message on setting oversized varchar");
-						a_ok = true;
-					}
+					assertTrue(e.getMessage().contains("Trying to set string of size"));
 				}
-				// conn.executeBatch();
 				conn.close();
 			}
 
-		else if (table_type == "date")
+		else if ("date".equals(table_type))
 			for (Date bad: badDates) {
-				log.info(" - Insert negative/huge long for date");
 				sql = MessageFormat.format("insert into t_{0} values (?)", tableName);
 				conn.execute(sql);
 
 				try {
-					log.info("Attempted bad insert value: " + bad);
 					conn.setDate(1, bad);}
 				finally {
 					conn.close();
-					// log.info("Correct exception thrown on bad date");
-					a_ok = true;
-					// return a_ok;
 				}
 				conn.next();
-				// conn.executeBatch();
 				conn.close();
 			}
 
-		else if (table_type == "datetime")
+		else if ("datetime".equals(table_type))
 			for (Timestamp bad: badDatetimes) {
 				try {
 					log.info("Attempted bad insert value: " + bad);
 					conn.setDatetime(1, bad);}
 				finally {
 					conn.close();
-					// log.info("Correct exception thrown on bad datetime");
-					a_ok = true;
-					// return a_ok;
 				}
 				conn.next();
-				// conn.executeBatch();
 				conn.close();
 			}
-
-
-		return a_ok;
     }
 
     @Test //(expected = ConnException.class)
@@ -439,7 +364,7 @@ public class Negative {
     public void wrongTypeTest() throws KeyManagementException, ScriptException, NoSuchAlgorithmException, ConnException, IOException {
 		String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "date", "datetime"};
 		for (String col_type : typelist) {
-			assertTrue(wrong_type_set(col_type));
+			wrong_type_set(col_type);
 		}
 	}
 
@@ -447,7 +372,7 @@ public class Negative {
 	public void badTypeTest() throws KeyManagementException, ScriptException, NoSuchAlgorithmException, ConnException, IOException {
 		String[] bad_typelist = {"tinyint", varchar_type};
 		for (String table_type: bad_typelist) {
-			assertTrue(bad_value_set(table_type));
+			bad_value_set(table_type);
 		}
 	}
 }

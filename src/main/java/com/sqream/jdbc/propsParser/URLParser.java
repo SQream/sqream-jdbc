@@ -26,7 +26,6 @@ public class URLParser {
         String[] urlElements = uri.getPath().split(";");
         parseUrlElements(urlElements, result);
 
-        LOGGER.log(Level.FINE, MessageFormat.format("Parsed params: [{0}]", convertMapToString(result)));
         return result;
     }
 
@@ -45,8 +44,6 @@ public class URLParser {
                 String entryKey = entry[0];
                 String entryValue = entry[1];
                 target.put(entryKey, entryValue);
-                LOGGER.log(Level.FINE, MessageFormat.format(
-                        "parsed key: [{0}], value: [{1}]", entryKey, entryValue));
             }
         }
     }
@@ -64,11 +61,5 @@ public class URLParser {
         } catch (URISyntaxException e) {
             throw new SQLException(e.getMessage(), e);
         }
-    }
-
-    private String convertMapToString(Properties props) {
-        return props.keySet().stream()
-                .map(key -> key + "=" + props.get(key))
-                .collect(Collectors.joining(", ", "{", "}"));
     }
 }

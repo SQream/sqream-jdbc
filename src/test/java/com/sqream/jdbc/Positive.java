@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 
 import static com.sqream.jdbc.TestEnvironment.*;
 import static com.sqream.jdbc.TestEnvironment.SERVICE;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(JUnit4.class)
 public class Positive {
@@ -79,10 +79,11 @@ public class Positive {
 		return System.currentTimeMillis();
 	}
 
-	private boolean test_varchar() throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException  {
-	    /* Test that get_varchar returns corect results for all types */
-
-		boolean a_ok = false;
+	/**
+	 * Test that get_varchar returns corect results for all types
+	 */
+	@Test
+	public void varcharTest() throws ConnException {
 		ConnectorImpl conn = new ConnectorImpl(
 				ConnectionParams.builder()
 						.ipAddress(IP)
@@ -108,42 +109,24 @@ public class Positive {
 
 		while(conn.next()) {
 			String res = conn.getNvarchar(11);
-			if (conn.getBoolean(1) != false)
-				log.info("Wrong return value on getBoolen");
-			else if (conn.getUbyte(2) != 14)
-				log.info("Wrong return value on get_ubyte");
-			else if (conn.getShort(3) != 140)
-				log.info("Wrong return value on get_short");
-			else if (conn.getInt(4) != 1400)
-				log.info("Wrong return value on get_int");
-			else if (conn.getLong(5) != 14000000l)
-				log.info("Wrong return value on get_long");
-			else if (conn.getFloat(6) != 14.1f)
-				log.info("Wrong return value on get_float");
-			else if (conn.getDouble(7) != 14.12345)
-				log.info("Wrong return value on get_double");
-			else if (!conn.getDate(8).toString().equals("2013-11-23"))
-				log.info("Wrong return value on get_date");
-			else if (!conn.getDatetime(9).toString().equals("2013-11-23 14:56:47.1"))
-				log.info("Wrong return value on get_datetime");
-			else if (!conn.getVarchar(10).trim().equals("wuzz"))
-				log.info("Wrong return value on get_varchar");
-
-			else if (!res.equals("up"))
-				log.info("Wrong return value on get_nvarchar");
-			else
-				log.info("get_varchar test ok");
-				a_ok = true;
+			assertFalse(conn.getBoolean(1));
+			assertEquals(Byte.valueOf((byte) 14), conn.getUbyte(2));
+			assertEquals(Short.valueOf((short) 140), conn.getShort(3));
+			assertEquals(Integer.valueOf(1400), conn.getInt(4));
+			assertEquals(Long.valueOf(14000000L), conn.getLong(5));
+			assertEquals(Float.valueOf(14.1f), conn.getFloat(6));
+			assertEquals(Double.valueOf(14.12345), conn.getDouble(7));
+			assertEquals("2013-11-23", conn.getDate(8).toString());
+			assertEquals("2013-11-23 14:56:47.1", conn.getDatetime(9).toString());
+			assertEquals("wuzz", conn.getVarchar(10).trim());
+			assertEquals("up", res);
 		}
 		conn.close();
-		// log.info(a_ok);
-		return a_ok;
 	}
 
-	private boolean insert(String table_type)throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException  {
+	private void insert(String table_type) throws IOException, ScriptException, ConnException, NoSuchAlgorithmException, KeyManagementException {
 
-    	boolean a_ok = false;
-    	String table_name = table_type.contains("varchar(") ?  table_type.substring(0,7) : table_type;
+		String table_name = table_type.contains("varchar(") ? table_type.substring(0, 7) : table_type;
 		ConnectorImpl conn = new ConnectorImpl(
 				ConnectionParams.builder()
 						.ipAddress(IP)
@@ -153,117 +136,123 @@ public class Positive {
 						.build());
 		conn.connect(DATABASE, USER, PASS, SERVICE);
 
-    	// Prepare Table
-//    	log.info(" - Create Table t_" + table_type);
-    	String sql = MessageFormat.format("create or replace table t_{0} (x {1})", table_name, table_type);
+		// Prepare Table
+		String sql = MessageFormat.format("create or replace table t_{0} (x {1})", table_name, table_type);
 		conn.execute(sql);
 
 		conn.close();
 
 		// Insert value
-//		log.info(" - Insert test value " + table_type);
-		if (table_type == "bool")
+		if ("bool".equals(table_type))
 			for (boolean test : test_bools) {
 				test_bool = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setBoolean(1, test_bool);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "tinyint")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("tinyint".equals(table_type))
 			for (byte test : test_ubytes) {
 				test_ubyte = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setUbyte(1, test_ubyte);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "smallint")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("smallint".equals(table_type))
 			for (short test : test_shorts) {
 				test_short = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setShort(1, test_short);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "int")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("int".equals(table_type))
 			for (int test : test_ints) {
 				test_int = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 				conn.setInt(1, test_int);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "bigint")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("bigint".equals(table_type))
 			for (long test : test_longs) {
 				test_long = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setLong(1, test_long);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "real")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("real".equals(table_type))
 			for (float test : test_reals) {
 				test_real = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setFloat(1, test_real);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "double")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("double".equals(table_type))
 			for (double test : test_doubles) {
 				test_double = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setDouble(1, test_double);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "varchar(100)")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("varchar(100)".equals(table_type))
 			for (String test : test_varchars) {
 				test_varchar = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setVarchar(1, test_varchar);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "nvarchar(4)")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("nvarchar(4)".equals(table_type))
 			for (String test : test_varchars) {
 				test_varchar = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setNvarchar(1, test_nvarchar);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "date")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("date".equals(table_type))
 			for (Date test : test_dates) {
 				test_date = test;
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setDate(1, test_date);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-		else if (table_type == "datetime")
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+		else if ("datetime".equals(table_type))
 			for (Timestamp test : test_datetimes) {
 				test_datetime = test;
-				//log.info("datetime: " + test_datetime);
 				sql = MessageFormat.format("insert into t_{0} values (?)", table_name);
 				conn.execute(sql);
 
 				conn.setDatetime(1, test_datetime);
-				send_and_retreive_result (conn, table_name, table_type);
-				a_ok = is_identical(table_type);}
-
-		return a_ok;
-    }
+				send_and_retreive_result(conn, table_name, table_type);
+				is_identical(table_type);
+			}
+	}
 
     public void send_and_retreive_result (ConnectorImpl conn, String table_name, String table_type) throws ConnException, IOException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
 
@@ -307,45 +296,34 @@ public class Positive {
 		conn.close();
 	}
 
-	public boolean is_identical(String table_type) {
+	public void is_identical(String table_type) {
+		if ("bool".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_bool, res_bool), test_bool, res_bool);
+		else if ("tinyint".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_ubyte, res_ubyte), test_ubyte, res_ubyte);
+		else if ("smallint".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_short, res_short), test_short, res_short);
+		else if ("int".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_int, res_int), test_int, res_int);
+		else if ("bigint".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_long, res_long), test_long, res_long);
+		else if ("real".equals(table_type))
+			assertEquals(msgNotIdentical(table_type,test_real, res_real) ,test_real, res_real, 0);
+		else if ("double".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_double, res_double), test_double, res_double, 0);
+		else if ("varchar(100)".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_varchar, res_varchar), test_varchar, res_varchar.trim());
+		else if ("nvarchar(4)".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_varchar, res_varchar), test_nvarchar, res_nvarchar.trim());
+		else if ("date".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_date, res_date), 1, Math.abs(test_date.compareTo(res_date)));
+		else if ("datetime".equals(table_type))
+			assertEquals(msgNotIdentical(table_type, test_datetime, res_datetime), test_datetime, res_datetime);
+	}
 
-		boolean res = false;
-		//assertEquals(test_int, res_int);
-
-		if (table_type == "bool" && test_bool != res_bool)
-			log.info("Results not identical on table type " + table_type + " " + test_bool + " " + res_bool);
-		else if (table_type == "tinyint" && test_ubyte != res_ubyte)
-			log.info("Results not identical on table type " + table_type + " " + test_ubyte + " " + res_ubyte);
-		else if (table_type == "smallint" && test_short != res_short)
-			log.info("Results not identical on table type " + table_type + " " + test_short + " " + res_short);
-		else if (table_type == "int" && test_int != res_int)
-			log.info("Results not identical on table type " + table_type + " " + test_int + " " + res_int);
-		else if (table_type == "bigint" && test_long != res_long)
-			log.info("Results not identical on table type " + table_type + " " + test_long + " " + res_long);
-		else if (table_type == "real" && test_real != res_real)
-			log.info("Results not identical on table type " + table_type + " " + test_real + " " + res_real);
-		else if (table_type == "double" && test_double != res_double)
-			log.info("Results not identical on table type " + table_type + " " + test_double + " " + res_double);
-		else if (table_type == "varchar(100)" && !test_varchar.equals(res_varchar.trim()))  {
-			log.info("Results not identical on table type " + table_type + " " + test_varchar + " " + res_varchar);
-			log.info(test_varchar.compareTo(res_varchar) + "a"+ test_varchar.length() + "b" + res_varchar.length());}
-		else if (table_type == "nvarchar(4)" && !test_nvarchar.equals(res_nvarchar.trim()))  {
-			log.info("Results not identical on table type " + table_type + " " + test_varchar + " " + res_varchar);
-			log.info(test_varchar.compareTo(res_nvarchar) + "a"+ test_nvarchar.length() + "b" + res_varchar.length());}
-		else if (table_type == "date" && Math.abs(test_date.compareTo(res_date)) > 1) {
-		//else if (table_type == "date" && !test_date.equals(res_date))  {
-			log.info("Results not identical on table type " + table_type + " " + test_date + " " + test_date.getTime() + " " + res_date + " " + res_date.getTime());
-			log.info(String.valueOf(test_date.compareTo(res_date)));}
-		else if (table_type == "datetime" && !test_datetime.equals(res_datetime))
-		//else if (table_type == "datetime" && Math.abs(test_datetime.compareTo(res_datetime)) > 1)
-			log.info("Results not identical on table type " + table_type + " " + test_datetime + " " + test_datetime.getTime() + " " + res_datetime + " " + res_datetime.getTime());
-
-		else {
-			log.info(" Results identical");
-			res = true;}
-
-	return res;
-
+	private String msgNotIdentical(String tableType, Object expected, Object actual) {
+		return MessageFormat.format("Results not identical. Table type [{0}], expected [{1}], actual [{2}]",
+				tableType, expected, actual);
 	}
 
 
@@ -364,13 +342,11 @@ public class Positive {
     	String table_type = "int";
 
     	//int row_num = 100000000;
-    	//log.info(" - Create Table t_" + table_type);
     	String sql = MessageFormat.format("create or replace table t_{0} (x {0})", table_type);
     	sql = "create or replace table test (x int, y nvarchar(50))";
 		conn.execute(sql);
 		conn.close();
 
-		//log.info(" - Insert " + table_type + " " + total_inserts + " times");
 		sql = MessageFormat.format("insert into test values (?, ?)", table_type);
 		conn.execute(sql);
 
@@ -384,8 +360,6 @@ public class Positive {
 
 		}
 		conn.close();
-		log.info("Autoflush ok");
-
     	return true;
     }
 
@@ -439,17 +413,12 @@ public class Positive {
     	 new Positive().autoflush(10000, 100);
      }
 
-     @Test
-	 public void varcharTest() throws KeyManagementException, ScriptException, NoSuchAlgorithmException, ConnException, IOException {
-		 assertTrue(test_varchar());
-	 }
-
 	 @Test
 	 public void someTest() throws KeyManagementException, ScriptException, NoSuchAlgorithmException, ConnException, IOException {
 		 String[] typelist = {"bool", "tinyint", "smallint", "int", "bigint", "real", "double", "varchar(100)", "nvarchar(4)", "date", "datetime"};
 
 		 for (String col_type : typelist) {
-			 assertTrue(insert(col_type));
+			 insert(col_type);
 		 }
 	 }
 

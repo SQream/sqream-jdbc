@@ -4,7 +4,6 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.logging.*;
-import java.lang.reflect.Field;
 
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.enums.SQSQLState;
@@ -13,8 +12,6 @@ import com.sqream.jdbc.propsParser.CaselessProperties;
 import com.sqream.jdbc.propsParser.PropsParser;
 import com.sqream.jdbc.propsParser.URLParser;
 import com.sqream.jdbc.utils.Utils;
-
-import java.nio.charset.Charset;
 
 import static com.sqream.jdbc.enums.DriverProperties.*;
 
@@ -40,23 +37,15 @@ public class SQDriver implements java.sql.Driver {
 
 	@Override
 	public boolean acceptsURL(String url) throws SQLException {
-		LOGGER.log(Level.FINE, MessageFormat.format("acceptsURL: url=[{0}]", url));
-
-		log("inside acceptsURL in SQDriver");
-
 		Properties props = new URLParser().parse(url);
 		return "sqream".equalsIgnoreCase(props.getProperty("provider"));
 	}
 
 	@Override
 	public Connection connect(String url, Properties driverProps) throws SQLException {
-		LOGGER.log(Level.FINE, MessageFormat.format(
-				"Connect with params: url=[{0}], info=[{1}]", url, driverProps));
 
 		String urlPrefix = url.trim().substring(0, PREFIX.length());
 		if (!urlPrefix.equals(PREFIX)) {
-			LOGGER.log(Level.FINE,
-					"Wrong prefix for connection string. Should be jdbc:Sqream but got: [{0}]", urlPrefix);
 			return null;
 		}
 
@@ -67,14 +56,15 @@ public class SQDriver implements java.sql.Driver {
 		CaselessProperties props = PropsParser.parse(url, driverProps, createDefaultProps());
 
 		if (!validProvider(props)) {
-			LOGGER.log(Level.FINE, "Bad provider in connection string. Should be sqream but got: [{0}]",
-					props.getProperty(PROVIDER.toString()));
 			return null;
 		}
 
 		loggingService.set(
 				props.getProperty(LOGGER_LEVEL.toString()),
 				props.getProperty(LOG_FILE_PATH.toString()));
+
+		LOGGER.log(Level.FINE, MessageFormat.format(
+				"Connect with params: url=[{0}], properties=[{1}]", url, driverProps));
 
 		LOGGER.log(Level.FINE, Utils.getMemoryInfo());
 		try {

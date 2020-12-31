@@ -15,10 +15,12 @@ import static org.junit.Assert.*;
 
 public class SQStatementTest {
     private static final String testTableForDelay = "delay_test";
+    private static final String
+            heavyQuery = MessageFormat.format("select count(*) from {0} cross join {0};", testTableForDelay);
 
     @BeforeClass
     public static void setUp() throws SQLException {
-        int AMOUNT = 30;
+        int AMOUNT = 20;
         String createTable = MessageFormat.format("create or replace table {0} (col1 int);", testTableForDelay);
         String insertRow = MessageFormat.format("insert into {0} values (1);", testTableForDelay);
         String multiply = MessageFormat.format("insert into {0} select * from {0};", testTableForDelay);
@@ -406,14 +408,11 @@ public class SQStatementTest {
     @Test(expected = SQLTimeoutException.class)
     public void whenExecuteQueryReachTimeoutThrowExceptionTest() throws SQLException {
         int timeout = 1;
-        String heavyStatement =
-                MessageFormat.format("insert into {0} select * from {0};", testTableForDelay, testTableForDelay);
-
 
         try (Connection conn = createConnection()) {
             try (Statement stmt = conn.createStatement()) {
                 stmt.setQueryTimeout(timeout);
-                stmt.executeQuery(heavyStatement);
+                stmt.executeQuery(heavyQuery);
             } catch (SQLTimeoutException e) {
                 assertTrue(serverQueueEmpty());
                 throw e;
@@ -425,14 +424,11 @@ public class SQStatementTest {
     @Test(expected = SQLTimeoutException.class)
     public void whenExecuteReachTimeoutThrowExceptionTest() throws SQLException {
         int timeout = 1;
-        String heavyStatement =
-                MessageFormat.format("insert into {0} select * from {0};", testTableForDelay, testTableForDelay);
-
 
         try (Connection conn = createConnection()) {
             try (Statement stmt = conn.createStatement()) {
                 stmt.setQueryTimeout(timeout);
-                stmt.execute(heavyStatement);
+                stmt.execute(heavyQuery);
             } catch (SQLTimeoutException e) {
                 assertTrue(serverQueueEmpty());
                 throw e;
@@ -444,14 +440,11 @@ public class SQStatementTest {
     @Test(expected = SQLTimeoutException.class)
     public void whenExecuteUpdateReachTimeoutThrowExceptionTest() throws SQLException {
         int timeout = 1;
-        String heavyStatement =
-                MessageFormat.format("insert into {0} select * from {0};", testTableForDelay, testTableForDelay);
-
 
         try (Connection conn = createConnection()) {
             try (Statement stmt = conn.createStatement()) {
                 stmt.setQueryTimeout(timeout);
-                stmt.executeUpdate(heavyStatement);
+                stmt.executeUpdate(heavyQuery);
             } catch (SQLTimeoutException e) {
                 assertTrue(serverQueueEmpty());
                 throw e;

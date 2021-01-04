@@ -531,8 +531,9 @@ public class JDBC_Positive {
     public void setValuesAsNullTest() throws SQLException {
         String createSql = "create or replace table test_null_values " +
                 "(bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, " +
-                "strings varchar(10), strangs nvarchar(10), dates date, dts datetime, texts text)";
-        String insertSql = "insert into test_null_values values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                "strings varchar(10), strangs nvarchar(10), dates date, dts datetime, texts text, " +
+                "numerics numeric(5,2), numerics2 numeric(5,2));";
+        String insertSql = "insert into test_null_values values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         try (Connection conn = DriverManager.getConnection(url, "sqream", "sqream");
              Statement stmt = conn.createStatement()) {
             stmt.execute(createSql);
@@ -552,6 +553,8 @@ public class JDBC_Positive {
             ps.setDate(10, null);
             ps.setTimestamp(11, null);
             ps.setString(12,null);
+            ps.setNull(13, NUMERIC);
+            ps.setBigDecimal(14, null);
             ps.addBatch();
         }
 
@@ -574,6 +577,14 @@ public class JDBC_Positive {
             assertNull(rs.getDate(10));
             assertNull(rs.getTimestamp(11));
             assertNull(rs.getString(12));
+            assertNull(rs.getObject(13));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getBigDecimal(13));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getObject(14));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getBigDecimal(14));
+            assertTrue(rs.wasNull());
         }
     }
 

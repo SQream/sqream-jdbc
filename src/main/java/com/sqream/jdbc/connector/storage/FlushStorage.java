@@ -135,6 +135,7 @@ public class FlushStorage {
     public void setBigDecimal(int colIndex, BigDecimal value) {
         if (value == null) {
             markAsNull(colIndex);
+            value = new BigDecimal(0);
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))

@@ -104,7 +104,7 @@ public class SQResultSetNotSupportedTest {
 
     @Test (expected = SQLFeatureNotSupportedException.class)
     public void getBigDecimal4Test() throws SQLException {
-        rs.getBigDecimal("");
+        rs.getBigDecimal("", 1);
     }
 
     @Test (expected = SQLFeatureNotSupportedException.class)

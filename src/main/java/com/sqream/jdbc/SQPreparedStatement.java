@@ -309,6 +309,9 @@ public class SQPreparedStatement implements PreparedStatement {
                 case "ftBlob":
                     client.setNvarchar(arg0, null);
                     break;
+                case "ftNumeric":
+                    client.setBigDecimal(arg0, null);
+                    break;
                 default:
                     throw new IllegalArgumentException(
                             MessageFormat.format("Unsupported column type [{0}]", type));

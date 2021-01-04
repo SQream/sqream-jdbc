@@ -76,6 +76,8 @@ public interface Connector extends AutoCloseable {
 
     Timestamp getDatetime(String col_name, ZoneId zone) throws ConnException;
 
+    BigDecimal getBigDecimal(String colName) throws ConnException;
+
     int getTimeout();
 
     boolean setBoolean(int col_num, Boolean value) throws ConnException;

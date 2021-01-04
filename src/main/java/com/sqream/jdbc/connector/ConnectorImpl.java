@@ -423,6 +423,11 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
+    public BigDecimal getBigDecimal(String colName) {
+        return getBigDecimal(sqreamExecutedStatement.getMeta().getColNumByName(colName));
+    }
+
+    @Override
     public int getTimeout() {
         return this.timeout;
     }

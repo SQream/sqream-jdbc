@@ -313,21 +313,11 @@ class SQResultSet implements ResultSet {
 	}
 
 	@Override
-	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
-		try {
-			BigDecimal res = client.getBigDecimal(columnIndex);
-			return (isNull = res == null) ? BigDecimal.valueOf(0) : res;
-		}
-		catch (ConnException e) {
-			throw new SQLException(e);
-		}
-	}
-
-	@Override
 	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
 		try {
 			BigDecimal res = client.getBigDecimal(columnIndex);
-			return (isNull = res == null) ? BigDecimal.valueOf(0) : res;
+			isNull = res == null;
+			return res;
 		}
 		catch (ConnException e) {
 			throw new SQLException(e);
@@ -665,6 +655,11 @@ class SQResultSet implements ResultSet {
 	}
 
 	@Override
+	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
+		throw new SQLFeatureNotSupportedException("getBigDecimal in SQResultSet");
+	}
+
+	@Override
 	public Time getTime(String columnLabel) throws SQLException {
 		this.baseUsageError();
 		throw new SQLFeatureNotSupportedException("getTime in SQResultSet");
@@ -720,8 +715,14 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException("getBigDecimal in SQResultSet");
+		try {
+			BigDecimal res = client.getBigDecimal(columnLabel.toLowerCase());
+			isNull = res == null;
+			return res;
+		}
+		catch (ConnException e) {
+			throw new SQLException(e);
+		}
 	}
 
 	@Override

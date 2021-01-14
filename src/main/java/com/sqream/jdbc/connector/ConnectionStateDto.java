@@ -2,12 +2,14 @@ package com.sqream.jdbc.connector;
 
 public class ConnectionStateDto {
 
-    private int connectionId;
-    private String varcharEncoding;
+    private final int connectionId;
+    private final String varcharEncoding;
+    private final String serverVersion;
 
-    public ConnectionStateDto(int connectionId, String varcharEncoding) {
+    public ConnectionStateDto(int connectionId, String varcharEncoding, String serverVersion) {
         this.connectionId = connectionId;
         this.varcharEncoding = varcharEncoding;
+        this.serverVersion = serverVersion;
     }
 
     public int getConnectionId() {
@@ -16,5 +18,9 @@ public class ConnectionStateDto {
 
     public String getVarcharEncoding() {
         return varcharEncoding;
+    }
+
+    public String getServerVersion() {
+        return serverVersion;
     }
 }

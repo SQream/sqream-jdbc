@@ -23,7 +23,7 @@ public class JsonParserTest {
                 .connectionId(CONNECTION_ID)
                 .varcharEncoding(ENCODING)
                 .build();
-        ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, ENCODING);
+        ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, ENCODING, "");
 
         ConnectionStateDto result = parser.toConnectionState(JSON);
 
@@ -39,7 +39,7 @@ public class JsonParserTest {
         String JSON_WITHOUT_ENCODING = jsonBuilder()
                 .connectionId(CONNECTION_ID)
                 .build();
-        ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, DEFAULT_ENCODING);
+        ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, DEFAULT_ENCODING, "");
 
         ConnectionStateDto result = parser.toConnectionState(JSON_WITHOUT_ENCODING);
 
@@ -56,12 +56,48 @@ public class JsonParserTest {
                 .connectionId(CONNECTION_ID)
                 .varcharEncoding(ENCODING_CONTAINS_874)
                 .build();
-        ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, EXPECTED_ENCODING);
+        ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, EXPECTED_ENCODING, "");
 
         ConnectionStateDto result = parser.toConnectionState(JSON);
 
         assertNotNull(result);
         assertEquals(expected.getVarcharEncoding(), result.getVarcharEncoding());
+    }
+
+    @Test
+    public void checkServerVersionTest() throws ConnException {
+        int CONNECTION_ID = 123;
+        String ENCODING_CONTAINS_874 = "someEncodingContains874-*&%#$@";
+        String EXPECTED_ENCODING = "cp874";
+        String EXPECTED_SERVER_VERSION = "TEST_SERVER_VERSION";
+        String JSON = jsonBuilder()
+                .connectionId(CONNECTION_ID)
+                .varcharEncoding(ENCODING_CONTAINS_874)
+                .version(EXPECTED_SERVER_VERSION)
+                .build();
+        ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, EXPECTED_ENCODING, EXPECTED_SERVER_VERSION);
+
+        ConnectionStateDto result = parser.toConnectionState(JSON);
+
+        assertNotNull(result);
+        assertEquals(expected.getServerVersion(), result.getServerVersion());
+    }
+
+    @Test
+    public void checkServerVersionNotProvidedTest() throws ConnException {
+        int CONNECTION_ID = 123;
+        String ENCODING_CONTAINS_874 = "someEncodingContains874-*&%#$@";
+        String EXPECTED_ENCODING = "cp874";
+        String JSON = jsonBuilder()
+                .connectionId(CONNECTION_ID)
+                .varcharEncoding(ENCODING_CONTAINS_874)
+                .build();
+        ConnectionStateDto expected = new ConnectionStateDto(CONNECTION_ID, EXPECTED_ENCODING, "");
+
+        ConnectionStateDto result = parser.toConnectionState(JSON);
+
+        assertNotNull(result);
+        assertEquals(expected.getServerVersion(), result.getServerVersion());
     }
 
     @Test
@@ -267,6 +303,7 @@ public class JsonParserTest {
         private Integer portSsl;
         private Boolean reconnect;
         private String ip;
+        private String version;
 
         private  TestJsonBuilder() { }
 
@@ -277,6 +314,11 @@ public class JsonParserTest {
 
         TestJsonBuilder varcharEncoding(String encoding) {
             this.varcharEncoding = encoding;
+            return this;
+        }
+
+        TestJsonBuilder version(String version) {
+            this.version = version;
             return this;
         }
 
@@ -322,6 +364,9 @@ public class JsonParserTest {
             }
             if (varcharEncoding != null) {
                 result.set("varcharEncoding", varcharEncoding);
+            }
+            if (version != null) {
+                result.set("version", version);
             }
             if (rows != null) {
                 result.set("rows", rows);

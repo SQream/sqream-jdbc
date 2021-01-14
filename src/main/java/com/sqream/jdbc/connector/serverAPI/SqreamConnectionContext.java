@@ -3,8 +3,8 @@ package com.sqream.jdbc.connector.serverAPI;
 import com.sqream.jdbc.ConnectionParams;
 import com.sqream.jdbc.connector.ColumnMetadataDto;
 import com.sqream.jdbc.connector.ConnectionStateDto;
+import com.sqream.jdbc.connector.heartbeat.HeartBeatService;
 import com.sqream.jdbc.connector.messenger.Messenger;
-import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import com.sqream.jdbc.connector.serverAPI.enums.StatementPhase;
 
 import java.util.List;
@@ -13,24 +13,22 @@ public class SqreamConnectionContext {
 
     private Integer statementId;
     private Messenger messenger;
-    private SQSocketConnector socket;
     private ConnectionParams connParams;
     private ConnectionStateDto connState;
     private String query;
     private int chunkSize;
     private List<ColumnMetadataDto> columnsMetadata;
     private StatementPhase statementPhase;
+    private HeartBeatService pingService;
 
     public SqreamConnectionContext(ConnectionStateDto connState,
                                    ConnectionParams connParams,
                                    int chunkSize,
-                                   Messenger messenger,
-                                   SQSocketConnector socket) {
+                                   Messenger messenger) {
         this.connState = connState;
         this.connParams = connParams;
         this.chunkSize = chunkSize;
         this.messenger = messenger;
-        this.socket = socket;
     }
 
     public ConnectionStateDto getConnState() {
@@ -51,10 +49,6 @@ public class SqreamConnectionContext {
 
     public Messenger getMessenger() {
         return messenger;
-    }
-
-    public SQSocketConnector getSocket() {
-        return socket;
     }
 
     public String getQuery() {
@@ -95,5 +89,13 @@ public class SqreamConnectionContext {
 
     public void setStatementPhase(StatementPhase statementState) {
         this.statementPhase = statementState;
+    }
+
+    public HeartBeatService getPingService() {
+        return pingService;
+    }
+
+    public void setPingService(HeartBeatService pingService) {
+        this.pingService = pingService;
     }
 }

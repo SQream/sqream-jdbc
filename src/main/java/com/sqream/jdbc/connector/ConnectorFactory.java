@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class ConnectorFactory {
 
-    public static Connector initConnector(ConnectionParams connParams) throws ConnException {
+    public Connector createConnector(ConnectionParams connParams) throws ConnException {
         return new ConnectorImpl(connParams);
     }
 }

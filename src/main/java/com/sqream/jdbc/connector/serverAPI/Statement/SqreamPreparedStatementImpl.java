@@ -25,7 +25,9 @@ public class SqreamPreparedStatementImpl extends BasesProtocolPhase implements S
     @Override
     public SqreamExecutedStatement execute() {
         try {
+            context.getPingService().start();
             context.getMessenger().execute();
+            context.getPingService().stop();
             List<ColumnMetadataDto> columnsMetadata = context.getMessenger().queryTypeInput();
             StatementType statementType;
             if (!columnsMetadata.isEmpty()) {

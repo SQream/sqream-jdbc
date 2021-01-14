@@ -29,20 +29,9 @@ public class SQSocket {
     private int port;
     private boolean useSsl;
 
-    SQSocket(String ip, int port, boolean useSsl) throws ConnException {
+    public SQSocket() throws ConnException {
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Open socket with params: ip=[{0}], port=[{1}], useSsl=[{2}]", ip, port, useSsl));
-        this.ip = ip;
-        this.port = port;
-        this.useSsl = useSsl;
-        openSocket();
-    }
-
-    public static SQSocket connect(String ip, int port, boolean useSsl) throws ConnException {
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            return new SQLoggableSocket(ip, port, useSsl);
-        }
-        return new SQSocket(ip, port, useSsl);
     }
 
     public int read(ByteBuffer result) throws ConnException {
@@ -53,7 +42,7 @@ public class SQSocket {
         }
     }
 
-    void write(ByteBuffer data) throws ConnException {
+    public void write(ByteBuffer data) throws ConnException {
         try {
             if (useSsl) {
                 tlsChannel.write(data);
@@ -85,7 +74,10 @@ public class SQSocket {
 
     }
 
-    private void openSocket() {
+    public void open(String ip, int port, boolean useSsl) {
+        this.ip = ip;
+        this.port = port;
+        this.useSsl = useSsl;
         try {
             socketChannel = SocketChannel.open();
             socketChannel.connect(new InetSocketAddress(ip, port));

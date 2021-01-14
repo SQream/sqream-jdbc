@@ -49,5 +49,4 @@ public class UtilsTest {
 
         assertEquals(expectedTotalLength, actualTotalLength);
     }
-
 }

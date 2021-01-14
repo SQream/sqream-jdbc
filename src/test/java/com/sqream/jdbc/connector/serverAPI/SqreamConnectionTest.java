@@ -14,7 +14,7 @@ public class SqreamConnectionTest {
     @Test
     public void whenCallCloseThenCloseConnectionTest() throws Exception {
         Messenger messengerMock = Mockito.mock(MessengerImpl.class);
-        SqreamConnectionContext context = new SqreamConnectionContext(null, null, 1, messengerMock, null);
+        SqreamConnectionContext context = new SqreamConnectionContext(null, null, 1, messengerMock);
         SqreamConnection connection = new SqreamConnection(context);
 
         connection.close();
@@ -25,7 +25,7 @@ public class SqreamConnectionTest {
     @Test
     public void whenCallCloseTwiceThenSecondIgnoredTest() throws Exception {
         Messenger messengerMock = Mockito.mock(MessengerImpl.class);
-        SqreamConnectionContext context = new SqreamConnectionContext(null, null, 1, messengerMock, null);
+        SqreamConnectionContext context = new SqreamConnectionContext(null, null, 1, messengerMock);
         SqreamConnection connection = new SqreamConnection(context);
 
         connection.close();

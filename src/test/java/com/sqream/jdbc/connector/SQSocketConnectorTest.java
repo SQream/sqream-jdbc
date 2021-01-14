@@ -7,18 +7,14 @@ import com.sqream.jdbc.connector.socket.SQSocket;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-import javax.net.ssl.SSLContext;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -28,68 +24,48 @@ import static com.sqream.jdbc.connector.socket.SQSocketConnector.SUPPORTED_PROTO
 import static junit.framework.TestCase.*;
 import static org.mockito.ArgumentMatchers.any;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({SQSocketConnector.class, SQSocket.class, SSLContext.class, MessengerImpl.class})
+@RunWith(MockitoJUnitRunner.class)
 public class SQSocketConnectorTest {
+    @Mock
+    private SQSocket socketMock;
+
 
     @Test
     public void reconnectToNodeTest() throws ConnException {
-        boolean USE_SSL = false;
-        boolean CLUSTER = true;
-        MessengerImpl messengerMock = Mockito.mock(MessengerImpl.class);
-        Mockito.when(messengerMock.connect(any(), any(), any(), any())).thenReturn(new ConnectionStateDto(1, "123"));
-        SQSocket socketMock = Mockito.mock(SQSocket.class);
+        String IP_TO_CONNECT = "1.1.1.1";
+        String IP_TO_RECONNECT = "2.2.2.2";
+        int PORT_TO_CONNECT = 1234;
+        int PORT_TO_RECONNECT = 4321;
+        boolean USE_SSL = true;
+
         Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
                 ByteBuffer targetBuffer = invocationOnMock.getArgument(0);
-                byte[] ip = IP.getBytes(StandardCharsets.UTF_8);
+                byte[] ip = IP_TO_RECONNECT.getBytes(StandardCharsets.UTF_8);
                 targetBuffer.putInt(ip.length);
                 targetBuffer.put(ip);
-                targetBuffer.putInt(PORT);
+                targetBuffer.putInt(PORT_TO_RECONNECT);
                 return null;
             }
         });
-        PowerMockito.mockStatic(SQSocket.class);
-        PowerMockito.when(SQSocket.connect(IP, PORT, USE_SSL)).thenReturn(socketMock);
-        PowerMockito.mockStatic(MessengerImpl.class);
-        PowerMockito.when(MessengerImpl.getInstance(any())).thenReturn(messengerMock);
-
-        Connector connector = new ConnectorImpl(
-                ConnectionParams.builder()
-                        .ipAddress(IP)
-                        .port(String.valueOf(PORT))
-                        .cluster(String.valueOf(CLUSTER))
-                        .useSsl(String.valueOf(SSL))
-                        .build());
-        connector.connect(IP, USER, PASS, SERVICE);
-
-        Mockito.verify(socketMock).close();
+        SQSocketConnector connector = new SQSocketConnector(socketMock);
+        connector.connect(IP_TO_CONNECT, PORT_TO_CONNECT, USE_SSL, true);
+        Mockito.verify(socketMock).open(IP_TO_CONNECT, PORT_TO_CONNECT, USE_SSL); // connect to server picker
+        Mockito.verify(socketMock).close(); // close first connection to server picker
+        Mockito.verify(socketMock).open(IP_TO_RECONNECT, PORT_TO_RECONNECT, USE_SSL); // reconnect to node
     }
 
     @Test(expected = ConnException.class)
     public void whenReconnectToNodeButDidNotReadBytesFromSocketThenThrowExceptionTest() throws ConnException {
 
-        String CORRECT_MESSAGE = "Socket closed When trying to connect to server picker";
+        String CORRECT_MESSAGE = "Socket closed when trying to connect to server picker";
+        int BYTES_HAS_READ = -1; // reached end of stream
+        Mockito.when(socketMock.read(any())).thenReturn(BYTES_HAS_READ);
 
         try {
-
-            boolean USE_SSL = false;
-            boolean CLUSTER = true;
-            SQSocket socketMock = Mockito.mock(SQSocket.class);
-            Mockito.when(socketMock.read(any(ByteBuffer.class))).thenReturn(-1);
-            PowerMockito.mockStatic(SQSocket.class);
-            PowerMockito.when(SQSocket.connect(IP, PORT, USE_SSL)).thenReturn(socketMock);
-
-            Connector connector = new ConnectorImpl(
-                    ConnectionParams.builder()
-                            .ipAddress(IP)
-                            .port(String.valueOf(PORT))
-                            .cluster(String.valueOf(CLUSTER))
-                            .useSsl(String.valueOf(SSL))
-                            .build());
-            connector.connect(DATABASE, USER, PASS, SERVICE);
-
+            SQSocketConnector socketConnector = new SQSocketConnector(socketMock);
+            socketConnector.connect(null, 0, false, true);
         } catch (ConnException e) {
             if (CORRECT_MESSAGE.equals(e.getMessage())) {
                 throw e;
@@ -101,13 +77,14 @@ public class SQSocketConnectorTest {
         fail("Method should throw exception");
     }
 
-    //TODO: When we connect to server picker BUT did not provide param 'cluster=true', then read wrong data from socket.
-    // Server sent ip address and port to reconnect, but client read first byte as protocol version (actually size of ip address)
+    /**
+     * When we connect to server picker BUT did not provide param 'cluster=true', then read wrong data from socket.
+     * Server sent ip address and port to reconnect, but client read first byte as protocol version (actually size of ip address)
+     */
     @Test(expected = ConnException.class)
     public void whenConnectToClusterWithParamClusterFalseTest()
-            throws IOException, ConnException, KeyManagementException, NoSuchAlgorithmException {
+            throws ConnException, NoSuchAlgorithmException {
 
-        SQSocket socketMock = Mockito.mock(SQSocket.class);
         Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
             @Override
             public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -119,11 +96,8 @@ public class SQSocketConnectorTest {
             }
         });
 
-        PowerMockito.mockStatic(SQSocket.class);
-        PowerMockito.when(SQSocket.connect(IP, PORT, false)).thenReturn(socketMock);
-        PowerMockito.mockStatic(SSLContext.class);
-        PowerMockito.when(SSLContext.getDefault()).thenReturn(null);
-        SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false, false);
+        SQSocketConnector socketConnector = new SQSocketConnector(socketMock);
+        socketConnector.connect(IP, PORT, false, false);
 
         try {
             socketConnector.parseHeader();
@@ -134,10 +108,9 @@ public class SQSocketConnectorTest {
     }
 
     @Test
-    public void supportedProtocolsTest() throws IOException, ConnException, NoSuchAlgorithmException {
+    public void supportedProtocolsTest() throws ConnException {
 
         for (byte protocolVersion : SUPPORTED_PROTOCOLS) {
-            SQSocket socketMock = Mockito.mock(SQSocket.class);
             Mockito.when(socketMock.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
                 @Override
                 public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -149,18 +122,15 @@ public class SQSocketConnectorTest {
                 }
             });
 
-            PowerMockito.mockStatic(SQSocket.class);
-            PowerMockito.when(SQSocket.connect(IP, PORT, false)).thenReturn(socketMock);
-            PowerMockito.mockStatic(SSLContext.class);
-            PowerMockito.when(SSLContext.getDefault()).thenReturn(null);
-            SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false, false);
+            SQSocketConnector socketConnector = new SQSocketConnector(socketMock);
+            socketConnector.connect(IP, PORT, false, false);
 
             socketConnector.parseHeader();
         }
     }
 
     @Test(expected = ConnException.class)
-    public void unsupportedProtocolTest() throws IOException, ConnException, NoSuchAlgorithmException {
+    public void unsupportedProtocolTest() throws ConnException, NoSuchAlgorithmException {
         byte UNSUPPORTED_PROTOCOL_VERSION = (byte) 1;
 
         SQSocket socketMock = Mockito.mock(SQSocket.class);
@@ -175,11 +145,8 @@ public class SQSocketConnectorTest {
             }
         });
 
-        PowerMockito.mockStatic(SQSocket.class);
-        PowerMockito.when(SQSocket.connect(IP, PORT, false)).thenReturn(socketMock);
-        PowerMockito.mockStatic(SSLContext.class);
-        PowerMockito.when(SSLContext.getDefault()).thenReturn(null);
-        SQSocketConnector socketConnector = SQSocketConnector.connect(IP, PORT, false, false);
+        SQSocketConnector socketConnector = new SQSocketConnector(socketMock);
+        socketConnector.connect(IP, PORT, false, false);
 
         try {
             socketConnector.parseHeader();
@@ -190,6 +157,5 @@ public class SQSocketConnectorTest {
                 fail(MessageFormat.format("Incorrect exception message [{0}]", e.getMessage()));
             }
         }
-
     }
 }

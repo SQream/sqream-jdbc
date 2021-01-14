@@ -4,8 +4,11 @@ import java.sql.ParameterMetaData;
 import java.sql.Types;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,9 +19,10 @@ import static com.sqream.jdbc.connector.enums.StatementType.NETWORK_INSERT;
 
 
 public class SQParameterMetaData implements ParameterMetaData{
+	private static final Logger LOGGER = Logger.getLogger(SQParameterMetaData.class.getName());
 
 	  Connector conn;
-	  int param_count = 0;
+	  int paramCount = 0;
 
 	  Map<String, Integer> sqream_to_sql = Stream.of(new Object[][] {
 		    { "ftBool", Types.BOOLEAN },
@@ -44,15 +48,15 @@ public class SQParameterMetaData implements ParameterMetaData{
 
 	     conn = _conn;
 	     // A query is marked "INSERT" in Connector.java when we get a non-empty queryTypeIn - network insert
-    	 param_count = (conn.getQueryType().equals(NETWORK_INSERT.getValue())) ? conn.getRowLength() : 0;
+    	 paramCount = (conn.getQueryType().equals(NETWORK_INSERT.getValue())) ? conn.getRowLength() : 0;
 
 	  }
 
 
 	  boolean _validate_index (int param_index) throws SQLException {
 
-		  if (param_index > param_count || param_index < 1)
-			  throw new SQLException ("parameter index " + param_index + " out of range. Number of parameters for this query is: " + param_count);
+		  if (param_index > paramCount || param_index < 1)
+			  throw new SQLException ("parameter index " + param_index + " out of range. Number of parameters for this query is: " + paramCount);
 
 		  return true;
 	  }
@@ -60,17 +64,19 @@ public class SQParameterMetaData implements ParameterMetaData{
 
 	  @Override
 	  public int getParameterCount() {
-
-	     return param_count;
+		  LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", paramCount));
+		  return paramCount;
 	  }
 
 
 	  @Override
-	  public String getParameterClassName(int param_index) throws SQLException {
+	  public String getParameterClassName(int paramIndex) throws SQLException {
 
-		_validate_index(param_index);
+		_validate_index(paramIndex);
 	    try {
-	    	return conn.getColName(param_index);
+	    	String result = conn.getColName(paramIndex);
+			LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", result, paramIndex));
+	    	return result;
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to get parameter name in SQParameterMetaData:\n" + e);
@@ -80,12 +86,14 @@ public class SQParameterMetaData implements ParameterMetaData{
 
 
 	  @Override
-	  public int getParameterType(int param_index) throws SQLException {
+	  public int getParameterType(int paramIndex) throws SQLException {
 
-		_validate_index(param_index);
+		_validate_index(paramIndex);
 
 		try {
-			return sqream_to_sql.get(conn.getColType(param_index));
+			int result = sqream_to_sql.get(conn.getColType(paramIndex));
+			LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", result, paramIndex));
+			return result;
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to check parameter type in SQParameterMetaData:\n" + e);
@@ -98,21 +106,24 @@ public class SQParameterMetaData implements ParameterMetaData{
 	  // https://docs.oracle.com/javase/tutorial/jdbc/basics/storedprocedures.html
 	  // Looks like we're always IN
 	  @Override
-	  public int getParameterMode(int param_index) throws SQLException {
+	  public int getParameterMode(int paramIndex) throws SQLException {
 
-		  _validate_index(param_index);
-
-		  return ParameterMetaData.parameterModeIn;
+		  _validate_index(paramIndex);
+		  int result = ParameterMetaData.parameterModeIn;
+		  LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", result, paramIndex));
+		  return result;
 	  }
 
 
 	  @Override
-	  public int getPrecision(int param_index) throws SQLException {
+	  public int getPrecision(int paramIndex) throws SQLException {
 
-		  _validate_index(param_index);
+		  _validate_index(paramIndex);
 
 		  try {
-				return conn.getColSize(param_index);
+		  	  int result = conn.getColSize(paramIndex);
+			  LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", result, paramIndex));
+			  return result;
 			} catch (ConnException e) {
 				e.printStackTrace();
 				throw new SQLException ("Connector exception when trying to check parameter precision in SQParameterMetaData:\n" + e);
@@ -121,26 +132,28 @@ public class SQParameterMetaData implements ParameterMetaData{
 
 
 	  @Override
-	  public int getScale(int param_index) throws SQLException {
+	  public int getScale(int paramIndex) throws SQLException {
 
-		_validate_index(param_index);
+		_validate_index(paramIndex);
 
 		// Not applicable for SQream types - we only support float and double, no such quality
 	    // If adding types to sqream, this may need to be revised
-	    int param_scale = 0;
+	    int paramScale = 0;
+		  LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", paramScale, paramIndex));
 
-
-	    return param_scale;
+	    return paramScale;
 	  }
 
 
 	  @Override
-	  public int isNullable(int param_index) throws SQLException {
+	  public int isNullable(int paramIndex) throws SQLException {
 
-		  _validate_index(param_index);
+		  _validate_index(paramIndex);
 
 	    try {
-	    	return conn.isColNullable(param_index) ? ParameterMetaData.parameterNullable : ParameterMetaData.parameterNullableUnknown;
+	    	int result = conn.isColNullable(paramIndex) ? ParameterMetaData.parameterNullable : ParameterMetaData.parameterNullableUnknown;
+			LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", result, paramIndex));
+	    	return result;
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to get parameter nullability in SQParameterMetaData:\n" + e);
@@ -150,12 +163,14 @@ public class SQParameterMetaData implements ParameterMetaData{
 
 
 	  @Override
-	  public String getParameterTypeName(int param_index) throws SQLException {
+	  public String getParameterTypeName(int paramIndex) throws SQLException {
 
-		  _validate_index(param_index);
+		  _validate_index(paramIndex);
 
 		  try {
-			  return conn.getColType(param_index);
+			  String result = conn.getColType(paramIndex);
+			  LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", result, paramIndex));
+			  return result;
 			} catch (ConnException e) {
 				e.printStackTrace();
 				throw new SQLException ("Connector exception when trying to get parameter type name in SQParameterMetaData:\n" + e);
@@ -165,12 +180,14 @@ public class SQParameterMetaData implements ParameterMetaData{
 
 
 	  @Override
-	  public boolean isSigned(int param_index) throws SQLException {
+	  public boolean isSigned(int paramIndex) throws SQLException {
 
-		  _validate_index(param_index);
+		  _validate_index(paramIndex);
 
         try {
-			return Arrays.asList("ftShort", "ftInt", "ftLong", "ftFloat", "ftDouble").contains(conn.getColType(param_index));
+        	boolean result = Arrays.asList("ftShort", "ftInt", "ftLong", "ftFloat", "ftDouble").contains(conn.getColType(paramIndex));
+			LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", result, paramIndex));
+        	return result;
 		} catch (ConnException e) {
 			e.printStackTrace();
 			throw new SQLException ("Connector exception when trying to check if parameter is signed in SQParameterMetaData:\n" + e);

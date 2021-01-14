@@ -1,6 +1,8 @@
 package com.sqream.jdbc.connector.serverAPI;
 
 import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.connector.heartbeat.HeartBeatService;
+import com.sqream.jdbc.connector.heartbeat.HeartBeatServiceFactory;
 import com.sqream.jdbc.connector.serverAPI.Statement.SqreamCreatedStatement;
 import com.sqream.jdbc.connector.serverAPI.Statement.SqreamCreatedStatementImpl;
 
@@ -33,6 +35,10 @@ public class SqreamConnection implements AutoCloseable {
         }
         try {
             context.setStatementId(context.getMessenger().openStatement());
+            HeartBeatService heartBeatService = HeartBeatServiceFactory.getService(
+                    context.getConnState().getServerVersion(),
+                    context.getMessenger());
+            context.setPingService(heartBeatService);
             return new SqreamCreatedStatementImpl(context);
         } catch (ConnException e) { //TODO needs refactor to throw correct exception Alex K 11.11.2020
             throw new RuntimeException(e);

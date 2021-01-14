@@ -2,43 +2,41 @@ package com.sqream.jdbc.connector.messenger;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.ParseException;
 import com.sqream.jdbc.connector.*;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sqream.jdbc.TestEnvironment.IP;
-import static com.sqream.jdbc.TestEnvironment.PORT;
+import static com.sqream.jdbc.TestEnvironment.*;
 import static com.sqream.jdbc.connector.JsonParser.TEXT_ITEM_SIZE;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.powermock.api.mockito.PowerMockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({Json.class})
+@RunWith(MockitoJUnitRunner.class)
 public class MessengerImplTest {
 
     private static final String EXPECTED_PART_OF_EXCEPTION = "Expected message:";
 
     private Messenger messenger;
+    @Mock
     private SQSocketConnector socket;
+    @Spy
+    private JsonParser jsonParser;
 
     @Before
     public void setUp() {
-        this.socket = Mockito.mock(SQSocketConnector.class);
-        this.messenger = MessengerImpl.getInstance(socket);
-        when(socket.generateHeaderedBuffer(any(Long.class), any(Boolean.class))).thenCallRealMethod();
+        this.messenger = MessengerImpl.getInstance(socket, jsonParser);
+        Mockito.when(socket.generateHeaderedBuffer(any(Long.class), any(Boolean.class))).thenCallRealMethod();
     }
 
     @Test
@@ -77,7 +75,7 @@ public class MessengerImplTest {
         String reconnectionRequest = "{\"reconnectDatabase\":\"testDatabase\", \"username\":\"testUser\", \"password\":\"testPass\", \"service\":\"testService\", \"connectionId\": 1139, \"listenerId\": 1}";
         ByteBuffer buffer = socket.generateHeaderedBuffer(reconnectionRequest.length(), true);
         buffer.put(reconnectionRequest.getBytes());
-        messenger.reconnect("testDatabase", "testUser", "testPass", "testService", 1139, 1);
+        messenger.reconnect(IP, PORT, SSL, DATABASE, "testUser", "testPass", "testService", 1139, 1);
 
         Mockito.verify(socket).sendData(buffer, true);
     }
@@ -365,17 +363,5 @@ public class MessengerImplTest {
         assertEquals(result.getPort(), PORT);
         assertEquals(result.getPortSsl(), portSsl);
         assertTrue(result.isReconnect());
-    }
-
-    @Test(expected = ConnException.class)
-    public void whenJsonParserThrowsExceptionThenPrepareStatementWrapItTest() throws IOException, ConnException {
-        String statement = "select * from test_table;";
-        int chunkSize = 1_000;
-        JsonObject jsonObjectMock = Mockito.mock(JsonObject.class);
-        Mockito.when(jsonObjectMock.add(any(String.class), any(String.class))).thenThrow(ParseException.class);
-        PowerMockito.mockStatic(Json.class);
-        when(Json.object()).thenReturn(jsonObjectMock);
-
-        messenger.prepareStatement(statement, chunkSize);
     }
 }

@@ -3,9 +3,12 @@ package com.sqream.jdbc;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnException;
@@ -13,6 +16,7 @@ import com.sqream.jdbc.enums.SqreamTypeId;
 
 
 public class SQResultSetMetaData implements ResultSetMetaData {
+	private static final Logger LOGGER = Logger.getLogger(SQResultSetMetaData.class.getName());
 
 	private static final Map<SqreamTypeId, Integer> displaySizeMap = new HashMap<>();
 
@@ -33,7 +37,7 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 	ColumnMetadata[] meta;
 	String dbName;
 	int rowLength;
-	
+
 	SQResultSetMetaData(Connector client, String catalog) throws ConnException {
 		this.client = client;
 		// Fill up meta in a loop using api stuff
@@ -43,92 +47,100 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 		for (int idx = 0; idx < rowLength; idx++) {
 			meta[idx] = new ColumnMetadata(client.getColName(idx +1), client.getColType(idx +1), client.getColSize(idx +1), client.isColNullable(idx +1));
 		}
-	}	
-	
+	}
+
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		// TODO Auto-generated method stub
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for interface=[{1}]", false, iface));
 		return false;
 	}
 
 	@Override
 	public String getCatalogName(int column) throws SQLException {
-		// TODO Auto-generated method stub
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for column=[{1}]", dbName, column));
 		// return MetaData[column].name;
 		return dbName; // hard-coded for dotan,in future, do it right.
 	}
-	
+
 	@Override
 	public int getColumnCount() throws SQLException {
-
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", meta.length));
 		return meta.length;
 	}
 
 	public int getColumnDisplaySize(int column) throws SQLException {
+		int result;
 		if ("Varchar".equals(meta[column-1].getTypeId().toString())) {
-			return meta[column - 1].getType().size;
+			result = meta[column - 1].getType().size;
 		} else {
-			return displaySizeMap.get(meta[column-1].getTypeId());
+			result = displaySizeMap.get(meta[column-1].getTypeId());
 		}
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", result));
+		return result;
 	}
 
 	@Override
 	public String getColumnLabel(int column) throws SQLException {
-		// TODO Auto-generated method stub
-		return meta[column-1].getName();
+		String result = meta[column-1].getName();
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", result));
+		return result;
 	}
 
 	@Override
 	public String getColumnName(int column) throws SQLException {
-		return meta[column-1].getName();
+		String result = meta[column-1].getName();
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", result));
+		return result;
 	}
 
 	@Override
 	public int getColumnType(int column) throws SQLException {
-		
-		return meta[column-1].getTypeId().getValue();
+		int result = meta[column-1].getTypeId().getValue();
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", result));
+		return result;
 	}
 
 	@Override
 	public String getColumnTypeName(int column) throws SQLException {
-		
-		return meta[column-1].getTypeId().toString();
+		String result = meta[column-1].getTypeId().toString();
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", result));
+		return result;
 	}
 
 	@Override
 	public int getPrecision(int column) throws SQLException {
-		
-		return meta[column-1].getTypeId().toString().equals("NVarchar") ? meta[column-1].getType().size / 4: meta[column-1].getType().size;
+		int result = meta[column-1].getTypeId().toString().equals("NVarchar") ? meta[column-1].getType().size / 4: meta[column-1].getType().size;
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", result));
+		return result;
 	}
 
 	@Override
 	public int getScale(int column) throws SQLException {
-		
-//		return meta[column-1].scale;
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", 0));
 		return 0;
 	}
 
 	@Override
 	public String getTableName(int column) throws SQLException {
-		// TODO Auto-generated method stub
-
-		return meta[column-1].getName();
+		String result = meta[column-1].getName();
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", result));
+		return result;
 	}
 
 	@Override
 	public boolean isAutoIncrement(int column) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", false));
 		return false;
-		//throw new SQLFeatureNotSupportedException();
 	}
-	
-	
+
+
 	@Override
 	public int isNullable(int column) throws SQLException {
-		// TODO Auto-generated method stub
-		return meta[column-1].isNull() ? 1 : 0;
-		//return 0;
+		int result = meta[column-1].isNull() ? 1 : 0;
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", result));
+		return result;
 	}
-	
+
 	/*
 	 Retrieves whether this Connection object is in read-only mode.
 
@@ -137,15 +149,18 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 	 */
 	@Override
 	public boolean isReadOnly(int column) throws SQLException {
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for column=[{1}]", false, column));
 		return false;
 	}
-	
+
 	@Override
 	public boolean isSigned(int column) throws SQLException {
 	    String col_type = meta[column-1].getTypeId().toString();
-        return Arrays.asList("Smallint", "Int", "Bigint", "Real", "Float").contains(col_type);
+        boolean result = Arrays.asList("Smallint", "Int", "Bigint", "Real", "Float").contains(col_type);
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for column=[{1}]", result, column));
+        return result;
 	}
-	
+
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new SQLFeatureNotSupportedException("unwrap in SQResultSetMetaData");
@@ -160,15 +175,15 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 	public String getSchemaName(int column) throws SQLException {
 		throw new SQLFeatureNotSupportedException("getSchemaName in SQResultSetMetaData");
 	}
-	
+
 	@Override
 	public boolean isCaseSensitive(int column) throws SQLException {
 		throw new SQLFeatureNotSupportedException("isCaseSensitive in SQResultSetMetaData");
 	}
-	
+
 	@Override
 	public boolean isCurrency(int column) throws SQLException {
-		// Indicates whether the designated column is a cash value.
+		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for column=[{1}]", false, column));
 		return false;
 	}
 
@@ -176,11 +191,11 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 	public boolean isDefinitelyWritable(int column) throws SQLException {
 		throw new SQLFeatureNotSupportedException("isDefinitelyWritable in SQResultSetMetaData");
 	}
-	
+
 	@Override
 	public boolean isSearchable(int column) throws SQLException {
 		throw new SQLFeatureNotSupportedException("isSearchable in SQResultSetMetaData");
-	}      
+	}
 
 	@Override
 	public boolean isWritable(int column) throws SQLException {

@@ -19,25 +19,25 @@ public class SQSocketConnector {
     public static final List<Byte> SUPPORTED_PROTOCOLS = new ArrayList<>(Arrays.asList((byte)6, (byte)7, (byte)8));
 
     private ByteBuffer responseMessage = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);;
-    private ByteBuffer header = ByteBuffer.allocateDirect(10).order(ByteOrder.LITTLE_ENDIAN);
+    private final ByteBuffer header = ByteBuffer.allocateDirect(10).order(ByteOrder.LITTLE_ENDIAN);
 
     private SQSocket socket;
 
-    private SQSocketConnector(String ip, int port, boolean useSsl, boolean cluster) throws ConnException {
-        socket = SQSocket.connect(ip, port, useSsl);
+    public SQSocketConnector(SQSocket socket) throws ConnException {
+        this.socket = socket;
+    }
+
+    public void connect(String ip, int port, boolean useSsl, boolean cluster) throws ConnException {
+        socket.open(ip, port, useSsl);
         // Clustered connection - reconnect to actual ip and port
         if (cluster) {
             reconnectToNode(useSsl);
         }
     }
 
-    public static SQSocketConnector connect(String ip, int port, boolean useSsl, boolean cluster) throws ConnException {
-        return new SQSocketConnector(ip, port, useSsl, cluster);
-    }
-
     public void reconnect(String ip, int port, boolean useSsl) throws ConnException {
         socket.close();
-        socket = SQSocket.connect(ip, port, useSsl);
+        socket.open(ip, port, useSsl);
     }
 
     // (2)  /* Return ByteBuffer with appropriate header for message */
@@ -142,7 +142,7 @@ public class SQSocketConnector {
         int bytes_read = socket.read(response_buffer);
         response_buffer.flip();
         if (bytes_read == -1) {
-            throw new ConnException("Socket closed When trying to connect to server picker");
+            throw new ConnException("Socket closed when trying to connect to server picker");
         }
 
         // Read size of IP address (7-15 bytes) and get the IP
@@ -154,7 +154,7 @@ public class SQSocketConnector {
         int port = response_buffer.getInt();
 
         socket.close();
-        socket = SQSocket.connect(ip, port, useSsl);
+        socket.open(ip, port, useSsl);
     }
 
     // In case when try to connect to server picket, but cluster parameter was not provided.

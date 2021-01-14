@@ -18,11 +18,13 @@ public class SQStatement implements Statement {
 	private AtomicBoolean IsCancelStatement = new AtomicBoolean(false);
 	private String dbName;
 	private boolean isClosed;
+	private ConnectorFactory connectorFactory;
 
-	SQStatement(SQConnection conn, ConnectionParams connParams) throws ConnException {
+	SQStatement(SQConnection conn, ConnectionParams connParams, ConnectorFactory connectorFactory) throws ConnException {
 		this.connection = conn;
 		this.dbName = connParams.getDbName();
-		this.client = ConnectorFactory.initConnector(conn.getParams());
+		this.connectorFactory = connectorFactory;
+		this.client = connectorFactory.createConnector(conn.getParams());
 		this.client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(),
 				conn.getParams().getService());
         if (connParams.getFetchSize() != null && connParams.getFetchSize() > 0) {

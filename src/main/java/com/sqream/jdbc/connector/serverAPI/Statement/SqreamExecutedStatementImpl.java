@@ -5,6 +5,7 @@ import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.FetchMetadataDto;
 import com.sqream.jdbc.connector.TableMetadata;
 import com.sqream.jdbc.connector.enums.StatementType;
+import com.sqream.jdbc.connector.messenger.Messenger;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import com.sqream.jdbc.connector.serverAPI.SqreamConnectionContext;
 import com.sqream.jdbc.connector.serverAPI.enums.StatementPhase;
@@ -48,17 +49,12 @@ public class SqreamExecutedStatementImpl extends BasesProtocolPhase implements S
     public void put(BlockDto block) {
         validatePut();
         try {
-            // Send header with total binary insert
-            ByteBuffer header_buffer = context.getSocket().generateHeader(
-                    Utils.totalLengthForHeader(metadata, block), false);
-            // Send put message
-            context.getMessenger().put(block.getFillSize());
-
-            context.getSocket().sendData(header_buffer, false);
-
+            Messenger messenger = context.getMessenger();
+            messenger.put(block.getFillSize());
+            messenger.sendBinaryHeader(Utils.totalLengthForHeader(metadata, block));
             // Send available columns
             sendDataToSocket(metadata, block);
-            context.getMessenger().isPutted();
+            messenger.isPutted();
         } catch (ConnException e) { //TODO needs refactor to throw correct exception Alex K 11.11.2020
             close();
             throw new RuntimeException(e);
@@ -91,7 +87,10 @@ public class SqreamExecutedStatementImpl extends BasesProtocolPhase implements S
     private BlockDto fetchChunk() {
         FetchMetadataDto fetchMeta = null;
         try {
-            fetchMeta = context.getMessenger().fetch();
+            Messenger messenger = context.getMessenger();
+            context.getPingService().start();
+            fetchMeta = messenger.fetch();
+            context.getPingService().stop();
             if (fetchMeta.getNewRowsFetched() == 0) {
                 BlockDto emptyBlock = new BlockDto(new ByteBuffer[0], new ByteBuffer[0], new ByteBuffer[0], 0);
                 emptyBlock.setFillSize(0);
@@ -104,9 +103,9 @@ public class SqreamExecutedStatementImpl extends BasesProtocolPhase implements S
                 fetch_buffers[i] = ByteBuffer.allocateDirect(fetchMeta.getSizeByIndex(i)).order(ByteOrder.LITTLE_ENDIAN);
             }
 
-            int bytes_read = context.getSocket().parseHeader();   // Get header out of the way
+            context.getMessenger().parseHeader();   // Get header out of the way
             for (ByteBuffer fetchBuffer : fetch_buffers) {
-                context.getSocket().readData(fetchBuffer, fetchBuffer.capacity());
+                messenger.fetchBinaryData(fetchBuffer, fetchBuffer.capacity());
             }
 
             return parse(fetch_buffers, metadata, fetchMeta.getNewRowsFetched());
@@ -150,16 +149,16 @@ public class SqreamExecutedStatementImpl extends BasesProtocolPhase implements S
 
     private void sendDataToSocket(TableMetadata tableMetadata, BlockDto block)
             throws IOException, ConnException {
-        SQSocketConnector socket = context.getSocket();
+        Messenger messenger = context.getMessenger();
 
         for(int idx=0; idx < tableMetadata.getRowLength(); idx++) {
             if(tableMetadata.isNullable(idx)) {
-                socket.sendData((ByteBuffer) block.getNullBuffers()[idx].position(block.getFillSize()), false);
+                messenger.sendBinaryData((ByteBuffer) block.getNullBuffers()[idx].position(block.getFillSize()));
             }
             if(tableMetadata.isTruVarchar(idx)) {
-                socket.sendData(block.getNvarcLenBuffers()[idx], false);
+                messenger.sendBinaryData(block.getNvarcLenBuffers()[idx]);
             }
-            socket.sendData(block.getDataBuffers()[idx], false);
+            messenger.sendBinaryData(block.getDataBuffers()[idx]);
         }
     }
 }

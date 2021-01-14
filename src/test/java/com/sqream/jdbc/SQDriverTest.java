@@ -4,16 +4,13 @@ package com.sqream.jdbc;
 import java.io.File;
 import java.text.MessageFormat;
 import static com.sqream.jdbc.TestEnvironment.URL;
-import com.sqream.jdbc.connector.ConnException;
-import com.sqream.jdbc.connector.Connector;
-import com.sqream.jdbc.connector.ConnectorFactory;
-import com.sqream.jdbc.connector.ConnectorImpl;
+
+import com.sqream.jdbc.connector.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -26,10 +23,8 @@ import java.util.logging.Level;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.powermock.api.mockito.PowerMockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ConnectorFactory.class})
+@RunWith(MockitoJUnitRunner.class)
 public class SQDriverTest {
     private static final String CORRECT_URI =
             "jdbc:Sqream://127.0.0.1:5000/master;user=sqream;password=sqream;ssl=true";
@@ -49,6 +44,9 @@ public class SQDriverTest {
         CORRECT_CONN_PROPERTIES.setProperty("password", "password");
     }
 
+    @Mock
+    private ConnectorFactory connectorFactoryMock;
+
 	@Test
     public void logfileLockTest() throws SQLException {
         mockConnector();
@@ -60,7 +58,7 @@ public class SQDriverTest {
             assertTrue("Can not create temp folder for logs", mkdir);
         }
 
-        Driver driver = new SQDriver();
+        Driver driver = new DriverTest();
         for (int i = 0; i < connAmount; i++) {
             driver.connect(
                     MessageFormat.format("{0};loggerLevel=DEBUG;logFile={1}/test.log", URL, TEMP_DIR),
@@ -84,85 +82,85 @@ public class SQDriverTest {
 
     @Test
     public void whenCorrectUriAcceptsURLReturnTrue() throws SQLException {
-        assertTrue(new SQDriver().acceptsURL(CORRECT_URI));
+        assertTrue(new DriverTest().acceptsURL(CORRECT_URI));
     }
 
     @Test(expected = SQLException.class)
     public void whenUriIsNullAcceptsURLThowExceptionTest() throws SQLException {
-        new SQDriver().acceptsURL(null);
+        new DriverTest().acceptsURL(null);
     }
 
     @Test(expected = SQLException.class)
     public void whenUriIsEmptyAcceptsURLThowExceptionTest() throws SQLException {
-        new SQDriver().acceptsURL("");
+        new DriverTest().acceptsURL("");
     }
 
     @Test
     public void whenAnotherProviderInUriAcceptsURLReturnFalse() throws SQLException {
-        assertFalse(new SQDriver().acceptsURL(ANOTHER_PROVIDER_URI));
+        assertFalse(new DriverTest().acceptsURL(ANOTHER_PROVIDER_URI));
     }
 
     public void whenConnectWithAnotherProviderReturnNullTest() throws SQLException {
-        Connection conn = new SQDriver().connect(ANOTHER_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
+        Connection conn = new DriverTest().connect(ANOTHER_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
         assertNull(conn);
     }
 
     @Test
     public void getMinorVersionTest() {
-        assertEquals(MINOR_VERSION, new SQDriver().getMinorVersion());
+        assertEquals(MINOR_VERSION, new DriverTest().getMinorVersion());
     }
 
     @Test
     public void getMajorVersionTest() {
-        assertEquals(MAJOR_VERSION, new SQDriver().getMajorVersion());
+        assertEquals(MAJOR_VERSION, new DriverTest().getMajorVersion());
     }
 
     @Test
     public void jdbcCompliantTest() {
-        assertTrue(new SQDriver().jdbcCompliant());
+        assertTrue(new DriverTest().jdbcCompliant());
     }
 
     @Test
     public void getParentLoggerTest() throws SQLFeatureNotSupportedException {
-        assertNotNull(new SQDriver().getParentLogger());
+        assertNotNull(new DriverTest().getParentLogger());
     }
 
     @Test
     public void getPropertyInfoTest() throws SQLException {
-        DriverPropertyInfo[] propertyInfo = new SQDriver().getPropertyInfo(null, null);
+        DriverPropertyInfo[] propertyInfo = new DriverTest().getPropertyInfo(null, null);
         assertEquals(0, propertyInfo.length);
     }
 
     @Test
     public void whenProviderLowerCaseConnectReturnNullTest() throws SQLException {
-        Connection conn = new SQDriver().connect(LOWER_CASE_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
+        Connection conn = new DriverTest().connect(LOWER_CASE_PROVIDER_URI, CORRECT_CONN_PROPERTIES);
         assertNull(conn);
     }
 
     @Test(expected = SQLException.class)
     public void whenPropertiesIsNullConnectThrowExceptionTest() throws SQLException {
-        new SQDriver().connect(CORRECT_URI, null);
+        new DriverTest().connect(CORRECT_URI, null);
     }
 
     @Test
     public void whenPropertiesDoNotContainUserOrPasswordConnectReturnConnectionTest() throws SQLException {
         mockConnector();
-        Connection connection = new SQDriver().connect(CORRECT_URI, new Properties());
+        Connection connection = new DriverTest().connect(CORRECT_URI, new Properties());
         assertNotNull(connection);
     }
 
     @Test
     public void loggerLevelIsOffTest() throws SQLException {
         mockConnector();
-        new SQDriver().connect(CORRECT_URI, new Properties());
-        Level expectedLevel = new SQDriver().getParentLogger().getLevel();
+        new DriverTest().connect(CORRECT_URI, new Properties());
+        Level expectedLevel = new DriverTest().getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.OFF);
     }
 
     @Test
     public void loggerLevelDebugTest() throws SQLException {
         mockConnector();
-        Driver driver = new SQDriver();
+        Driver driver = new DriverTest();
         driver.connect(CORRECT_URI + ";loggerLevel=DEBUG", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.FINE);
@@ -171,7 +169,7 @@ public class SQDriverTest {
     @Test
     public void loggerLevelTraceTest() throws SQLException, IOException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
         mockConnector();
-        Driver driver = new SQDriver();
+        Driver driver = new DriverTest();
         driver.connect(CORRECT_URI + ";loggerLevel=TRACE", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.FINEST);
@@ -180,7 +178,7 @@ public class SQDriverTest {
     @Test
     public void loggerLevelWrongParamKeyIgnoredTest() throws SQLException {
         mockConnector();
-        Driver driver = new SQDriver();
+        Driver driver = new DriverTest();
         driver.connect(CORRECT_URI + ";loggerWrongKeyLevel=DEBUG", new Properties());
         Level expectedLevel = driver.getParentLogger().getLevel();
         assertEquals(expectedLevel, Level.OFF);
@@ -188,17 +186,24 @@ public class SQDriverTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void loggerLevelUnsupportedLevel() throws SQLException {
-        new SQDriver().connect(CORRECT_URI + ";loggerLevel=UNSUPPORTED_LEVEL", new Properties());
+        new DriverTest().connect(CORRECT_URI + ";loggerLevel=UNSUPPORTED_LEVEL", new Properties());
     }
 
     private void mockConnector() {
-        Connector connectorMock = Mockito.mock(ConnectorImpl.class);
-        PowerMockito.mockStatic(ConnectorFactory.class);
-        try {
-            when(ConnectorFactory.initConnector(any(ConnectionParams.class)))
+	    try {
+            Connector connectorMock = Mockito.mock(ConnectorImpl.class);
+            Mockito.when(connectorFactoryMock.createConnector(any(ConnectionParams.class)))
                     .thenReturn(connectorMock);
         } catch (ConnException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private class DriverTest extends SQDriver {
+
+        @Override
+        protected ConnectorFactory getConnectorFactory() {
+            return connectorFactoryMock;
         }
     }
 }

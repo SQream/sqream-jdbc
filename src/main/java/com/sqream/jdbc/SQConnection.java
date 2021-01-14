@@ -29,20 +29,22 @@ public class SQConnection implements Connection {
 	private SQDatabaseMetaData data = null;
 	private ConnectionParams params;
 	private AtomicBoolean isClosed = new AtomicBoolean(true);
+	private ConnectorFactory connectorFactory;
 
 	SQConnection(Connector client) {
 		globalClient = client;
 	}
 
-	SQConnection(ConnectionParams connParams) throws ConnException {
+	SQConnection(ConnectionParams connParams, ConnectorFactory connectorFactory) throws ConnException {
 		if (Level.FINE == LOGGER.getParent().getLevel()) {
 			LOGGER.log(Level.FINE, MessageFormat.format(
 					"Construct SQConnection with properties [{0}]", connParams));
 		}
 
 		this.params = connParams;
+		this.connectorFactory = connectorFactory;
 
-		globalClient = ConnectorFactory.initConnector(params);
+		globalClient = connectorFactory.createConnector(params);
 
 		globalClient.connect(params.getDbName(), params.getUser(), params.getPassword(), params.getService());
 
@@ -66,7 +68,7 @@ public class SQConnection implements Connection {
 
 		SQStatement SQS;
 		try {
-			SQS = new SQStatement(this, params);
+			SQS = new SQStatement(this, params, connectorFactory);
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -88,7 +90,7 @@ public class SQConnection implements Connection {
 
 		SQStatement SQS = null;
 		try {
-			SQS = new SQStatement(this, params);
+			SQS = new SQStatement(this, params, connectorFactory);
 			Statement_list.addElement(SQS);
 		} catch (Exception e) {
 			throw new SQLException(e);
@@ -126,7 +128,7 @@ public class SQConnection implements Connection {
 
 		SQStatement SQS;
 		try {
-			SQS = new SQStatement(this, params);
+			SQS = new SQStatement(this, params, connectorFactory);
 			Statement_list.addElement(SQS);
 
 		} catch (Exception e) {
@@ -197,7 +199,7 @@ public class SQConnection implements Connection {
 
 		if (data == null) {
 			try {
-				data = new SQDatabaseMetaData(globalClient,this, params.getUser(), params.getDbName());
+				data = new SQDatabaseMetaData(globalClient,this, params.getUser(), params.getDbName(), connectorFactory);
 			} catch (Exception e) {
 				throw new SQLException(e);
 			}

@@ -37,16 +37,18 @@ public class MessengerImpl implements Messenger {
     private static final String QUERY_TYPE_IN = "{\"queryTypeIn\":\"queryTypeIn\"}";
     private static final String QUERY_TYPE_OUT = "{\"queryTypeOut\":\"queryTypeOut\"}";
 
-    private SQSocketConnector socket;
-    private JsonParser jsonParser;
+    private static final String PING = "{\"ping\":\"ping\"}";
 
-    private MessengerImpl(SQSocketConnector socket) {
+    private final SQSocketConnector socket;
+    private final JsonParser jsonParser;
+
+    private MessengerImpl(SQSocketConnector socket, JsonParser jsonParser) {
         this.socket = socket;
-        this.jsonParser = new JsonParser();
+        this.jsonParser = jsonParser;
     }
 
-    public static Messenger getInstance(SQSocketConnector socket) {
-        return new MessengerImpl(socket);
+    public static Messenger getInstance(SQSocketConnector socket, JsonParser jsonParser) {
+        return new MessengerImpl(socket, jsonParser);
     }
 
     @Override
@@ -118,6 +120,12 @@ public class MessengerImpl implements Messenger {
     }
 
     @Override
+    public void ping() throws ConnException {
+        sendMessage(PING, false);
+        LOGGER.log(Level.FINE, PING);
+    }
+
+    @Override
     public void isPutted() throws ConnException {
         String response = socket.sendData(null, true);
         LOGGER.log(Level.FINE, MessageFormat.format(
@@ -134,7 +142,9 @@ public class MessengerImpl implements Messenger {
     }
 
     @Override
-    public void reconnect(String database, String user, String password, String service, int connectionId, int listenerId) throws ConnException {
+    public void reconnect(String ip, int port, boolean useSsl, String database, String user, String password,
+                          String service, int connectionId, int listenerId) throws ConnException {
+        socket.reconnect(ip, port, useSsl);
         String reconnectStr = MessageFormat.format(RECONNECT_DATABASE_TEMPLATE,
                 database, user, password, service, connectionId, listenerId);
         String response = sendMessage(reconnectStr, true);
@@ -143,17 +153,32 @@ public class MessengerImpl implements Messenger {
 
     @Override
     public StatementStateDto prepareStatement(String statement, int chunkSize) throws ConnException {
-        JsonObject prepare_jsonify;
-        try {
-            prepare_jsonify = Json.object()
-                    .add("prepareStatement", statement)
-                    .add("chunkSize", chunkSize);
-        } catch(ParseException e) {
-            throw new ConnException (MessageFormat.format("Could not parse the statement for PrepareStatement: [{0}]", statement));
-        }
-        String prepareStr = prepare_jsonify.toString(WriterConfig.MINIMAL);
-
+        JsonObject prepareJsonify = Json.object()
+                .add("prepareStatement", statement)
+                .add("chunkSize", chunkSize);
+        String prepareStr = prepareJsonify.toString(WriterConfig.MINIMAL);
         return jsonParser.toStatementState(sendMessage(prepareStr, true));
+    }
+
+    @Override
+    public void sendBinaryHeader(long dataLength) throws ConnException {
+        ByteBuffer header = socket.generateHeader(dataLength, false);
+        socket.sendData(header,false);
+    }
+
+    @Override
+    public void sendBinaryData(ByteBuffer buffer) throws ConnException {
+        socket.sendData(buffer, false);
+    }
+
+    @Override
+    public void parseHeader() throws ConnException {
+        socket.parseHeader();
+    }
+
+    @Override
+    public void fetchBinaryData(ByteBuffer target, int size) throws ConnException {
+        socket.readData(target, size);
     }
 
     private String validateResponse(String response, String expected) throws ConnException {

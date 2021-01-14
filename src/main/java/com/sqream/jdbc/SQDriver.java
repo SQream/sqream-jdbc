@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.logging.*;
 
 import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.enums.SQSQLState;
 import com.sqream.jdbc.logging.LoggingService;
 import com.sqream.jdbc.propsParser.CaselessProperties;
@@ -82,7 +83,9 @@ public class SQDriver implements java.sql.Driver {
 					.insertBuffer(props.getProperty("insertBuffer"))
 					.build();
 
-			return new SQConnection(connParams);
+			ConnectorFactory connFactory = getConnectorFactory();
+
+			return new SQConnection(connParams, connFactory);
 		} catch (ConnException e) {
 			throw addSQLState(e);
 		} catch (Exception e) {
@@ -150,5 +153,9 @@ public class SQDriver implements java.sql.Driver {
 			}
 		}
 		return new SQLException(e);
+	}
+
+	protected ConnectorFactory getConnectorFactory() {
+		return new ConnectorFactory();
 	}
 }

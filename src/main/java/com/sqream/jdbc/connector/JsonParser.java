@@ -25,12 +25,13 @@ public class JsonParser {
         int connId = safeReadValue(jsonObj, "connectionId").asInt();
         String varcharEncoding = jsonObj.getString("varcharEncoding", "ascii");
         varcharEncoding = (varcharEncoding.contains("874"))? "cp874" : "ascii";
+        String serverVersion = jsonObj.get("version") != null ? jsonObj.get("version").asString() : "";
 
         LOGGER.log(Level.FINEST, MessageFormat.format(
                 "Parsed: connectionId = [{0}], varcharEncoding = [{1}] from json [{2}]",
                 connId, varcharEncoding, body));
 
-        return new ConnectionStateDto(connId, varcharEncoding);
+        return new ConnectionStateDto(connId, varcharEncoding, serverVersion);
     }
 
     public List<ColumnMetadataDto> toQueryTypeInput(String body) throws ConnException {

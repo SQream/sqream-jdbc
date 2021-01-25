@@ -5,6 +5,7 @@ import java.io.File;
 import java.text.MessageFormat;
 import static com.sqream.jdbc.TestEnvironment.URL;
 
+import com.sqream.jdbc.catalogQueryBuilder.CatalogQueryBuilderFactory;
 import com.sqream.jdbc.connector.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +47,8 @@ public class SQDriverTest {
 
     @Mock
     private ConnectorFactory connectorFactoryMock;
+    @Mock
+    private CatalogQueryBuilderFactory catalogQueryBuilderFactoryMock;
 
 	@Test
     public void logfileLockTest() throws SQLException {
@@ -204,6 +207,11 @@ public class SQDriverTest {
         @Override
         protected ConnectorFactory getConnectorFactory() {
             return connectorFactoryMock;
+        }
+
+        @Override
+        protected CatalogQueryBuilderFactory getCatalogQueryBuilderFactory() {
+            return catalogQueryBuilderFactoryMock;
         }
     }
 }

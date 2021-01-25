@@ -139,4 +139,6 @@ public interface Connector extends AutoCloseable {
     void setFetchSize(int fetchSize);
 
     int getFetchSize();
+
+    String getServerVersion();
 }

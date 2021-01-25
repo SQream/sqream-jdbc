@@ -1,35 +1,46 @@
 package com.sqream.jdbc;
 
+import com.sqream.jdbc.catalogQueryBuilder.CatalogQueryBuilder;
+import com.sqream.jdbc.catalogQueryBuilder.ExplicitCatalogQueryBuilder;
+import com.sqream.jdbc.catalogQueryBuilder.PatternSupportedCatalogQueryBuilder;
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnectorImpl;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoRule;
 
 import java.sql.*;
-import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static com.sqream.jdbc.TestEnvironment.*;
-import static com.sqream.jdbc.TestEnvironment.DATABASE;
 import static com.sqream.jdbc.TestEnvironment.DATABASE;
 import static com.sqream.jdbc.TestEnvironment.USER;
 import static com.sqream.jdbc.TestUtils.createConnectionParams;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(Parameterized.class)
 public class SQDatabaseMetaDataTest {
     private static SQDatabaseMetaData metadata;
+    private final CatalogQueryBuilder catalogQueryBuilder;
+    private final String getTablesQueryTemplate;
+    private final String getColumnsQueryTemplate;
+    private final String nullReplacement;
+    private final String emptyTypeListReplacement;
 
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
     @Mock
     private ConnectorFactory connectorFactoryMock;
     @Mock
@@ -38,6 +49,33 @@ public class SQDatabaseMetaDataTest {
     SQConnection connectionMock;
     @Captor
     private ArgumentCaptor<String> connectorExecuteCaptor;
+    @Parameterized.Parameters
+    public static Collection<Object[]> getCatalogQueryBuilder() {
+        return Arrays.asList(new Object[][]{
+                {new ExplicitCatalogQueryBuilder(),
+                        "*",
+                        "*",
+                        "select get_tables('%s','%s','%s','%s')",
+                        "select get_columns('%s','%s','%s','%s')"},
+                {new PatternSupportedCatalogQueryBuilder(),
+                        "%",
+                        "",
+                        "select get_tables_like('%s','%s','%s','%s')",
+                        "select get_columns_like('%s','%s','%s','%s')"}
+        });
+    }
+
+    public SQDatabaseMetaDataTest(CatalogQueryBuilder catalogQueryBuilder,
+                                  String nullReplacement,
+                                  String emptyTypeListReplacement,
+                                  String getTablesQueryTemplate,
+                                  String getColumnsQueryTemplate) {
+        this.catalogQueryBuilder = catalogQueryBuilder;
+        this.emptyTypeListReplacement = emptyTypeListReplacement;
+        this.nullReplacement = nullReplacement;
+        this.getTablesQueryTemplate = getTablesQueryTemplate;
+        this.getColumnsQueryTemplate = getColumnsQueryTemplate;
+    }
 
     @Before
     public void setUp() throws ConnException {
@@ -50,7 +88,7 @@ public class SQDatabaseMetaDataTest {
                         .useSsl(String.valueOf(SSL))
                         .build());
         SQConnection connection = new SQConnection(connector);
-        metadata = new SQDatabaseMetaData(connector, connection, USER, DATABASE, new ConnectorFactory());
+        metadata = new SQDatabaseMetaData(connector, connection, USER, DATABASE, new ConnectorFactory(), catalogQueryBuilder);
     }
 
     @Test
@@ -120,155 +158,63 @@ public class SQDatabaseMetaDataTest {
     }
 
     @Test
-    public void whenCatalogEmptyGetEmptyResultTest() throws SQLException {
-        String CATALOG = "";
-        Set<String> columnsByQuery = new HashSet<>();
-        Set<String> columnsFromMetadata = new HashSet<>();
+    public void whenCatalogNullGetCurrentDatabaseColumnsTest() throws SQLException, ConnException {
+        String EXPECTED_GET_TABLES_QUERY = String.format(
+                getColumnsQueryTemplate, DATABASE, nullReplacement, nullReplacement, nullReplacement);
+        Mockito.when(connectorFactoryMock.createConnector(any(ConnectionParams.class))).thenReturn(connectorMock);
+        Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
-        try (Connection conn = createConnection()) {
-            try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_columns('%s', '*', '*', '*');", CATALOG));
-                while (rs.next()) {
-                    columnsByQuery.add(rs.getString(3));
-                }
-            }
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet rs = metaData.getColumns(CATALOG, null, null, null);
-            while (rs.next()) {
-                columnsFromMetadata.add(rs.getString(3));
-            }
-        }
+        SQDatabaseMetaData metaData =
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
+        metaData.getColumns(null, null, null, null);
 
-        assertEquals(columnsByQuery.size(), columnsFromMetadata.size());
-        for (String tableFromQuery : columnsByQuery) {
-            assertTrue(columnsFromMetadata.contains(tableFromQuery));
-        }
+        Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
+        assertEquals(EXPECTED_GET_TABLES_QUERY, connectorExecuteCaptor.getValue());
     }
 
     @Test
-    public void whenCatalogNullGetCurrentDatabaseColumnsTest() throws SQLException {
-        Set<String> columnsByQuery = new HashSet<>();
-        Set<String> columnsFromMetadata = new HashSet<>();
+    public void whenCatalogProvidedGetCurrentDatabaseColumnsTest() throws SQLException, ConnException {
+        String EXPECTED_GET_TABLES_QUERY = String.format(
+                getColumnsQueryTemplate, DATABASE, nullReplacement, nullReplacement, nullReplacement);
+        Mockito.when(connectorFactoryMock.createConnector(any(ConnectionParams.class))).thenReturn(connectorMock);
+        Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
-        try (Connection conn = createConnection()) {
-            try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_columns('%s', '*', '*', '*');", DATABASE));
-                while (rs.next()) {
-                    columnsByQuery.add(rs.getString(3));
-                }
-            }
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet rs = metaData.getColumns(null, null, null, null);
-            while (rs.next()) {
-                columnsFromMetadata.add(rs.getString(3));
-            }
-        }
+        SQDatabaseMetaData metaData =
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
+        metaData.getColumns(DATABASE, null, null, null);
 
-        assertEquals(columnsByQuery.size(), columnsFromMetadata.size());
-        for (String tableFromQuery : columnsByQuery) {
-            assertTrue(columnsFromMetadata.contains(tableFromQuery));
-        }
+        Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
+        assertEquals(EXPECTED_GET_TABLES_QUERY, connectorExecuteCaptor.getValue());
     }
 
     @Test
-    public void whenCatalogProvidedGetCurrentDatabaseColumnsTest() throws SQLException {
-        Set<String> columnsByQuery = new HashSet<>();
-        Set<String> columnsFromMetadata = new HashSet<>();
+    public void whenCatalogNullGetCurrentDatabaseTablesTest() throws SQLException, ConnException {
+        String EXPECTED_GET_TABLES_QUERY = String.format(
+                getTablesQueryTemplate, DATABASE, nullReplacement, nullReplacement, emptyTypeListReplacement);
+        Mockito.when(connectorFactoryMock.createConnector(any(ConnectionParams.class))).thenReturn(connectorMock);
+        Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
-        try (Connection conn = createConnection()) {
-            try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_columns('%s', '*', '*', '*');", DATABASE));
-                while (rs.next()) {
-                    columnsByQuery.add(rs.getString(3));
-                }
-            }
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet rs = metaData.getColumns(DATABASE, null, null, null);
-            while (rs.next()) {
-                columnsFromMetadata.add(rs.getString(3));
-            }
-        }
+        SQDatabaseMetaData metaData =
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
+        metaData.getTables(null, null, null, null);
 
-        assertEquals(columnsByQuery.size(), columnsFromMetadata.size());
-        for (String tableFromQuery : columnsByQuery) {
-            assertTrue(columnsFromMetadata.contains(tableFromQuery));
-        }
+        Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
+        assertEquals(EXPECTED_GET_TABLES_QUERY, connectorExecuteCaptor.getValue());
     }
 
     @Test
-    public void whenCatalogEmptyGetCurrentDatabaseTablesTest() throws SQLException {
-        String CATALOG = "";
-        Set<String> tablesByQuery = new HashSet<>();
-        Set<String> tablesFromMetadata = new HashSet<>();
+    public void whenCatalogProvidedGetItsTablesTest() throws SQLException, ConnException {
+        String EXPECTED_GET_TABLES_QUERY = String.format(
+                getTablesQueryTemplate, DATABASE, nullReplacement, nullReplacement, emptyTypeListReplacement);
+        Mockito.when(connectorFactoryMock.createConnector(any(ConnectionParams.class))).thenReturn(connectorMock);
+        Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
-        try (Connection conn = createConnection()) {
-            try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", CATALOG));
-                while (rs.next()) {
-                    tablesByQuery.add(rs.getString(3));
-                }
-            }
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet rs = metaData.getTables(CATALOG, null, null, null);
-            while (rs.next()) {
-                tablesFromMetadata.add(rs.getString(3));
-            }
-        }
+        SQDatabaseMetaData metaData =
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
+        metaData.getTables(DATABASE, null, null, null);
 
-        assertEquals(tablesByQuery.size(), tablesFromMetadata.size());
-        for (String tableFromQuery : tablesByQuery) {
-            assertTrue(tablesFromMetadata.contains(tableFromQuery));
-        }
-    }
-
-    @Test
-    public void whenCatalogNullGetCurrentDatabaseTablesTest() throws SQLException {
-        Set<String> tablesByQuery = new HashSet<>();
-        Set<String> tablesFromMetadata = new HashSet<>();
-
-        try (Connection conn = createConnection()) {
-            try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", DATABASE));
-                while (rs.next()) {
-                    tablesByQuery.add(rs.getString(3));
-                }
-            }
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet rs = metaData.getTables(null, null, null, null);
-            while (rs.next()) {
-                tablesFromMetadata.add(rs.getString(3));
-            }
-        }
-
-        assertEquals(tablesByQuery.size(), tablesFromMetadata.size());
-        for (String tableFromQuery : tablesByQuery) {
-            assertTrue(tablesFromMetadata.contains(tableFromQuery));
-        }
-    }
-
-    @Test
-    public void whenCatalogProvidedGetCurrentDatabaseTablesTest() throws SQLException {
-        Set<String> tablesByQuery = new HashSet<>();
-        Set<String> tablesFromMetadata = new HashSet<>();
-
-        try (Connection conn = createConnection()) {
-            try (Statement stmt = conn.createStatement()) {
-                ResultSet rs = stmt.executeQuery(String.format("select get_tables('%s', '*', '*', '*');", DATABASE));
-                while (rs.next()) {
-                    tablesByQuery.add(rs.getString(3));
-                }
-            }
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet rs = metaData.getTables(DATABASE, null, null, null);
-            while (rs.next()) {
-                tablesFromMetadata.add(rs.getString(3));
-            }
-        }
-
-        assertEquals(tablesByQuery.size(), tablesFromMetadata.size());
-        for (String tableFromQuery : tablesByQuery) {
-            assertTrue(tablesFromMetadata.contains(tableFromQuery));
-        }
+        Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
+        assertEquals(EXPECTED_GET_TABLES_QUERY, connectorExecuteCaptor.getValue());
     }
 
     @Test
@@ -277,7 +223,7 @@ public class SQDatabaseMetaDataTest {
         Mockito.when(connectorFactoryMock.createConnector(any(ConnectionParams.class))).thenReturn(connectorMock);
         Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
-        SQDatabaseMetaData metaData = new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock);
+        SQDatabaseMetaData metaData = new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
         metaData.getCatalogs();
 
         Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
@@ -293,7 +239,7 @@ public class SQDatabaseMetaDataTest {
         Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock);
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
         metaData.getProcedures(null, null, null);
 
         Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
@@ -307,7 +253,7 @@ public class SQDatabaseMetaDataTest {
         Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock);
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
         metaData.getSchemas();
 
         Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
@@ -320,13 +266,13 @@ public class SQDatabaseMetaDataTest {
         String SCHEMA_PATTERN = "testSchemaPattern";
         String TABLE_NAME_PATTERN = "testTableNamePattern";
         String[] TYPES = new String[]{"TABLE", "VIEW"};
-        String EXPECTED_GET_TABLES_QUERY = String.format("select get_tables('%s','%s','*','%s,%s')",
-                DATABASE, SCHEMA_PATTERN, TYPES[0].toLowerCase(), TYPES[1].toLowerCase());
+        String EXPECTED_GET_TABLES_QUERY = String.format(getTablesQueryTemplate,
+                DATABASE, SCHEMA_PATTERN, TABLE_NAME_PATTERN, String.join(",", TYPES).toLowerCase());
         Mockito.when(connectorFactoryMock.createConnector(any(ConnectionParams.class))).thenReturn(connectorMock);
         Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock);
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
         metaData.getTables(DATABASE, SCHEMA_PATTERN, TABLE_NAME_PATTERN, TYPES);
 
         Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
@@ -340,7 +286,7 @@ public class SQDatabaseMetaDataTest {
         Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock);
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
         metaData.getTypeInfo();
 
         Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
@@ -350,7 +296,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getUDTsReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getUDTs(null, null, null, null);
 
         assertFalse(rs.next());
@@ -367,7 +313,7 @@ public class SQDatabaseMetaDataTest {
                 params.getPassword());
         Mockito.when(connectionMock.getParams()).thenReturn(params);
 
-        SQDatabaseMetaData metaData = new SQDatabaseMetaData(null, connectionMock, null, null, null);
+        SQDatabaseMetaData metaData = new SQDatabaseMetaData(null, connectionMock, null, null, null, null);
 
         assertEquals(expectedUrl, metaData.getURL());
     }
@@ -376,7 +322,7 @@ public class SQDatabaseMetaDataTest {
     public void getUserName() throws SQLException {
         String expectedUserName = "testUserName";
 
-        SQDatabaseMetaData metaData = new SQDatabaseMetaData(null, null, expectedUserName, null, null);
+        SQDatabaseMetaData metaData = new SQDatabaseMetaData(null, null, expectedUserName, null, null, null);
 
         assertEquals(expectedUserName, metaData.getUserName());
     }
@@ -384,7 +330,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getVersionColumnsReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getVersionColumns(null, null, null);
 
         assertFalse(rs.next());
@@ -393,7 +339,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getAttributesReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getAttributes(null, null, null, null);
 
         assertFalse(rs.next());
@@ -402,7 +348,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getBestRowIdentifierReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getBestRowIdentifier(null, null, null, 0, false);
 
         assertFalse(rs.next());
@@ -415,7 +361,7 @@ public class SQDatabaseMetaDataTest {
         Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock);
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
         metaData.getSchemas(null, null);
 
         Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());
@@ -425,7 +371,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getClientInfoPropertiesReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getClientInfoProperties();
 
         assertFalse(rs.next());
@@ -434,7 +380,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getColumnPrivilegesReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getColumnPrivileges(null, null, null, null);
 
         assertFalse(rs.next());
@@ -443,7 +389,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getFunctionColumnsReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getFunctionColumns(null, null, null, null);
 
         assertFalse(rs.next());
@@ -452,7 +398,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getFunctionsReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getFunctions(null, null, null);
 
         assertFalse(rs.next());
@@ -461,7 +407,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getImportedKeysReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getImportedKeys(null, null, null);
 
         assertFalse(rs.next());
@@ -470,7 +416,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getIndexInfoReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getIndexInfo(null, null, null, false, false);
 
         assertFalse(rs.next());
@@ -479,7 +425,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getCrossReferenceReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getCrossReference(null, null, null,
                 null, null, null);
 
@@ -489,7 +435,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getExportedKeysReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getExportedKeys(null, null, null);
 
         assertFalse(rs.next());
@@ -498,7 +444,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getPrimaryKeysReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getPrimaryKeys(null, null, null);
 
         assertFalse(rs.next());
@@ -507,7 +453,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getProcedureColumnsReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getProcedureColumns(null, null, null, null);
 
         assertFalse(rs.next());
@@ -516,7 +462,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getSuperTypesReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getSuperTypes(null, null, null);
 
         assertFalse(rs.next());
@@ -525,7 +471,7 @@ public class SQDatabaseMetaDataTest {
     @Test
     public void getTablePrivilegesReturnsEmptyResultSetTest() throws ConnException, SQLException {
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, null, null, null, null);
+                new SQDatabaseMetaData(null, null, null, null, null, null);
         ResultSet rs = metaData.getTablePrivileges(null, null, null);
 
         assertFalse(rs.next());
@@ -538,7 +484,7 @@ public class SQDatabaseMetaDataTest {
         Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock);
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
         metaData.getTableTypes();
 
         Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());

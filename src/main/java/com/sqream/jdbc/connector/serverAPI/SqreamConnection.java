@@ -52,4 +52,11 @@ public class SqreamConnection implements AutoCloseable {
     public boolean isOpen() {
         return isOpen;
     }
+
+    public String getServerVersion() {
+        return context != null &&
+                context.getConnState() !=null &&
+                context.getConnState().getServerVersion() != null ?
+                context.getConnState().getServerVersion() : "";
+    }
 }

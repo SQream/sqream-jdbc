@@ -5,7 +5,9 @@ import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.logging.*;
 
+import com.sqream.jdbc.catalogQueryBuilder.CatalogQueryBuilderFactory;
 import com.sqream.jdbc.connector.ConnException;
+import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.enums.SQSQLState;
 import com.sqream.jdbc.logging.LoggingService;
@@ -84,8 +86,9 @@ public class SQDriver implements java.sql.Driver {
 					.build();
 
 			ConnectorFactory connFactory = getConnectorFactory();
+			CatalogQueryBuilderFactory catalogQueryBuilderFactory = getCatalogQueryBuilderFactory();
 
-			return new SQConnection(connParams, connFactory);
+			return new SQConnection(connParams, connFactory, catalogQueryBuilderFactory);
 		} catch (ConnException e) {
 			throw addSQLState(e);
 		} catch (Exception e) {
@@ -157,5 +160,9 @@ public class SQDriver implements java.sql.Driver {
 
 	protected ConnectorFactory getConnectorFactory() {
 		return new ConnectorFactory();
+	}
+
+	protected CatalogQueryBuilderFactory getCatalogQueryBuilderFactory() {
+		return new CatalogQueryBuilderFactory();
 	}
 }

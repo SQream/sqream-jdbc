@@ -1,8 +1,4 @@
-/**
- *
- */
 package com.sqream.jdbc;
-
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -19,15 +15,10 @@ import java.util.logging.Logger;
 
 import javax.script.ScriptException;
 
+import com.sqream.jdbc.catalogQueryBuilder.CatalogQueryBuilder;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnectorFactory;
 import com.sqream.jdbc.connector.ConnException;
-
-
-/**
- * @author root
- *
- */
 
 public class SQDatabaseMetaData implements DatabaseMetaData {
 	private static final Logger LOGGER = Logger.getLogger(SQDatabaseMetaData.class.getName());
@@ -44,40 +35,39 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	private String driverVersion = "4.3.2";
 	private String dbName;
 	private final ConnectorFactory connectorFactory;
+	private final CatalogQueryBuilder catalogQueryBuilder;
 
 	public SQDatabaseMetaData(Connector client,
 							  SQConnection conn,
 							  String user,
 							  String catalog,
-							  ConnectorFactory connectorFactory) {
+							  ConnectorFactory connectorFactory,
+							  CatalogQueryBuilder catalogQueryBuilder) {
 		this.client = client;
 		this.conn = conn;
 		this.user = user;
 		this.dbName = catalog;
 		this.connectorFactory = connectorFactory;
+		this.catalogQueryBuilder = catalogQueryBuilder;
 	}
 
-	SQResultSet metadataStatement(String sql) throws ConnException, IOException, SQLException, ScriptException, NoSuchAlgorithmException, KeyManagementException {
+	SQResultSet metadataStatement(String sql) throws SQLException {
 
-		Connector client = connectorFactory.createConnector(conn.getParams());
-		client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(), conn.getParams().getService());
-		client.execute(sql);
+		try {
+			Connector client = connectorFactory.createConnector(conn.getParams());
+			client.connect(conn.getParams().getDbName(), conn.getParams().getUser(), conn.getParams().getPassword(), conn.getParams().getService());
+			client.execute(sql);
 
-		return SQResultSet.getInstance(client, dbName);
+			return SQResultSet.getInstance(client, dbName);
+		} catch (ConnException e) {
+			throw new SQLException(e);
+		}
 	}
 
 	@Override
 	public ResultSet getCatalogs() throws SQLException {
-		LOGGER.log(Level.FINE, "Get catalogs from database meta data. Query=[select get_catalogs()]");
-
-		try {
-			return metadataStatement("select get_catalogs()");
-		}
-		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			e.printStackTrace();
-			throw new SQLException(e.getMessage());
-		}
-
+		LOGGER.log(Level.FINE, "Get catalogs from database meta data.");
+		return metadataStatement(catalogQueryBuilder.getCatalogs());
 	}
 
 	@Override
@@ -85,20 +75,8 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		LOGGER.log(Level.FINE, MessageFormat.format(
 				"Get columns: catalog=[{0}], schemaPattern=[{1}], tableNamePattern=[{2}], columnNamePattern=[{3}]",
 				catalog, schemaPattern, tableNamePattern, columnNamePattern));
-		if (catalog == null) {
-			catalog = dbName;
-			LOGGER.log(Level.FINE,MessageFormat.format("Catalog is null, set current database: catalog=[{0}]", dbName));
-		}
-		String sql = "select get_columns(" + CheckNull(catalog) + "," + CheckNull(schemaPattern) + "," + CheckNull(tableNamePattern) + ",'*')";
-		sql = sql.toLowerCase();
-		try {
-			return metadataStatement(sql);
-		}
-
-		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			e.printStackTrace();
-			throw new SQLException(e.getMessage());
-		}
+		String sql = catalogQueryBuilder.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern, dbName);
+		return metadataStatement(sql);
 	}
 
 	@Override
@@ -106,27 +84,14 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 		LOGGER.log(Level.FINE, MessageFormat.format(
 				"Get procedures: catalog=[{0}], schemaPattern=[{1}], procedureNamePattern=[{2}]",
 				catalog, schemaPattern, procedureNamePattern));
-		ResultSet rs = null;
-		try {
-			rs = metadataStatement("select database_name as PROCEDURE_CAT, null as PROCEDURE_SCHEM, function_name as PROCEDURE_NAME, null as UNUSED, null as UNUSED2, null as UNUSED3, ' ' as REMARKS, 0 as PROCEDURE_TYPE, function_name as SPECIFIC_NAME from sqream_catalog.user_defined_functions");
-		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			e.printStackTrace();
-		}
 
-		return rs;
+		return metadataStatement(catalogQueryBuilder.getProcedures());
 	}
 
 	@Override
 	public ResultSet getSchemas() throws SQLException {
 		LOGGER.log(Level.FINE, "Get schemas");
-		try {
-			return metadataStatement("select get_schemas()");
-		}
-
-		catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			e.printStackTrace();
-			throw new SQLException(e.getMessage());
-		}
+		return metadataStatement(catalogQueryBuilder.getSchemas());
 	}
 
 	public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
@@ -134,53 +99,8 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 				"Get tables: catalog=[{0}], schemaPattern=[{1}], tableNamePattern=[{2}], types=[{3}])",
 				catalog, schemaPattern, tableNamePattern, types));
 
-		String logTypes = "";
-		if (types != null && types.length > 0) {
-			for (String type : types) {
-				logTypes += type + ";";
-			}
-		}
-
-		// We currently support only tables and views, so see if any of them
-		// were reqeusted.
-		String strTypes = "";
-		if (types != null && types.length > 0) {
-			boolean bFoundView = false;
-			boolean bFoundTable = false;
-			for (String type : types) {
-				if (type.contains("TABLE")) {
-					bFoundTable = true;
-					if (strTypes != "")
-						strTypes += ",";
-					strTypes += "table";
-				} else if (type.contains("VIEW")) {
-					bFoundView = true;
-					if (strTypes != "")
-						strTypes += ",";
-					strTypes += "view";
-				}
-			}
-
-			if (!bFoundView && !bFoundTable) {
-				throw new SQLException("error", "Got " + logTypes
-						+ " and couldn't find TABLE or VIEW");
-			}
-		} else {
-			strTypes = "*";
-		}
-		if (catalog == null) {
-			catalog = dbName;
-		}
-		String sql = "select get_tables(" + CheckNull(catalog) + ","
-				+ CheckNull(schemaPattern) + ",'*'," + CheckNull(strTypes)
-				+ ")";
-		LOGGER.log(Level.FINE, MessageFormat.format("Execute query: [{0}]", sql));
-		try {
-			return metadataStatement(sql);
-		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			e.printStackTrace();
-			throw new SQLException(e.getMessage());
-		}
+		String sql = catalogQueryBuilder.getTables(catalog, schemaPattern, tableNamePattern, types, dbName);
+		return metadataStatement(sql);
 	}
 
 	@Override
@@ -217,11 +137,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getTypeInfo() throws SQLException {
 		LOGGER.log(Level.FINE, "Get type info");
-		try {
-			return metadataStatement("select get_type_info()");
-		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			throw new SQLException(e.getMessage());
-		}
+		return metadataStatement(catalogQueryBuilder.getTypeInfo());
 	}
 
 	@Override
@@ -505,12 +421,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public ResultSet getTableTypes() throws SQLException {
 		LOGGER.log(Level.FINE, "method called");
-
-		try {
-			return metadataStatement("select get_table_types()");
-		} catch (IOException | ConnException | ScriptException | NoSuchAlgorithmException | KeyManagementException e) {
-			throw new SQLException(e.getMessage());
-		}
+		return metadataStatement(catalogQueryBuilder.getTableTypes());
 	}
 
 	// Replace this SQL with a real empty result set !
@@ -760,16 +671,8 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	@Override
 	public String getSearchStringEscape() throws SQLException {
 		LOGGER.log(Level.FINE, "method called");
-		return "";
+		return "\\";
 	}
-
-
-	private String CheckNull(String str) {
-		LOGGER.log(Level.FINE, "method called");
-		return str == null ? "'*'" : "'" + str.trim() + "'";
-	}
-
-
 
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {

@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.sqream.jdbc.catalogQueryBuilder.CatalogQueryBuilder;
+import com.sqream.jdbc.catalogQueryBuilder.CatalogQueryBuilderFactory;
 import com.sqream.jdbc.connector.Connector;
 import com.sqream.jdbc.connector.ConnException;
 import com.sqream.jdbc.connector.ConnectorFactory;
@@ -30,12 +32,13 @@ public class SQConnection implements Connection {
 	private ConnectionParams params;
 	private AtomicBoolean isClosed = new AtomicBoolean(true);
 	private ConnectorFactory connectorFactory;
+	private CatalogQueryBuilderFactory catalogQueryBuilderFactory;
 
 	SQConnection(Connector client) {
 		globalClient = client;
 	}
 
-	SQConnection(ConnectionParams connParams, ConnectorFactory connectorFactory) throws ConnException {
+	SQConnection(ConnectionParams connParams, ConnectorFactory connectorFactory, CatalogQueryBuilderFactory catalogQueryBuilderFactory) throws ConnException {
 		if (Level.FINE == LOGGER.getParent().getLevel()) {
 			LOGGER.log(Level.FINE, MessageFormat.format(
 					"Construct SQConnection with properties [{0}]", connParams));
@@ -43,6 +46,7 @@ public class SQConnection implements Connection {
 
 		this.params = connParams;
 		this.connectorFactory = connectorFactory;
+		this.catalogQueryBuilderFactory = catalogQueryBuilderFactory;
 
 		globalClient = connectorFactory.createConnector(params);
 
@@ -199,7 +203,8 @@ public class SQConnection implements Connection {
 
 		if (data == null) {
 			try {
-				data = new SQDatabaseMetaData(globalClient,this, params.getUser(), params.getDbName(), connectorFactory);
+				CatalogQueryBuilder catalogQueryBuilder = catalogQueryBuilderFactory.createBuilder(globalClient.getServerVersion());
+				data = new SQDatabaseMetaData(globalClient,this, params.getUser(), params.getDbName(), connectorFactory, catalogQueryBuilder);
 			} catch (Exception e) {
 				throw new SQLException(e);
 			}

@@ -641,6 +641,11 @@ public class ConnectorImpl implements Connector {
         return fetchSize;
     }
 
+    @Override
+    public String getServerVersion() {
+        return sqreamConnection.getServerVersion();
+    }
+
     private ByteBufferPool createByteBufferPool(int blockSize) throws ConnException {
         try {
             return new ByteBufferPool(BYTE_BUFFER_POOL_SIZE, blockSize, sqreamExecutedStatement.getMeta());

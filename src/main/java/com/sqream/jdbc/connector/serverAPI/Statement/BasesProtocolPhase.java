@@ -18,9 +18,6 @@ public abstract class BasesProtocolPhase implements SqreamStatement, CloseableSq
 
     @Override
     public void close() {
-        if (context.getPingService() !=null) {
-            context.getPingService().stop();
-        }
         switch (context.getStatementPhase()) {
             case CLOSED:
                 break;

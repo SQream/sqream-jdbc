@@ -35,10 +35,6 @@ public class SqreamConnection implements AutoCloseable {
         }
         try {
             context.setStatementId(context.getMessenger().openStatement());
-            HeartBeatService heartBeatService = HeartBeatServiceFactory.getService(
-                    context.getConnState().getServerVersion(),
-                    context.getMessenger());
-            context.setPingService(heartBeatService);
             return new SqreamCreatedStatementImpl(context);
         } catch (ConnException e) { //TODO needs refactor to throw correct exception Alex K 11.11.2020
             throw new RuntimeException(e);

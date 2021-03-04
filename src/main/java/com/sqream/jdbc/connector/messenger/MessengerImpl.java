@@ -5,6 +5,9 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
 import com.eclipsesource.json.WriterConfig;
 import com.sqream.jdbc.connector.*;
+import com.sqream.jdbc.connector.heartbeat.HeartBeatFakeService;
+import com.sqream.jdbc.connector.heartbeat.HeartBeatService;
+import com.sqream.jdbc.connector.heartbeat.HeartBeatServiceFactory;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 
 import java.nio.ByteBuffer;
@@ -41,6 +44,7 @@ public class MessengerImpl implements Messenger {
 
     private final SQSocketConnector socket;
     private final JsonParser jsonParser;
+    private HeartBeatService pingService = new HeartBeatFakeService();
 
     private MessengerImpl(SQSocketConnector socket, JsonParser jsonParser) {
         this.socket = socket;
@@ -53,7 +57,7 @@ public class MessengerImpl implements Messenger {
 
     @Override
     public FetchMetadataDto fetch() throws ConnException {
-        String response = sendMessage(COMMAND_FETCH, true);
+        String response = sendMessage(COMMAND_FETCH, true, true);
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Request: [{0}], Response: [{1}]", COMMAND_FETCH, response));
         return jsonParser.toFetchMetadata(response);
@@ -63,14 +67,19 @@ public class MessengerImpl implements Messenger {
     public ConnectionStateDto connect(String database, String user, String password, String service)
             throws ConnException {
         String connStr = MessageFormat.format(CONNECT_DATABASE_TEMPLATE, database, user, password, service);
-        String response = sendMessage(connStr, true);
+        String response = sendMessage(connStr, true, false);
         LOGGER.log(Level.FINE, MessageFormat.format("Request: [{0}], Response: [{1}]", connStr, response));
-        return jsonParser.toConnectionState(response);
+
+        ConnectionStateDto connState = jsonParser.toConnectionState(response);
+        String serverVersion = connState.getServerVersion();
+        pingService = HeartBeatServiceFactory.getService(serverVersion, this);
+        pingService.start();
+        return connState;
     }
 
     @Override
     public int openStatement() throws ConnException {
-        String response = sendMessage(COMMAND_GET_STATEMENT_ID, true);
+        String response = sendMessage(COMMAND_GET_STATEMENT_ID, true, true);
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Request: [{0}], Response: [{1}]", COMMAND_GET_STATEMENT_ID, response));
         return jsonParser.toStatementId(response);
@@ -79,26 +88,26 @@ public class MessengerImpl implements Messenger {
     @Override
     public void isStatementReconstructed(int statementId) throws ConnException {
         validateResponse(sendMessage(MessageFormat.format(RECONSTRUCT_STATEMENT_TEMPLATE, statementId),
-                true), EVENT_STATEMENT_RECONSTRUCTED);
+                true, true), EVENT_STATEMENT_RECONSTRUCTED);
     }
 
     @Override
     public List<ColumnMetadataDto> queryTypeInput() throws ConnException {
-        String response = sendMessage(QUERY_TYPE_IN, true);
+        String response = sendMessage(QUERY_TYPE_IN, true, true);
         LOGGER.log(Level.FINE, MessageFormat.format("Request: [{0}], Response: [{1}]", QUERY_TYPE_IN, response));
         return jsonParser.toQueryTypeInput(response);
     }
 
     @Override
     public List<ColumnMetadataDto> queryTypeOut() throws ConnException {
-        String response = sendMessage(QUERY_TYPE_OUT, true);
+        String response = sendMessage(QUERY_TYPE_OUT, true, true);
         LOGGER.log(Level.FINE, MessageFormat.format("Request: [{0}], Response: [{1}]", QUERY_TYPE_OUT, response));
         return jsonParser.toQueryTypeOut(response);
     }
 
     @Override
     public void closeStatement() throws ConnException {
-        String response = sendMessage(COMMAND_CLOSE_STATEMENT, true);
+        String response = sendMessage(COMMAND_CLOSE_STATEMENT, true, true);
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Request: [{0}], Response: [{1}]", COMMAND_CLOSE_STATEMENT, response));
         validateResponse(response, EVENT_STATEMENT_CLOSED);
@@ -106,7 +115,8 @@ public class MessengerImpl implements Messenger {
 
     @Override
     public void closeConnection() throws ConnException {
-        String response = sendMessage(COMMAND_CLOSE_CONNECTION, true);
+        pingService.stop();
+        String response = sendMessage(COMMAND_CLOSE_CONNECTION, true, false);
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Request: [{0}], Response: [{1}]", COMMAND_CLOSE_CONNECTION, response));
         validateResponse(response, EVENT_CONNECTION_CLOSED);
@@ -115,13 +125,14 @@ public class MessengerImpl implements Messenger {
     @Override
     public void put(int rowCounter) throws ConnException {
         String message = MessageFormat.format(PUT_TEMPLATE, rowCounter);
-        sendMessage(message, false);
+        pingService.stop();
+        sendMessage(message, false, false);
         LOGGER.log(Level.FINE, message);
     }
 
     @Override
     public void ping() throws ConnException {
-        sendMessage(PING, false);
+        sendMessage(PING, false, false);
         LOGGER.log(Level.FINE, PING);
     }
 
@@ -135,7 +146,7 @@ public class MessengerImpl implements Messenger {
 
     @Override
     public void execute() throws ConnException {
-        String response = sendMessage(COMMAND_EXECUTE, true);
+        String response = sendMessage(COMMAND_EXECUTE, true, true);
         LOGGER.log(Level.FINE, MessageFormat.format(
                 "Request: [{0}], Response: [{1}]", COMMAND_EXECUTE, response));
         validateResponse(response, EVENT_EXECUTED);
@@ -147,7 +158,7 @@ public class MessengerImpl implements Messenger {
         socket.reconnect(ip, port, useSsl);
         String reconnectStr = MessageFormat.format(RECONNECT_DATABASE_TEMPLATE,
                 database, user, password, service, connectionId, listenerId);
-        String response = sendMessage(reconnectStr, true);
+        String response = sendMessage(reconnectStr, true, true);
         LOGGER.log(Level.FINE, MessageFormat.format("Request: [{0}], Response: [{1}]", reconnectStr, response));
     }
 
@@ -157,18 +168,22 @@ public class MessengerImpl implements Messenger {
                 .add("prepareStatement", statement)
                 .add("chunkSize", chunkSize);
         String prepareStr = prepareJsonify.toString(WriterConfig.MINIMAL);
-        return jsonParser.toStatementState(sendMessage(prepareStr, true));
+        return jsonParser.toStatementState(sendMessage(prepareStr, true, true));
     }
 
     @Override
     public void sendBinaryHeader(long dataLength) throws ConnException {
+        pingService.stop();
         ByteBuffer header = socket.generateHeader(dataLength, false);
         socket.sendData(header,false);
+        pingService.start();
     }
 
     @Override
     public void sendBinaryData(ByteBuffer buffer) throws ConnException {
+        pingService.stop();
         socket.sendData(buffer, false);
+        pingService.start();
     }
 
     @Override
@@ -192,7 +207,11 @@ public class MessengerImpl implements Messenger {
         return response;
     }
 
-    private String sendMessage(String message, boolean getResponse) throws ConnException {
+    private String sendMessage(String message, boolean getResponse, boolean restartPing) throws ConnException {
+        if (restartPing) { // restart ping service to prevent mixing messages
+            pingService.stop();
+            pingService.start();
+        }
         byte[] messageBytes = message.getBytes();
         ByteBuffer messageBuffer = socket.generateHeaderedBuffer(messageBytes.length, true);
         messageBuffer.put(messageBytes);

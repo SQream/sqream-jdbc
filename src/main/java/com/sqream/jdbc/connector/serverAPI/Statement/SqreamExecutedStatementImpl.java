@@ -88,9 +88,7 @@ public class SqreamExecutedStatementImpl extends BasesProtocolPhase implements S
         FetchMetadataDto fetchMeta = null;
         try {
             Messenger messenger = context.getMessenger();
-            context.getPingService().start();
             fetchMeta = messenger.fetch();
-            context.getPingService().stop();
             if (fetchMeta.getNewRowsFetched() == 0) {
                 BlockDto emptyBlock = new BlockDto(new ByteBuffer[0], new ByteBuffer[0], new ByteBuffer[0], 0);
                 emptyBlock.setFillSize(0);

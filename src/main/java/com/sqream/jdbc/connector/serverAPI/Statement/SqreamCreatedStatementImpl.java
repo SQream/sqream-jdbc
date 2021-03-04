@@ -30,9 +30,7 @@ public class SqreamCreatedStatementImpl extends BasesProtocolPhase implements Sq
         try {
             context.setQuery(query);
             StatementStateDto statementState = null;
-            context.getPingService().start();
             statementState = context.getMessenger().prepareStatement(query, context.getChunkSize());
-            context.getPingService().stop();
             ConnectionParams connParams = context.getConnParams();
             int port = connParams.getUseSsl() ? statementState.getPortSsl() : statementState.getPort();
             // Reconnect and reestablish statement if redirected by load balancer

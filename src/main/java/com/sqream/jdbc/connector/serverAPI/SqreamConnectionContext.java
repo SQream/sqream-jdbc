@@ -19,7 +19,6 @@ public class SqreamConnectionContext {
     private int chunkSize;
     private List<ColumnMetadataDto> columnsMetadata;
     private StatementPhase statementPhase;
-    private HeartBeatService pingService;
 
     public SqreamConnectionContext(ConnectionStateDto connState,
                                    ConnectionParams connParams,
@@ -91,11 +90,4 @@ public class SqreamConnectionContext {
         this.statementPhase = statementState;
     }
 
-    public HeartBeatService getPingService() {
-        return pingService;
-    }
-
-    public void setPingService(HeartBeatService pingService) {
-        this.pingService = pingService;
-    }
 }

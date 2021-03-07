@@ -1,8 +1,5 @@
 package com.sqream.jdbc.connector;
 
-import com.sqream.jdbc.ConnectionParams;
-import com.sqream.jdbc.connector.messenger.Messenger;
-import com.sqream.jdbc.connector.messenger.MessengerImpl;
 import com.sqream.jdbc.connector.socket.SQSocket;
 import com.sqream.jdbc.connector.socket.SQSocketConnector;
 import org.junit.Test;
@@ -59,7 +56,8 @@ public class SQSocketConnectorTest {
     @Test(expected = ConnException.class)
     public void whenReconnectToNodeButDidNotReadBytesFromSocketThenThrowExceptionTest() throws ConnException {
 
-        String CORRECT_MESSAGE = "Socket closed when trying to connect to server picker";
+        String CORRECT_MESSAGE =
+                "Connection timed out. For cluster=true it is recommended to use port 3108 or 3109 for ssl.";
         int BYTES_HAS_READ = -1; // reached end of stream
         Mockito.when(socketMock.read(any())).thenReturn(BYTES_HAS_READ);
 
@@ -102,7 +100,7 @@ public class SQSocketConnectorTest {
         try {
             socketConnector.parseHeader();
         } catch (ConnException e) {
-            assertTrue(e.getMessage().contains("Probably tried to connect to server picker"));
+            assertTrue(e.getMessage().contains("Connection error. Connected to cluster but cluster=false is in connection string, did you mean cluster=true?"));
             throw e;
         }
     }

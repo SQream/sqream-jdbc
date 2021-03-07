@@ -7,6 +7,7 @@ import static com.sqream.jdbc.TestEnvironment.URL;
 
 import com.sqream.jdbc.catalogQueryBuilder.CatalogQueryBuilderFactory;
 import com.sqream.jdbc.connector.*;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -190,6 +191,18 @@ public class SQDriverTest {
     @Test(expected = IllegalArgumentException.class)
     public void loggerLevelUnsupportedLevel() throws SQLException {
         new DriverTest().connect(CORRECT_URI + ";loggerLevel=UNSUPPORTED_LEVEL", new Properties());
+    }
+
+    @Test
+    public void clusterTrueByDefaultTest() throws SQLException, ConnException {
+        Mockito.when(connectorFactoryMock.createConnector(any(ConnectionParams.class))).then(invocationOnMock -> {
+            Object[] args = invocationOnMock.getArguments();
+            assertEquals(1, args.length);
+            assertTrue("Cluster flag should be [true] by default", ((ConnectionParams) args[0]).getCluster());
+            return Mockito.mock(Connector.class);
+        });
+        Driver driver = new DriverTest();
+        driver.connect(CORRECT_URI, new Properties());
     }
 
     private void mockConnector() {

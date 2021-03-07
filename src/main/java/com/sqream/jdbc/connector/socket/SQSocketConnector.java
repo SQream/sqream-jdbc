@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.concurrent.*;
 
 import static com.sqream.jdbc.utils.Utils.decode;
 
@@ -17,6 +18,9 @@ public class SQSocketConnector {
     private static final byte PROTOCOL_VERSION = 8;
     private static final int HEADER_SIZE = 10;
     public static final List<Byte> SUPPORTED_PROTOCOLS = new ArrayList<>(Arrays.asList((byte)6, (byte)7, (byte)8));
+    public static final int DEFAULT_SERVER_PICKER_PORT = 3108;
+    public static final int DEFAULT_SERVER_PICKER_SSL_PORT = 3109;
+
 
     private ByteBuffer responseMessage = ByteBuffer.allocateDirect(64 * 1024).order(ByteOrder.LITTLE_ENDIAN);;
     private final ByteBuffer header = ByteBuffer.allocateDirect(10).order(ByteOrder.LITTLE_ENDIAN);
@@ -31,7 +35,25 @@ public class SQSocketConnector {
         socket.open(ip, port, useSsl);
         // Clustered connection - reconnect to actual ip and port
         if (cluster) {
-            reconnectToNode(useSsl);
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Future<?> future = executor.submit((Callable<Object>) () -> {
+                reconnectToNode(useSsl);
+                return 0;
+            });
+            try {
+                future.get(5, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                try {
+                    future.cancel(true);
+                } catch (Exception ex) {
+                    /*NOP*/
+                }
+                if (port != DEFAULT_SERVER_PICKER_PORT && port != DEFAULT_SERVER_PICKER_SSL_PORT) {
+                    throw new ConnException("Connection timed out. For cluster=true it is recommended to use port 3108 or 3109 for ssl.");
+                } else {
+                    throw new ConnException(e);
+                }
+            }
         }
     }
 
@@ -64,7 +86,7 @@ public class SQSocketConnector {
             StringJoiner joiner = new StringJoiner(", ");
             SUPPORTED_PROTOCOLS.forEach(newElement -> joiner.add(newElement.toString()));
             if (isRedirection(header)) {
-                throw new ConnException("Probably tried to connect to server picker, but cluster parameter was not provided");
+                throw new ConnException("Connection error. Connected to cluster but cluster=false is in connection string, did you mean cluster=true?");
             } else {
                 throw new ConnException(String.format("Unsupported protocol version - supported versions are %s, but got %s", joiner.toString(), userProtocolVersion));
             }

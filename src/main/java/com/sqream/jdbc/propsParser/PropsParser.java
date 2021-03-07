@@ -9,19 +9,16 @@ public class PropsParser {
 
     private static final URLParser urlParser = new URLParser();
 
-    public static Properties parse(String url) throws SQLException {
-        return parse(url, new Properties());
-    }
-
-    public static CaselessProperties parse(String primary, Properties... additions) throws SQLException {
-        CaselessProperties result = urlParser.parse(primary);
+    public static Properties parse(Properties primary, String url, Properties... additions) throws SQLException {
+        Properties urlProps = urlParser.parse(url);
+        merge(primary, urlProps);
         for (Properties additional : additions) {
-            merge(result, additional);
+            merge(primary, additional);
         }
-        return result;
+        return primary;
     }
 
-    private static void merge(CaselessProperties primary, Properties additional) {
+    private static void merge(Properties primary, Properties additional) {
         if (primary == null || additional == null) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "Properties should not be null: primary=[{0}], additional=[{1}]", primary, additional));
@@ -29,7 +26,7 @@ public class PropsParser {
         addIfAbsent(primary, additional);
     }
 
-    private static void addIfAbsent(CaselessProperties target, Properties values) {
+    private static void addIfAbsent(Properties target, Properties values) {
         Set<Object> keys = values.keySet();
         for (Object key : keys) {
             target.putIfAbsent(key, values.get(key));

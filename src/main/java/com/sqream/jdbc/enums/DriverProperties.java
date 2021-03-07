@@ -8,12 +8,12 @@ public enum DriverProperties {
     PROVIDER("provider"),
     HOST("host"),
     PORT("port"),
-    DB_NAME("dbName"),
+    DB_NAME("dbname"),
     USER("user"),
     PASSWORD("password"),
-    LOGGER_LEVEL("loggerLevel"),
-    LOG_FILE_PATH("logFile"),
-    INSERT_BUFFER("insertBuffer");
+    LOGGER_LEVEL("loggerlevel"),
+    LOG_FILE_PATH("logfile"),
+    INSERT_BUFFER("insertbuffer");
 
 
 

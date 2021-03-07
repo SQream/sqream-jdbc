@@ -20,7 +20,7 @@ public class PropsParserTest {
             MessageFormat.format("{0};loggerLevel={1};logFile={2}", URL, LOG_LEVEL, LOG_FILE);
 
     @Test
-    public void driverPropertiesDoesNotAffectPrimaryUrlPropertiesTest() throws SQLException {
+    public void primaryDriverPropertiesRewriteUrlPropertiesTest() throws SQLException {
         Properties driverProps = new Properties();
         driverProps.setProperty(USER.getValue(), "newTestUserName");
         driverProps.setProperty(PASSWORD.getValue(), "newTestPassword");
@@ -30,15 +30,15 @@ public class PropsParserTest {
         driverProps.setProperty(LOGGER_LEVEL.getValue(), "newTestLoggerLevel");
         driverProps.setProperty(LOG_FILE_PATH.getValue(), "newTestLogFilePath");
 
-        Properties result = PropsParser.parse(FULL_URL, driverProps);
+        Properties result = PropsParser.parse(driverProps, FULL_URL);
 
-        assertEquals(TestEnvironment.USER, result.getProperty(USER.getValue()));
-        assertEquals(TestEnvironment.PASS, result.getProperty(PASSWORD.getValue()));
-        assertEquals(String.valueOf(TestEnvironment.CLUSTER), result.getProperty(CLUSTER.getValue()));
-        assertEquals(String.valueOf(TestEnvironment.SSL), result.getProperty(SSL.getValue()));
-        assertEquals(TestEnvironment.SERVICE, result.getProperty(SERVICE.getValue()));
-        assertEquals(LOG_LEVEL, result.getProperty(LOGGER_LEVEL.getValue()));
-        assertEquals(LOG_FILE, result.getProperty(LOG_FILE_PATH.getValue()));
+        assertEquals(driverProps.getProperty(USER.getValue()), result.getProperty(USER.getValue()));
+        assertEquals(driverProps.getProperty(PASSWORD.toString()), result.getProperty(PASSWORD.getValue()));
+        assertEquals(driverProps.getProperty(CLUSTER.getValue()), result.getProperty(CLUSTER.getValue()));
+        assertEquals(driverProps.getProperty(SSL.getValue()), result.getProperty(SSL.getValue()));
+        assertEquals(driverProps.getProperty(SERVICE.getValue()), result.getProperty(SERVICE.getValue()));
+        assertEquals(driverProps.getProperty(LOGGER_LEVEL.getValue()), result.getProperty(LOGGER_LEVEL.getValue()));
+        assertEquals(driverProps.getProperty(LOG_FILE_PATH.getValue()), result.getProperty(LOG_FILE_PATH.getValue()));
     }
 
     @Test
@@ -49,7 +49,7 @@ public class PropsParserTest {
         defaultProps.setProperty(SERVICE.toString(), "sqream");
         defaultProps.setProperty(SCHEMA.toString(), "public");
 
-        Properties result = PropsParser.parse(SHORT_URL, defaultProps);
+        Properties result = PropsParser.parse(defaultProps, SHORT_URL);
 
         assertEquals("false", result.getProperty(CLUSTER.getValue()));
         assertEquals("false", result.getProperty(SSL.getValue()));

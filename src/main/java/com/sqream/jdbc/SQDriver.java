@@ -56,7 +56,7 @@ public class SQDriver implements java.sql.Driver {
 			throw new SQLException("Properties info is null");
 		}
 
-		CaselessProperties props = PropsParser.parse(url, driverProps, createDefaultProps());
+		Properties props = PropsParser.parse(driverProps, url, createDefaultProps());
 
 		if (!validProvider(props)) {
 			return null;
@@ -75,14 +75,14 @@ public class SQDriver implements java.sql.Driver {
 					.cluster(props.getProperty("cluster"))
 					.ipAddress(props.getProperty("host"))
 					.port(props.getProperty("port"))
-					.dbName(props.getProperty("dbName"))
+					.dbName(props.getProperty("dbname"))
 					.service(props.getProperty("service"))
 					.schema(props.getProperty("schema"))
 					.user(props.getProperty("user"))
 					.password(props.getProperty("password"))
 					.useSsl(props.getProperty("ssl"))
-					.fetchSize(props.getProperty("fetchSize"))
-					.insertBuffer(props.getProperty("insertBuffer"))
+					.fetchSize(props.getProperty("fetchsize"))
+					.insertBuffer(props.getProperty("insertbuffer"))
 					.build();
 
 			ConnectorFactory connFactory = getConnectorFactory();

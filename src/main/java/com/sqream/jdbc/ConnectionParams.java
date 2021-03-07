@@ -144,7 +144,7 @@ public class ConnectionParams {
 
         public ConnectionParamsBuilder password(String password) throws ConnException {
             if ((this.password = password) == null) {
-                throw new ConnException("missing database name error");
+                throw new ConnException("missing password");
             }
             return this;
         }

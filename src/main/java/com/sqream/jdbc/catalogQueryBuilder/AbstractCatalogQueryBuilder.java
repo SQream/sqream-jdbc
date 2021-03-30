@@ -81,7 +81,7 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
 
     private String toTypesString(String[] types) throws SQLException {
         String[] typesUpper = types.clone();
-        for (int i = 0; i < typesLower.length; i++) {
+        for (int i = 0; i < typesUpper.length; i++) {
             typesUpper[i] = types[i].toUpperCase();
         }
         Set<String> typeSet = new HashSet<>(Arrays.asList(typesUpper));
@@ -96,7 +96,7 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
             if (type.equals("EXTERNAL_TABLE")) {
                 type = "EXTERNAL";
             }
-            
+
             typesBuilder.append(previousSeparator);
             typesBuilder.append(type.toLowerCase());
             previousSeparator = ",";

@@ -96,6 +96,7 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
             if (type.equals("EXTERNAL_TABLE")) {
                 type = "EXTERNAL";
             }
+            
             typesBuilder.append(previousSeparator);
             typesBuilder.append(type.toLowerCase());
             previousSeparator = ",";

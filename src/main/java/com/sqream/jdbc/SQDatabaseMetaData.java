@@ -99,8 +99,14 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 				"Get tables: catalog=[{0}], schemaPattern=[{1}], tableNamePattern=[{2}], types=[{3}])",
 				catalog, schemaPattern, tableNamePattern, types));
 
-		String sql = catalogQueryBuilder.getTables(catalog, schemaPattern, tableNamePattern, types, dbName);
-		return metadataStatement(sql);
+		try {
+			String sql = catalogQueryBuilder.getTables(catalog, schemaPattern, tableNamePattern, types, dbName);
+			LOGGER.log(Level.FINE, MessageFormat.format("SQL: {0}", sql));
+			return metadataStatement(sql);
+		} catch (Exception e) {
+			LOGGER.log(Level.FINE, MessageFormat.format("ERROR: {0}", e.getMessage()));
+			throw e;
+		}
 	}
 
 	@Override

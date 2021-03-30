@@ -80,10 +80,11 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
     abstract String emptyTypeListReplacement();
 
     private String toTypesString(String[] types) throws SQLException {
-        for (int i = 0; i < types.length; i++) {
-            types[i]=types[i].toLowerCase();
+        String[] typesLower = types.clone();
+        for (int i = 0; i < typesLower.length; i++) {
+            typesLower[i] = types[i].toLowerCase();
         }
-        Set<String> typeSet = new HashSet<>(Arrays.asList(types));
+        Set<String> typeSet = new HashSet<>(Arrays.asList(typesLower));
         String previousSeparator = "";
         StringBuilder typesBuilder = new StringBuilder();
         for (String type : typeSet) {

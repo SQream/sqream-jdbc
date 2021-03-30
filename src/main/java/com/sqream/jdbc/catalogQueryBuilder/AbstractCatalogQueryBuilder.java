@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder {
-    private static final Set<String> SUPPORTED_TABLE_TYPES = new HashSet<>(Arrays.asList("table", "view", "external"));
+    private static final Set<String> SUPPORTED_TABLE_TYPES = new HashSet<>(Arrays.asList("TABLE", "VIEW", "EXTERNAL_TABLE"));
 
     @Override
     public String getTables(String catalog,
@@ -80,17 +80,21 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
     abstract String emptyTypeListReplacement();
 
     private String toTypesString(String[] types) throws SQLException {
-        String[] typesLower = types.clone();
+        String[] typesUpper = types.clone();
         for (int i = 0; i < typesLower.length; i++) {
-            typesLower[i] = types[i].toLowerCase();
+            typesUpper[i] = types[i].toUpperCase();
         }
-        Set<String> typeSet = new HashSet<>(Arrays.asList(typesLower));
+        Set<String> typeSet = new HashSet<>(Arrays.asList(typesUpper));
         String previousSeparator = "";
         StringBuilder typesBuilder = new StringBuilder();
         for (String type : typeSet) {
             if (!SUPPORTED_TABLE_TYPES.contains(type)) {
                 throw new SQLException(MessageFormat.format("Unsupported type [{0}] in types array {1}",
                         type, Arrays.asList(types)));
+            }
+            
+            if (type.equals("EXTERNAL_TABLE")) {
+                type = "EXTERNAL";
             }
             typesBuilder.append(previousSeparator);
             typesBuilder.append(type.toLowerCase());

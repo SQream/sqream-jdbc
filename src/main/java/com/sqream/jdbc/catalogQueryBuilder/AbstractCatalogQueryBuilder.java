@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder {
-    private static final Set<String> SUPPORTED_TABLE_TYPES = new HashSet<>(Arrays.asList("TABLE", "VIEW"));
+    private static final Set<String> SUPPORTED_TABLE_TYPES = new HashSet<>(Arrays.asList("table", "view", "external"));
 
     @Override
     public String getTables(String catalog,
@@ -80,6 +80,9 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
     abstract String emptyTypeListReplacement();
 
     private String toTypesString(String[] types) throws SQLException {
+        for (int i = 0; i < types.length; i++) {
+            types[i]=types[i].toLowerCase();
+        }
         Set<String> typeSet = new HashSet<>(Arrays.asList(types));
         String previousSeparator = "";
         StringBuilder typesBuilder = new StringBuilder();

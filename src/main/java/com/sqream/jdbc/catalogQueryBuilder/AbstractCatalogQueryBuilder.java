@@ -88,6 +88,9 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
         String previousSeparator = "";
         StringBuilder typesBuilder = new StringBuilder();
         for (String type : typeSet) {
+            if (type.equals("SYNONYM")) {
+                continue;
+            }
             if (!SUPPORTED_TABLE_TYPES.contains(type)) {
                 throw new SQLException(MessageFormat.format("Unsupported type [{0}] in types array {1}",
                         type, Arrays.asList(types)));

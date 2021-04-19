@@ -20,13 +20,13 @@ public class UtilsTest {
 
         List<ColumnMetadataDto> columnMetadataList = new ArrayList<>();
 
-        columnMetadataList.add(new ColumnMetadataDto(true, "testColName0", true, "ftInt", 4, 0));
+        columnMetadataList.add(new ColumnMetadataDto(true, "testColName0", true, "ftInt", 4, 0, 0));
         expectedTotalLength += (Integer.BYTES + Byte.BYTES + Integer.BYTES);
 
-        columnMetadataList.add(new ColumnMetadataDto(false, "testColName1", false, "ftBool", 1, 0));
+        columnMetadataList.add(new ColumnMetadataDto(false, "testColName1", false, "ftBool", 1, 0, 0));
         expectedTotalLength += (0 + 0 + Byte.BYTES);
 
-        columnMetadataList.add(new ColumnMetadataDto(true, "testColName1", false, "ftLong", 8, 0));
+        columnMetadataList.add(new ColumnMetadataDto(true, "testColName1", false, "ftLong", 8, 0, 0));
         expectedTotalLength += (Integer.BYTES + 0 + Long.BYTES);
 
         int rowLength = columnMetadataList.size();

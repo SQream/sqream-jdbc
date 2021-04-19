@@ -22,7 +22,8 @@ public class SQResultSetMetaDataTest {
     public void columnDisplaySizeTest() throws SQLException {
         String createSql = "create or replace table test_display_size " +
                 "(col1 bool, col2 tinyint, col3 smallint, col4 int, col5 bigint, col6 real, col7 double, " +
-                "col8 varchar(10), col9 nvarchar(10), col10 text(10), col11 nvarchar, col12 text, col13 date, col14 datetime)";
+                "col8 varchar(10), col9 nvarchar(10), col10 text(10), col11 nvarchar, col12 text, col13 date, " +
+                "col14 datetime, col15 numeric(20,5));";
         String selectSql = "select * from test_display_size";
 
         ResultSetMetaData rsmeta;
@@ -36,6 +37,8 @@ public class SQResultSetMetaDataTest {
         }
 
         assertNotNull(rsmeta);
+
+        // check getColumnDisplaySize
         assertEquals(1, rsmeta.getColumnDisplaySize(1));
         assertEquals(3, rsmeta.getColumnDisplaySize(2));
         assertEquals(6, rsmeta.getColumnDisplaySize(3));
@@ -50,6 +53,41 @@ public class SQResultSetMetaDataTest {
         assertEquals(Integer.MAX_VALUE, rsmeta.getColumnDisplaySize(12));
         assertEquals(10, rsmeta.getColumnDisplaySize(13));
         assertEquals(23, rsmeta.getColumnDisplaySize(14));
+        assertEquals(40, rsmeta.getColumnDisplaySize(15));
+
+        // check getScale()
+        assertEquals(0, rsmeta.getScale(1));
+        assertEquals(0, rsmeta.getScale(2));
+        assertEquals(0, rsmeta.getScale(3));
+        assertEquals(0, rsmeta.getScale(4));
+        assertEquals(0, rsmeta.getScale(5));
+        assertEquals(0, rsmeta.getScale(6));
+        assertEquals(0, rsmeta.getScale(7));
+        assertEquals(0, rsmeta.getScale(8));
+        assertEquals(0, rsmeta.getScale(9));
+        assertEquals(0, rsmeta.getScale(10));
+        assertEquals(0, rsmeta.getScale(11));
+        assertEquals(0, rsmeta.getScale(12));
+        assertEquals(0, rsmeta.getScale(13));
+        assertEquals(0, rsmeta.getScale(14));
+        assertEquals(5, rsmeta.getScale(15));
+
+        // check getPrecision
+        assertEquals(0, rsmeta.getPrecision(1));
+        assertEquals(0, rsmeta.getPrecision(2));
+        assertEquals(0, rsmeta.getPrecision(3));
+        assertEquals(0, rsmeta.getPrecision(4));
+        assertEquals(0, rsmeta.getPrecision(5));
+        assertEquals(0, rsmeta.getPrecision(6));
+        assertEquals(0, rsmeta.getPrecision(7));
+        assertEquals(0, rsmeta.getPrecision(8));
+        assertEquals(0, rsmeta.getPrecision(9));
+        assertEquals(0, rsmeta.getPrecision(10));
+        assertEquals(0, rsmeta.getPrecision(11));
+        assertEquals(0, rsmeta.getPrecision(12));
+        assertEquals(0, rsmeta.getPrecision(13));
+        assertEquals(0, rsmeta.getPrecision(14));
+        assertEquals(20, rsmeta.getPrecision(15));
     }
 
     @Test

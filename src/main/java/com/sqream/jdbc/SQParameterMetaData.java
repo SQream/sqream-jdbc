@@ -117,31 +117,29 @@ public class SQParameterMetaData implements ParameterMetaData{
 
 	  @Override
 	  public int getPrecision(int paramIndex) throws SQLException {
-
-		  _validate_index(paramIndex);
-
 		  try {
-		  	  int result = conn.getColSize(paramIndex);
-			  LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", result, paramIndex));
-			  return result;
-			} catch (ConnException e) {
-				e.printStackTrace();
-				throw new SQLException ("Connector exception when trying to check parameter precision in SQParameterMetaData:\n" + e);
-			}
+			  _validate_index(paramIndex);
+			  if ("ftNumeric".equals(conn.getColType(paramIndex))) {
+				  return conn.getColPrecision(paramIndex);
+			  }
+			  return 0;
+		  } catch (ConnException e) {
+			  throw new SQLException(e);
+		  }
 	  }
 
 
 	  @Override
 	  public int getScale(int paramIndex) throws SQLException {
-
-		_validate_index(paramIndex);
-
-		// Not applicable for SQream types - we only support float and double, no such quality
-	    // If adding types to sqream, this may need to be revised
-	    int paramScale = 0;
-		  LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}] for paramIndex=[{1}]", paramScale, paramIndex));
-
-	    return paramScale;
+		  try {
+			  _validate_index(paramIndex);
+			  if ("ftNumeric".equals(conn.getColType(paramIndex))) {
+				  return conn.getColScale(paramIndex);
+			  }
+			  return 0;
+		  } catch (ConnException e) {
+			  throw new SQLException(e);
+		  }
 	  }
 
 

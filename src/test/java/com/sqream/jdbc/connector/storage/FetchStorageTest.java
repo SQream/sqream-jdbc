@@ -34,7 +34,7 @@ public class FetchStorageTest {
 
     private TableMetadata createMetadata() {
         ColumnMetadataDto columnMetadata =
-                new ColumnMetadataDto(false, "name", false, "ftInt", Integer.BYTES, 0);
+                new ColumnMetadataDto(false, "name", false, "ftInt", Integer.BYTES, 0, 0);
         return TableMetadata.builder()
                 .rowLength(ROW_LENGTH)
                 .fromColumnsMetadata(Collections.singletonList(columnMetadata))

@@ -596,6 +596,16 @@ public class ConnectorImpl implements Connector {
     }
 
     @Override
+    public int getColScale(int colNum) throws ConnException {
+        return sqreamExecutedStatement.getMeta().getScale(validateColNum(colNum));
+    }
+
+    @Override
+    public int getColPrecision(int colNum) throws ConnException {
+        return sqreamExecutedStatement.getMeta().getPrecision(validateColNum(colNum));
+    }
+
+    @Override
     public boolean isColNullable(int colNum) throws ConnException {
 
         return sqreamExecutedStatement.getMeta().isNullable(validateColNum(colNum));

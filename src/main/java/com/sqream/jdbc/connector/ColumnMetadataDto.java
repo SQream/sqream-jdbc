@@ -8,14 +8,16 @@ public class ColumnMetadataDto {
     private String valueType;
     private int valueSize;
     private int scale;
+    private int precision;
 
-    public ColumnMetadataDto(boolean truVarchar, String name, boolean nullable, String valueType, int valueSize, int scale) {
+    public ColumnMetadataDto(boolean truVarchar, String name, boolean nullable, String valueType, int valueSize, int scale, int precision) {
         this.truVarchar = truVarchar;
         this.name = name;
         this.nullable = nullable;
         this.valueType = valueType;
         this.valueSize = valueSize;
         this.scale = scale;
+        this.precision = precision;
     }
 
     public boolean isTruVarchar() {
@@ -44,5 +46,9 @@ public class ColumnMetadataDto {
 
     public int getScale() {
         return scale;
+    }
+
+    public int getPrecision() {
+        return precision;
     }
 }

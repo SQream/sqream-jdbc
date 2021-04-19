@@ -124,6 +124,10 @@ public interface Connector extends AutoCloseable {
 
     int getColSize(int col_num) throws ConnException;
 
+    int getColScale(int colNum) throws ConnException;
+
+    int getColPrecision(int colNum) throws ConnException;
+
     boolean isColNullable(int col_num) throws ConnException;
 
     boolean isOpenStatement();

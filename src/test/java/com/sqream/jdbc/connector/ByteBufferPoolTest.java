@@ -59,9 +59,9 @@ public class ByteBufferPoolTest {
 
     private TableMetadata createTableMetadata(int excpectedRowLength) {
         List<ColumnMetadataDto> columnMetadataList = new ArrayList<>();
-        columnMetadataList.add(new ColumnMetadataDto(true, "testColName0", true, "ftInt", 4, 0));
-        columnMetadataList.add(new ColumnMetadataDto(false, "testColName1", false, "ftBool", 1, 0));
-        columnMetadataList.add(new ColumnMetadataDto(true, "testColName1", false, "ftLong", 8, 0));
+        columnMetadataList.add(new ColumnMetadataDto(true, "testColName0", true, "ftInt", 4, 0, 0));
+        columnMetadataList.add(new ColumnMetadataDto(false, "testColName1", false, "ftBool", 1, 0, 0));
+        columnMetadataList.add(new ColumnMetadataDto(true, "testColName1", false, "ftLong", 8, 0, 0));
         int rowLength = columnMetadataList.size();
 
         if (excpectedRowLength != rowLength) {

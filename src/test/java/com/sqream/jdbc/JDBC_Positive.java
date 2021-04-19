@@ -191,20 +191,24 @@ public class JDBC_Positive {
 	}
 
     @Test
-    public void parameter_metadata() throws SQLException {
+    public void parameterMetadata() throws SQLException {
+	    int expectedNumericPrecision = 10;
+	    int expectedNumericScale = 5;
+
         /*  Check if charitable behavior works - not closing statement before starting the next one   */
         int COLUMN_AMOUNT = 13;
 
         try (Connection conn = createConnection()) {
 
             // Count test - DML
-            String sql = "create or replace table test_parameter(bools bool not null, tinies tinyint, smalls smallint, ints int, bigs bigint, floats real, doubles double, dates date, dts datetime, varcs varchar (10), nvarcs nvarchar (10), tests text, numerics numeric(10,5))";
+            String sql = String.format(
+                    "create or replace table test_parameter(bools bool not null, tinies tinyint, smalls smallint, " +
+                            "ints int, bigs bigint, floats real, doubles double, dates date, dts datetime, " +
+                            "varcs varchar (10), nvarcs nvarchar (10), tests text, numerics numeric(%s,%s))",
+                    expectedNumericPrecision, expectedNumericScale);
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ParameterMetaData params = ps.getParameterMetaData();
-                int count = params.getParameterCount();
-                if (count != 0) {
-                    fail(MessageFormat.format("Should have 0 parameter count on a DML query, but got: [{0}]", count));
-                }
+                assertEquals(0, params.getParameterCount());
             }
 
             // Count test - regular insert
@@ -212,97 +216,105 @@ public class JDBC_Positive {
                     "(true, 1, 11, 111, 1111, 1.1, 1.11, '2016-11-03', '2016-11-03 16:56:45.000', 'bla', 'nbla', 'textTestValue', 12345.54321)";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ParameterMetaData params = ps.getParameterMetaData();
-                int count = params.getParameterCount() ;
-                if (count != 0) {
-                    fail(MessageFormat.format(
-                            "Should have 0 parameter count on a regular insert query, but got: [{0}]", count));
-                }
+                assertEquals(0, params.getParameterCount());
             }
 
             // Network insert - an actual paramtered query
             sql = "insert into test_parameter values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ParameterMetaData params = ps.getParameterMetaData();
-                int count = params.getParameterCount() ;
-                if (count != COLUMN_AMOUNT) {
-                    fail(MessageFormat.format(
-                            "Should have [{0}] parameter count on a network insert, but got: [{0}]",
-                            COLUMN_AMOUNT, count));
-                }
 
+                assertEquals(COLUMN_AMOUNT, params.getParameterCount());
+
+                // check getParameterClassName()
                 for (int i = 1; i <= COLUMN_AMOUNT; i++) {
-                    if (!"denied".equals(params.getParameterClassName(i))) {
-                        StringBuilder sb = new StringBuilder();
-                        for (int j = 1; j <= COLUMN_AMOUNT; j++) {
-                            sb.append(params.getParameterClassName(j));
-                            sb.append("\n");
-                        }
-                        fail(MessageFormat.format("Bad column names returned:\n{0}", sb.toString()));
-                    }
+                    assertEquals("denied", params.getParameterClassName(i));
                 }
 
+                // check getParameterMode()
                 for (int i = 1; i <= COLUMN_AMOUNT; i++) {
-                    if (params.getParameterMode(i) != ParameterMetaData.parameterModeIn) {
-                        fail("Bad parameter mode returned: " + params.getParameterMode(1));
-                    }
+                    assertEquals(ParameterMetaData.parameterModeIn, params.getParameterMode(i));
                 }
 
-                for (int i = 1; i <= COLUMN_AMOUNT; i++) {
-                    if (params.getScale(i) != 0) {
-                        fail("Bad scale returned: " + params.getScale(2));
-                    }
-                }
+                // check getScale()
+                assertEquals(0, params.getScale(1));
+                assertEquals(0, params.getScale(2));
+                assertEquals(0, params.getScale(3));
+                assertEquals(0, params.getScale(4));
+                assertEquals(0, params.getScale(5));
+                assertEquals(0, params.getScale(6));
+                assertEquals(0, params.getScale(7));
+                assertEquals(0, params.getScale(8));
+                assertEquals(0, params.getScale(9));
+                assertEquals(0, params.getScale(10));
+                assertEquals(0, params.getScale(11));
+                assertEquals(0, params.getScale(12));
+                assertEquals(expectedNumericScale, params.getScale(13));
 
-                if (params.isNullable(1) != ParameterMetaData.parameterNullableUnknown) {
-                    fail("Bad isNullable returned: " + params.isNullable(1));
-                }
+                // check isNullable()
                 for (int i = 2; i <= COLUMN_AMOUNT; i++) {
-                    if (params.isNullable(i) != ParameterMetaData.parameterNullable) {
-                        fail("Bad isNullable returned: " + params.isNullable(2));
-                    }
+                    assertEquals(ParameterMetaData.parameterNullable, params.isNullable(i));
                 }
 
-                if (params.getParameterType(1) != Types.BOOLEAN || params.getParameterType(2) != TINYINT ||
-                        params.getParameterType(3) != Types.SMALLINT || params.getParameterType(4) != Types.INTEGER ||
-                        params.getParameterType(5) != Types.BIGINT || params.getParameterType(6) != Types.REAL ||
-                        params.getParameterType(7) != Types.DOUBLE || params.getParameterType(8) != Types.DATE ||
-                        params.getParameterType(9) != Types.TIMESTAMP || params.getParameterType(10) != Types.VARCHAR ||
-                        params.getParameterType(11) != Types.NVARCHAR || params.getParameterType(12) != NVARCHAR ||
-                        params.getParameterType(13) != Types.NUMERIC)
-                {
-                    fail("Bad parameter type returned: " + params.isNullable(1));
-                }
+                // check getParameterType()
+                assertEquals(BOOLEAN, params.getParameterType(1));
+                assertEquals(TINYINT, params.getParameterType(2));
+                assertEquals(SMALLINT, params.getParameterType(3));
+                assertEquals(INTEGER, params.getParameterType(4));
+                assertEquals(BIGINT, params.getParameterType(5));
+                assertEquals(REAL, params.getParameterType(6));
+                assertEquals(DOUBLE, params.getParameterType(7));
+                assertEquals(DATE, params.getParameterType(8));
+                assertEquals(TIMESTAMP, params.getParameterType(9));
+                assertEquals(VARCHAR, params.getParameterType(10));
+                assertEquals(NVARCHAR, params.getParameterType(11));
+                assertEquals(NVARCHAR, params.getParameterType(12));
+                assertEquals(NUMERIC, params.getParameterType(13));
 
-                //FIXME: Alex K 27/02/2020 check what values we exactly should expect here.
-                if (params.getPrecision(1) != 1 || params.getPrecision(2) != 1 || params.getPrecision(3) != 2 ||
-                        params.getPrecision(4) != 4 || params.getPrecision(5) != 8 || params.getPrecision(6) != 4 ||
-                        params.getPrecision(7) != 8 || params.getPrecision(8) != 4 || params.getPrecision(9) != 8 ||
-                        params.getPrecision(10) != 10 || params.getPrecision(11) == 0 || params.getPrecision(12) == 0 ||
-                        params.getPrecision(13) != 16)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    for (int j = 1; j <= COLUMN_AMOUNT; j++) {
-                        sb.append(params.getPrecision(j));
-                        sb.append("\n");
-                    }
-                    fail(MessageFormat.format("Bad precision returned from parameter test:\n{0}", sb.toString()));
-                }
+                // check getPrecision()
+                assertEquals(0, params.getPrecision(1));
+                assertEquals(0, params.getPrecision(2));
+                assertEquals(0, params.getPrecision(3));
+                assertEquals(0, params.getPrecision(4));
+                assertEquals(0, params.getPrecision(5));
+                assertEquals(0, params.getPrecision(6));
+                assertEquals(0, params.getPrecision(7));
+                assertEquals(0, params.getPrecision(8));
+                assertEquals(0, params.getPrecision(9));
+                assertEquals(0, params.getPrecision(10));
+                assertEquals(0, params.getPrecision(11));
+                assertEquals(0, params.getPrecision(12));
+                assertEquals(expectedNumericPrecision, params.getPrecision(13));
 
-                if (!params.getParameterTypeName(1).equals("ftBool") || !params.getParameterTypeName(2).equals("ftUByte") ||
-                        !params.getParameterTypeName(3).equals("ftShort") || !params.getParameterTypeName(4).equals("ftInt") ||
-                        !params.getParameterTypeName(5).equals("ftLong") || !params.getParameterTypeName(6).equals("ftFloat") ||
-                        !params.getParameterTypeName(7).equals("ftDouble") || !params.getParameterTypeName(8).equals("ftDate") ||
-                        !params.getParameterTypeName(9).equals("ftDateTime") || !params.getParameterTypeName(10).equals("ftVarchar") ||
-                        !params.getParameterTypeName(11).equals("ftBlob") || !params.getParameterTypeName(13).equals("ftNumeric"))
-                {
-                    fail("Bad taypenames returned:\n" + params.getParameterTypeName(1) + '\n' + params.getParameterTypeName(2) + '\n' + params.getParameterTypeName(3) + '\n' + params.getParameterTypeName(4) + '\n' + params.getParameterTypeName(5) + '\n' + params.getParameterTypeName(6) + '\n' + params.getParameterTypeName(7) + '\n' + params.getParameterTypeName(8) + '\n' + params.getParameterTypeName(9) + '\n' + params.getParameterTypeName(10) + '\n' + params.getParameterTypeName(11)  );
-                }
+                // check getParameterTypeName()
+                assertEquals("ftBool", params.getParameterTypeName(1));
+                assertEquals("ftUByte", params.getParameterTypeName(2));
+                assertEquals("ftShort", params.getParameterTypeName(3));
+                assertEquals("ftInt", params.getParameterTypeName(4));
+                assertEquals("ftLong", params.getParameterTypeName(5));
+                assertEquals("ftFloat", params.getParameterTypeName(6));
+                assertEquals("ftDouble", params.getParameterTypeName(7));
+                assertEquals("ftDate", params.getParameterTypeName(8));
+                assertEquals("ftDateTime", params.getParameterTypeName(9));
+                assertEquals("ftVarchar", params.getParameterTypeName(10));
+                assertEquals("ftBlob", params.getParameterTypeName(11));
+                assertEquals("ftBlob", params.getParameterTypeName(12));
+                assertEquals("ftNumeric", params.getParameterTypeName(13));
 
-                for (int i = 1; i <= COLUMN_AMOUNT; i++) {
-                    if (params.isSigned(1)) {
-                        fail("Bad values returned on isSigned():" + params.isSigned(1));
-                    }
-                }
+                // check isSigned()
+                assertFalse(params.isSigned(1));
+                assertFalse(params.isSigned(2));
+                assertTrue(params.isSigned(3));
+                assertTrue(params.isSigned(4));
+                assertTrue(params.isSigned(5));
+                assertTrue(params.isSigned(6));
+                assertTrue(params.isSigned(7));
+                assertFalse(params.isSigned(8));
+                assertFalse(params.isSigned(9));
+                assertFalse(params.isSigned(10));
+                assertFalse(params.isSigned(11));
+                assertFalse(params.isSigned(12));
+                assertFalse(params.isSigned(13));
             }
         }
     }

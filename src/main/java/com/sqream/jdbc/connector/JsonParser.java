@@ -123,8 +123,12 @@ public class JsonParser {
         String valueType = type.get(0).asString();
         int valueSize = type.get(1).asInt() != 0 ? type.get(1).asInt() : TEXT_ITEM_SIZE;
         int scale = type.get(2).asInt();
+        int precision = 0;
+        if (type.size() > 3) {
+            precision = type.get(3).asInt();
+        }
 
-        return new ColumnMetadataDto(truVarchar, name, nullable, valueType, valueSize, scale);
+        return new ColumnMetadataDto(truVarchar, name, nullable, valueType, valueSize, scale, precision);
     }
 
     private JsonObject parseJson(String jsonStr) throws ConnException {

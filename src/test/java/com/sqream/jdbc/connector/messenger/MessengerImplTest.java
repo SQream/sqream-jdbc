@@ -257,10 +257,10 @@ public class MessengerImplTest {
         String queryTypeInputRequest = "{\"queryTypeIn\":\"queryTypeIn\"}";
         String serverResponse = "{\"queryType\":[{\"isTrueVarChar\":false,\"nullable\":true,\"type\":[\"ftBool\",1,0]},{\"isTrueVarChar\":false,\"nullable\":true,\"type\":[\"ftUByte\",1,0]},{\"isTrueVarChar\":false,\"nullable\":true,\"type\":[\"ftShort\",2,0]},{\"isTrueVarChar\":true,\"nullable\":true,\"type\":[\"ftBlob\",0,0]}]}";
         List<ColumnMetadataDto> expectedList = new ArrayList<>();
-        expectedList.add(new ColumnMetadataDto(false, "", true, "ftBool", 1, 0));
-        expectedList.add(new ColumnMetadataDto(false, "", true, "ftUByte", 1, 0));
-        expectedList.add(new ColumnMetadataDto(false, "", true, "ftShort", 2, 0));
-        expectedList.add(new ColumnMetadataDto(true, "", true, "ftBlob", TEXT_ITEM_SIZE, 0));
+        expectedList.add(new ColumnMetadataDto(false, "", true, "ftBool", 1, 0, 0));
+        expectedList.add(new ColumnMetadataDto(false, "", true, "ftUByte", 1, 0, 0));
+        expectedList.add(new ColumnMetadataDto(false, "", true, "ftShort", 2, 0, 0));
+        expectedList.add(new ColumnMetadataDto(true, "", true, "ftBlob", TEXT_ITEM_SIZE, 0, 0));
         ByteBuffer buffer = socket.generateHeaderedBuffer(queryTypeInputRequest.length(), true);
         buffer.put(queryTypeInputRequest.getBytes());
         Mockito.when(socket.sendData(buffer, true)).thenReturn(serverResponse);
@@ -286,7 +286,7 @@ public class MessengerImplTest {
         String queryTypeOutRequest = "{\"queryTypeOut\":\"queryTypeOut\"}";
         String serverResponse = "{\"queryTypeNamed\":[{\"isTrueVarChar\":false,\"name\":\"ints\",\"nullable\":true,\"type\":[\"ftInt\",4,0]}]}";
         List<ColumnMetadataDto> expectedList = new ArrayList<>();
-        expectedList.add(new ColumnMetadataDto(false, "ints", true, "ftInt", 4, 0));
+        expectedList.add(new ColumnMetadataDto(false, "ints", true, "ftInt", 4, 0, 0));
         ByteBuffer buffer = socket.generateHeaderedBuffer(queryTypeOutRequest.length(), true);
         buffer.put(queryTypeOutRequest.getBytes());
         Mockito.when(socket.sendData(buffer, true)).thenReturn(serverResponse);

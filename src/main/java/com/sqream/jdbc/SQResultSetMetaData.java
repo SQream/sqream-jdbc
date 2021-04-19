@@ -31,6 +31,9 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 		displaySizeMap.put(SqreamTypeId.Date, 10);
 		displaySizeMap.put(SqreamTypeId.DateTime, 23);
 		displaySizeMap.put(SqreamTypeId.NVarchar, Integer.MAX_VALUE);
+		displaySizeMap.put(SqreamTypeId.Numeric, 40); //TODO Alex K 12/01/2020:
+		                                              // Fix when protocol support precision value for numeric type.
+		                                              // For numeric type display size should be precision + 2 (minus sign and dot).
 	}
 
 	Connector client;
@@ -109,15 +112,26 @@ public class SQResultSetMetaData implements ResultSetMetaData {
 
 	@Override
 	public int getPrecision(int column) throws SQLException {
-		int result = meta[column-1].getTypeId().toString().equals("NVarchar") ? meta[column-1].getType().size / 4: meta[column-1].getType().size;
-		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", result));
-		return result;
+		try {
+			if ("ftNumeric".equals(client.getColType(column))) {
+				return client.getColPrecision(column);
+			}
+			return 0;
+		} catch (ConnException e) {
+			throw new SQLException(e);
+		}
 	}
 
 	@Override
-	public int getScale(int column) throws SQLException {
-		LOGGER.log(Level.FINE, MessageFormat.format("returns [{0}]", 0));
-		return 0;
+	public int getScale(int colNum) throws SQLException {
+		try {
+			if ("ftNumeric".equals(client.getColType(colNum))) {
+				return client.getColScale(colNum);
+			}
+			return 0;
+		} catch (ConnException e) {
+			throw new SQLException(e);
+		}
 	}
 
 	@Override

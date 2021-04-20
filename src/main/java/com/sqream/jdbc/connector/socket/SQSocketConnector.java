@@ -42,12 +42,14 @@ public class SQSocketConnector {
             });
             try {
                 future.get(5, TimeUnit.SECONDS);
+                executor.shutdown();
             } catch (Exception e) {
                 try {
                     future.cancel(true);
                 } catch (Exception ex) {
                     /*NOP*/
                 }
+                executor.shutdown();
                 if (port != DEFAULT_SERVER_PICKER_PORT && port != DEFAULT_SERVER_PICKER_SSL_PORT) {
                     throw new ConnException("Connection timed out. For cluster=true it is recommended to use port 3108 or 3109 for ssl.");
                 } else {

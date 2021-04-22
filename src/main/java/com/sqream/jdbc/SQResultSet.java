@@ -800,14 +800,12 @@ class SQResultSet implements ResultSet {
 
 	@Override
 	public void setFetchSize(int rows) throws SQLException {
-		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException("setFetchSize in SQResultSet");
+		client.setFetchSize(rows);
 	}
 
 	@Override
 	public int getFetchSize() throws SQLException {
-		this.baseUsageError();
-		throw new SQLFeatureNotSupportedException("getFetchSize in SQResultSet");
+		return client.getFetchSize();
 	}
 
 	@Override

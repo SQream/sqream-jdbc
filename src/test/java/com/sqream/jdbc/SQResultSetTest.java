@@ -94,4 +94,17 @@ public class SQResultSetTest {
             assertEquals(SQLoggableResultSet.class, stmt.getResultSet().getClass());
         }
     }
+
+    @Test
+    public void fetchSizeTest() throws SQLException {
+        try (Connection conn = createConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("select 1;")) {
+            rs.setFetchSize(1);
+            assertEquals(1, rs.getFetchSize());
+
+            rs.setFetchSize(1000);
+            assertEquals(1000, rs.getFetchSize());
+        }
+    }
 }

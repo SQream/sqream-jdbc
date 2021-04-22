@@ -7,6 +7,12 @@ import java.nio.ByteBuffer;
 public class FtNumericWriter extends BaseWriter {
 
     @Override
+    public int writeDouble(ByteBuffer buffer, Double value) {
+        BigDecimal val = new BigDecimal(value);
+        return writeNumeric(buffer, val, val.scale());
+    }
+
+    @Override
     public int writeNumeric(ByteBuffer buffer, BigDecimal value, int scale) {
         int NUMERIC_SIZE = 16;
         byte padding = (byte) value.signum() == -1 ? (byte) -1 : (byte) 0;

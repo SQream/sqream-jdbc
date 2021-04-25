@@ -168,16 +168,6 @@ public class SQResultSetNotSupportedTest {
     }
 
     @Test (expected = SQLFeatureNotSupportedException.class)
-    public void setFetchSizeTest() throws SQLException {
-        rs.setFetchSize(0);
-    }
-
-    @Test (expected = SQLFeatureNotSupportedException.class)
-    public void getFetchSizeTest() throws SQLException {
-        rs.getFetchSize();
-    }
-
-    @Test (expected = SQLFeatureNotSupportedException.class)
     public void getTypeTest() throws SQLException {
         rs.getType();
     }

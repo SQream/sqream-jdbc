@@ -58,7 +58,7 @@ public class FlushStorage {
 
     public void setBoolean(int colIndex, Boolean value) {
         if (value == null) {
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
@@ -68,7 +68,7 @@ public class FlushStorage {
 
     public void setUbyte(int colIndex, Byte value) {
         if (value == null) {
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
             value = (byte) 0;
         }
         blockFullness += ByteWriterFactory
@@ -79,7 +79,7 @@ public class FlushStorage {
 
     public void setShort(int colIndex, Short value) {
         if (value == null) {
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
             value = 0;
         }
         blockFullness += ByteWriterFactory
@@ -91,7 +91,7 @@ public class FlushStorage {
     public void setInt(int colIndex, Integer value) {
         if (value == null) {
             value = 0;
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
@@ -102,7 +102,7 @@ public class FlushStorage {
     public void setLong(int colIndex, Long value) {
         if (value == null) {
             value = 0L;
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
@@ -113,7 +113,7 @@ public class FlushStorage {
     public void setFloat(int colIndex, Float value) {
         if (value == null) {
             value = 0f;
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
@@ -124,7 +124,7 @@ public class FlushStorage {
     public void setDouble(int colIndex, Double value) {
         if (value == null) {
             value = 0d;
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
@@ -134,7 +134,7 @@ public class FlushStorage {
 
     public void setBigDecimal(int colIndex, BigDecimal value) {
         if (value == null) {
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
             value = new BigDecimal(0);
         }
         blockFullness += ByteWriterFactory
@@ -145,7 +145,7 @@ public class FlushStorage {
 
     public void setVarchar(int colIndex, byte[] stringBytes, String originalString) {
         if (originalString == null) {
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
@@ -166,14 +166,14 @@ public class FlushStorage {
                 .writeNvarchar(curBlock.getDataBuffers()[colIndex], stringBytes);
 
         if (originalString == null) {
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
         }
         columnsSet.set(colIndex);
     }
 
     public void setDate(int colIndex, Date date, ZoneId zone) {
         if (date == null) {
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
@@ -183,7 +183,7 @@ public class FlushStorage {
 
     public void setDatetime(int colIndex, Timestamp timestamp, ZoneId zone) {
         if (timestamp == null) {
-            markAsNull(colIndex);
+            markAsNull(colIndex, rowIterator.getRowIndex());
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
@@ -196,8 +196,8 @@ public class FlushStorage {
         rowIterator.next();
     }
 
-    private void markAsNull(int index) {
-        curBlock.getNullBuffers()[index].put((byte) 1);
+    private void markAsNull(int colIndex, int rowIndex) {
+        curBlock.getNullBuffers()[colIndex].put(rowIndex, (byte) 1);
         blockFullness++;
     }
 

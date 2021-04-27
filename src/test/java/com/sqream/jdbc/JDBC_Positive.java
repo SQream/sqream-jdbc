@@ -600,6 +600,106 @@ public class JDBC_Positive {
         }
     }
 
+    @Test
+    public void setNullValuesTest() throws SQLException {
+        String createSql = "create or replace table test_null_values " +
+                "(bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, " +
+                "strings varchar(10), strangs nvarchar(10), dates date, dts datetime, texts text, " +
+                "numerics numeric(5,2), numerics2 numeric(5,2));";
+        String insertSql = "insert into test_null_values values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        try (Connection conn = DriverManager.getConnection(url, "sqream", "sqream");
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(createSql);
+        }
+
+        try (Connection conn = DriverManager.getConnection(url, "sqream", "sqream");
+             PreparedStatement ps = conn.prepareStatement(insertSql)) {
+            ps.setBoolean(1, true);
+            ps.setByte(2, (byte)1);
+            ps.setShort(3, (short)1);
+            ps.setInt(4, 1);
+            ps.setLong(5, 1);
+            ps.setFloat(6, 1);
+            ps.setDouble(7, 1);
+            ps.setString(8, "1");
+            ps.setString(9, "1");
+            ps.setDate(10, test_dates[0]);
+            ps.setTimestamp(11, test_datetimes[0]);
+            ps.setString(12, "1");
+            ps.setBigDecimal(13, new BigDecimal(1));
+            ps.setBigDecimal(14, new BigDecimal(1));
+            ps.addBatch();
+            
+            ps.setNull(1, BOOLEAN);
+            ps.setNull(2, TINYINT);
+            ps.setNull(3, SMALLINT);
+            ps.setNull(4, INTEGER);
+            ps.setNull(5, BIGINT);
+            ps.setNull(6, REAL);
+            ps.setNull(7, DOUBLE);
+            ps.setString(8, null);
+            ps.setString(9, null);
+            ps.setDate(10, null);
+            ps.setTimestamp(11, null);
+            ps.setString(12, null);
+            ps.setBigDecimal(13, null);
+            ps.setBigDecimal(14, null);
+            ps.addBatch();
+        }
+
+        String selectSql = "select * from test_null_values";
+        try (Connection conn = DriverManager.getConnection(url, "sqream", "sqream");
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(selectSql);
+            ResultSet rs = stmt.getResultSet();
+
+            assertTrue(rs.next());
+            assertNotNull(rs.getObject(1));
+            assertNotNull(rs.getObject(2));
+            assertNotNull(rs.getObject(3));
+            assertNotNull(rs.getObject(4));
+            assertNotNull(rs.getObject(5));
+            assertNotNull(rs.getObject(6));
+            assertNotNull(rs.getObject(7));
+            assertNotNull(rs.getString(8));
+            assertNotNull(rs.getString(9));
+            assertNotNull(rs.getDate(10));
+            assertNotNull(rs.getTimestamp(11));
+            assertNotNull(rs.getString(12));
+            assertNotNull(rs.getObject(13));
+            assertFalse(rs.wasNull());
+            assertNotNull(rs.getBigDecimal(13));
+            assertFalse(rs.wasNull());
+            assertNotNull(rs.getObject(14));
+            assertFalse(rs.wasNull());
+            assertNotNull(rs.getBigDecimal(14));
+            assertFalse(rs.wasNull());
+            
+
+            assertTrue(rs.next());
+            assertNull(rs.getObject(1));
+            assertNull(rs.getObject(2));
+            assertNull(rs.getObject(3));
+            assertNull(rs.getObject(4));
+            assertNull(rs.getObject(5));
+            assertNull(rs.getObject(6));
+            assertNull(rs.getObject(7));
+            assertNull(rs.getString(8));
+            assertNull(rs.getString(9));
+            assertNull(rs.getDate(10));
+            assertNull(rs.getTimestamp(11));
+            assertNull(rs.getString(12));
+            assertNull(rs.getObject(13));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getBigDecimal(13));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getObject(14));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getBigDecimal(14));
+            assertTrue(rs.wasNull());
+        }
+    }
+
 
     @Test(expected = SQLException.class)
     public void bad_message() throws SQLException {

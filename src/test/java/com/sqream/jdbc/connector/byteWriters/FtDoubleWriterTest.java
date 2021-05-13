@@ -13,7 +13,7 @@ public class FtDoubleWriterTest {
     public void writeDoubleReturnsEightBytes() {
         int expected = Double.BYTES;
 
-        int result = writer.writeDouble(buffer, 1d);
+        int result = writer.writeDouble(buffer, 1d, 0);
 
         Assert.assertEquals(expected, result, 0);
     }

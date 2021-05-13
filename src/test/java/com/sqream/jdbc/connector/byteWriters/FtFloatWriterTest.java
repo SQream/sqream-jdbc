@@ -13,7 +13,7 @@ public class FtFloatWriterTest {
     public void writeFloatFourBytesTest() {
         int expected = Float.BYTES;
 
-        int result = writer.writeFloat(buffer, 1f);
+        int result = writer.writeFloat(buffer, 1f, 0);
 
         Assert.assertEquals(expected, result, 0);
     }

@@ -7,9 +7,15 @@ import java.nio.ByteBuffer;
 public class FtNumericWriter extends BaseWriter {
 
     @Override
-    public int writeDouble(ByteBuffer buffer, Double value) {
+    public int writeFloat(ByteBuffer buffer, Float value, int scale) {
         BigDecimal val = new BigDecimal(value);
-        return writeNumeric(buffer, val, val.scale());
+        return writeNumeric(buffer, val, scale);
+    }
+
+    @Override
+    public int writeDouble(ByteBuffer buffer, Double value, int scale) {
+        BigDecimal val = new BigDecimal(value);
+        return writeNumeric(buffer, val, scale);
     }
 
     @Override

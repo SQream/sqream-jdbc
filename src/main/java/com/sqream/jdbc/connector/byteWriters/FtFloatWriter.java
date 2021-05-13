@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 public class FtFloatWriter extends BaseWriter {
 
     @Override
-    public int writeFloat(ByteBuffer buffer, Float value) {
+    public int writeFloat(ByteBuffer buffer, Float value, int scale) {
         buffer.putFloat(value);
         return Float.BYTES;
     }

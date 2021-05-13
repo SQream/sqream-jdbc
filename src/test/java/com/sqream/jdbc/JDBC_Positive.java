@@ -605,8 +605,8 @@ public class JDBC_Positive {
         String createSql = "create or replace table test_null_values " +
                 "(bools bool, bytes tinyint, shorts smallint, ints int, bigints bigint, floats real, doubles double, " +
                 "strings varchar(10), strangs nvarchar(10), dates date, dts datetime, texts text, " +
-                "numerics numeric(5,2), numerics2 numeric(5,2));";
-        String insertSql = "insert into test_null_values values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                "numerics numeric(5,2), numerics2 numeric(5,2), numerics3 numeric(5,2));";
+        String insertSql = "insert into test_null_values values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         try (Connection conn = DriverManager.getConnection(url, "sqream", "sqream");
              Statement stmt = conn.createStatement()) {
             stmt.execute(createSql);
@@ -627,7 +627,8 @@ public class JDBC_Positive {
             ps.setTimestamp(11, test_datetimes[0]);
             ps.setString(12, "1");
             ps.setBigDecimal(13, new BigDecimal(1));
-            ps.setBigDecimal(14, new BigDecimal(1));
+            ps.setDouble(14, 1.0);
+            ps.setFloat(15, (float)1.0);
             ps.addBatch();
             
             ps.setNull(1, BOOLEAN);
@@ -644,6 +645,7 @@ public class JDBC_Positive {
             ps.setString(12, null);
             ps.setBigDecimal(13, null);
             ps.setBigDecimal(14, null);
+            ps.setBigDecimal(15, null);
             ps.addBatch();
         }
 
@@ -668,11 +670,11 @@ public class JDBC_Positive {
             assertNotNull(rs.getString(12));
             assertNotNull(rs.getObject(13));
             assertFalse(rs.wasNull());
-            assertNotNull(rs.getBigDecimal(13));
+            assertTrue(rs.getBigDecimal(13).equals(new BigDecimal("1.00")));
             assertFalse(rs.wasNull());
-            assertNotNull(rs.getObject(14));
+            assertTrue(rs.getBigDecimal(14).equals(new BigDecimal("1.00")));
             assertFalse(rs.wasNull());
-            assertNotNull(rs.getBigDecimal(14));
+            assertTrue(rs.getBigDecimal(15).equals(new BigDecimal("1.00")));
             assertFalse(rs.wasNull());
             
 
@@ -696,6 +698,8 @@ public class JDBC_Positive {
             assertNull(rs.getObject(14));
             assertTrue(rs.wasNull());
             assertNull(rs.getBigDecimal(14));
+            assertTrue(rs.wasNull());
+            assertNull(rs.getBigDecimal(15));
             assertTrue(rs.wasNull());
         }
     }

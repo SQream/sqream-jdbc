@@ -117,7 +117,7 @@ public class FlushStorage {
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
-                .writeFloat(curBlock.getDataBuffers()[colIndex], value);
+                .writeFloat(curBlock.getDataBuffers()[colIndex], value, metadata.getScale(colIndex));
         columnsSet.set(colIndex);
     }
 
@@ -128,7 +128,7 @@ public class FlushStorage {
         }
         blockFullness += ByteWriterFactory
                 .getWriter(metadata.getType(colIndex))
-                .writeDouble(curBlock.getDataBuffers()[colIndex], value);
+                .writeDouble(curBlock.getDataBuffers()[colIndex], value, metadata.getScale(colIndex));
         columnsSet.set(colIndex);
     }
 

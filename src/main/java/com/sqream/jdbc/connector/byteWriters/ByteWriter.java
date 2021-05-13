@@ -11,9 +11,9 @@ public interface ByteWriter {
 
     int writeLong(ByteBuffer buffer, Long value);
 
-    int writeFloat(ByteBuffer buffer, Float value);
+    int writeFloat(ByteBuffer buffer, Float value, int scale);
 
-    int writeDouble(ByteBuffer buffer, Double value);
+    int writeDouble(ByteBuffer buffer, Double value, int scale);
 
     int writeNumeric(ByteBuffer buffer, BigDecimal value, int scale);
 

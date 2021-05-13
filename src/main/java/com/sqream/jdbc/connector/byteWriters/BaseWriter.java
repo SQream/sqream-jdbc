@@ -24,13 +24,13 @@ public abstract class BaseWriter implements ByteWriter {
     }
 
     @Override
-    public int writeFloat(ByteBuffer buffer, Float value) {
+    public int writeFloat(ByteBuffer buffer, Float value, int scale) {
         throw new UnsupportedOperationException(
                 String.format("Trying to set a value of type [Float] to column type [%s]", getColumnType()));
     }
 
     @Override
-    public int writeDouble(ByteBuffer buffer, Double value) {
+    public int writeDouble(ByteBuffer buffer, Double value, int scale) {
         throw new UnsupportedOperationException(
                 String.format("Trying to set a value of type [Double] to column type [%s]", getColumnType()));
     }

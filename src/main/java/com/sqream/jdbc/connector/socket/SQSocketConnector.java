@@ -41,7 +41,7 @@ public class SQSocketConnector {
                 return 0;
             });
             try {
-                future.get(5, TimeUnit.SECONDS);
+                future.get(60, TimeUnit.SECONDS);
                 executor.shutdown();
             } catch (Exception e) {
                 try {

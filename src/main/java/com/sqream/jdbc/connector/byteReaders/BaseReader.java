@@ -36,6 +36,12 @@ public abstract class BaseReader implements ByteReader {
     }
 
     @Override
+    public Double readDouble(ByteBuffer buffer, int rowIndex, int scale) {
+        throw new UnsupportedOperationException(
+                String.format("Trying to get a value of type [Double] from column type [%s]", getColumnType()));
+    }
+
+    @Override
     public Boolean readBoolean(ByteBuffer buffer, int rowIndex) {
         throw new UnsupportedOperationException(
                 String.format("Trying to get a value of type [Boolean] from column type [%s]", getColumnType()));

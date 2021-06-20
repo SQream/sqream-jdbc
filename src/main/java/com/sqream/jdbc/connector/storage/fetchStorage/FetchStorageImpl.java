@@ -83,6 +83,12 @@ public class FetchStorageImpl implements FetchStorage {
     }
 
     public Double getDouble(int colIndex) {
+        if (metadata.getType(colIndex).equals("ftNumeric")) {
+            return isNotNull(colIndex, rowIterator.getRowIndex()) ?
+                ByteReaderFactory
+                    .getReader(metadata.getType(colIndex))
+                    .readDouble(curBlock.getDataBuffers()[colIndex], rowIterator.getRowIndex(), metadata.getScale(colIndex)) : null;
+        }
         return isNotNull(colIndex, rowIterator.getRowIndex()) ?
                 ByteReaderFactory
                         .getReader(metadata.getType(colIndex))

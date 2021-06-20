@@ -7,6 +7,11 @@ import java.nio.ByteBuffer;
 public class FtNumericReader extends BaseReader {
 
     @Override
+    public Double readDouble(ByteBuffer buffer, int rowIndex, int scale) {
+        return readBigDecimal(buffer, rowIndex, scale).doubleValue();
+    }
+
+    @Override
     public BigDecimal readBigDecimal(ByteBuffer buffer, int rowIndex, int scale) {
         int NUMERIC_SIZE = 16;
         byte[] bytes = readBackward(buffer, rowIndex * NUMERIC_SIZE, NUMERIC_SIZE);

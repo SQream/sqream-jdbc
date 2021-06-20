@@ -1789,7 +1789,7 @@ public class JDBC_Positive {
                         assertEquals(MessageFormat.format("Wrong result for row [{0}] column [{1}]",
                                 i + 1, j + 1), exp, rs.getBigDecimal(j + 1));
                         assertEquals(MessageFormat.format("Wrong double result for row [{0}] column [{1}]",
-                                i + 1, j + 1), exp.doubleValue(), rs.getDouble(j + 1));
+                                i + 1, j + 1), exp.doubleValue(), rs.getDouble(j + 1), 0);
                     }
                 }
             }

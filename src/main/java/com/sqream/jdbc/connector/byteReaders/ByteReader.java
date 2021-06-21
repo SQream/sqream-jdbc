@@ -17,6 +17,8 @@ public interface ByteReader {
 
     Double readDouble(ByteBuffer buffer, int rowIndex);
 
+    Double readDouble(ByteBuffer buffer, int rowIndex, int scale);
+
     BigDecimal readBigDecimal(ByteBuffer buffer, int rowIndex, int scale);
 
     Boolean readBoolean(ByteBuffer buffer, int rowIndex);

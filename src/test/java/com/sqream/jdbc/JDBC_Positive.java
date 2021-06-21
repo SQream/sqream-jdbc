@@ -1785,8 +1785,11 @@ public class JDBC_Positive {
                 for (int i = 0; i < values.length; i++) {
                     assertTrue(rs.next());
                     for (int j = 0; j < values[i].length; j++) {
+                        BigDecimal exp = new BigDecimal(expected[i][j]);
                         assertEquals(MessageFormat.format("Wrong result for row [{0}] column [{1}]",
-                                i + 1, j + 1), new BigDecimal(expected[i][j]), rs.getBigDecimal(j + 1));
+                                i + 1, j + 1), exp, rs.getBigDecimal(j + 1));
+                        assertEquals(MessageFormat.format("Wrong double result for row [{0}] column [{1}]",
+                                i + 1, j + 1), exp.doubleValue(), rs.getDouble(j + 1), 0);
                     }
                 }
             }

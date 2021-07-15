@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class ServerVersion implements Comparable<ServerVersion> {
     private static final Logger LOGGER = Logger.getLogger(ServerVersion.class.getName());
 
-    private static final String versionReg = "\\d{4}(\\.\\d+)+";
+    private static final String versionReg = "\\d{4}(\\.\\d+)*";
     private static final String trimReg = "(\\.0)+$";
     private final String version;
     private final String comparableVersion;

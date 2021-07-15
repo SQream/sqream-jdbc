@@ -37,5 +37,10 @@ public class ServerVersionTest {
         assertEquals(1, ServerVersion.compare("1234.5.1.1", "1234.5.1"));
         // any applicable version is higher than not applicable
         assertEquals(1, ServerVersion.compare("1234.56", "version1"));
+        assertEquals(-1, ServerVersion.compare("version1", "1234.56"));
+        assertEquals(-1, ServerVersion.compare("1233.5.1.1", "1234.5.1"));
+        assertEquals(-1, ServerVersion.compare("", "1234.56"));
+        assertEquals(-1, ServerVersion.compare("1234", "1234.1"));
+        assertEquals(1, ServerVersion.compare("1235", "1234"));
     }
 }

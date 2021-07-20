@@ -25,4 +25,9 @@ public class ExplicitCatalogQueryBuilder extends AbstractCatalogQueryBuilder {
     String emptyTypeListReplacement() {
         return EMPTY_TYPE_LIST_REPLACEMENT;
     }
+
+    @Override
+    String unescapeIfNeeded(String str) {
+        return str != null ? str.replaceAll("\\\\(.)", "$1") : str;
+    }
 }

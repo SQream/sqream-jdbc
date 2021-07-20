@@ -22,9 +22,9 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
         }
         return MessageFormat.format("select {0}(''{1}'',''{2}'',''{3}'',''{4}'')",
                 getTablesUF(),
-                replaceNullOrTrim(replaceWildcard(catalog)),
-                replaceNullOrTrim(replaceWildcard(schemaPattern)),
-                replaceNullOrTrim(replaceWildcard(tableNamePattern)),
+                replaceNullOrTrim(unescapeIfNeeded(replaceWildcard(catalog))),
+                replaceNullOrTrim(unescapeIfNeeded(replaceWildcard(schemaPattern))),
+                replaceNullOrTrim(unescapeIfNeeded(replaceWildcard(tableNamePattern))),
                 strTypes);
     }
 
@@ -35,10 +35,10 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
         }
         String sql = MessageFormat.format("select {0}(''{1}'',''{2}'',''{3}'',''{4}'')",
                 getColumnsUF(),
-                replaceNullOrTrim(replaceWildcard(catalog)),
-                replaceNullOrTrim(replaceWildcard(schemaPattern)),
-                replaceNullOrTrim(replaceWildcard(tableNamePattern)),
-                replaceNullOrTrim(replaceWildcard(columnNamePattern)));
+                replaceNullOrTrim(unescapeIfNeeded(replaceWildcard(catalog))),
+                replaceNullOrTrim(unescapeIfNeeded(replaceWildcard(schemaPattern))),
+                replaceNullOrTrim(unescapeIfNeeded(replaceWildcard(tableNamePattern))),
+                replaceNullOrTrim(unescapeIfNeeded(replaceWildcard(columnNamePattern))));
         return sql.toLowerCase();
     }
 
@@ -78,6 +78,10 @@ public abstract class AbstractCatalogQueryBuilder implements CatalogQueryBuilder
     abstract String getColumnsUF();
 
     abstract String emptyTypeListReplacement();
+
+    String unescapeIfNeeded(String str) {
+        return str;
+    }
 
     private String replaceWildcard(String str) {
         return str != null && str.equals("%") ? getNullReplacement() : str;

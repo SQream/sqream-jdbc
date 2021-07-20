@@ -262,7 +262,11 @@ public class SQDatabaseMetaDataTest {
 
     @Test
     public void getTablesTest() throws ConnException, SQLException {
-        String DATABASE = "testDatabase";
+        String DATABASE_INPUT = "test\\_Database";
+        String DATABASE = "test\\_Database";
+        if (catalogQueryBuilder instanceof ExplicitCatalogQueryBuilder) {
+            DATABASE = "test_Database";
+        }
         String SCHEMA_PATTERN = "testSchemaPattern";
         String TABLE_NAME_PATTERN = "testTableNamePattern";
         String[] TYPES = new String[]{"TABLE", "VIEW"};
@@ -272,7 +276,7 @@ public class SQDatabaseMetaDataTest {
         Mockito.when(connectionMock.getParams()).thenReturn(createConnectionParams());
 
         SQDatabaseMetaData metaData =
-                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE, connectorFactoryMock, catalogQueryBuilder);
+                new SQDatabaseMetaData(null, connectionMock, USER, DATABASE_INPUT, connectorFactoryMock, catalogQueryBuilder);
         metaData.getTables(DATABASE, SCHEMA_PATTERN, TABLE_NAME_PATTERN, TYPES);
 
         Mockito.verify(connectorMock).execute(connectorExecuteCaptor.capture());

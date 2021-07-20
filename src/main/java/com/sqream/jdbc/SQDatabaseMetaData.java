@@ -32,7 +32,7 @@ public class SQDatabaseMetaData implements DatabaseMetaData {
 	private int databaseMinorVersion = 0;
 	private int driverMajorVersion = 4;
 	private int driverMinorVersion = 4;
-	private String driverVersion = "4.4.1";
+	private String driverVersion = "4.4.2";
 	private String dbName;
 	private final ConnectorFactory connectorFactory;
 	private final CatalogQueryBuilder catalogQueryBuilder;
